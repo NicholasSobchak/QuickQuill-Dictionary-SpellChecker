@@ -1,5 +1,5 @@
 # Dictionary-Spell-Checker
-The Spell Checker is a C++ application that uses a Trie (prefix) tree to identify and search a large collection of English words i.e. 20,000 words. The program loads a dictionary file that is identified by a Trie tree, allowing the user to quickly check whether a given word is spelled correctly. If a word is not found, the program can suggest corrections based on similar words stored within the tree.
+The Spell Checker is a C++ application that uses a Trie (prefix) tree to identify and search a large collection of English words. The program loads a dictionary file that is identified by a Trie tree, allowing the user to quickly check whether a given word is spelled correctly. If a word is not found, the program can suggest corrections based on similar words stored within the tree.
 
 This project will demonstrate efficient text lookup using Trie search time, O(L). Making it a practical data-structure-driven tool.
 
