@@ -47,7 +47,7 @@ private:
     /*********************************
     // Helper declarations go here
     **********************************/
-    bool remove(TrieNode *&node, std::string_view word);
+    bool removeWord(TrieNode *&node, std::string_view word);
 
     void deleteTrie(TrieNode *node);
     void rewrite(const TrieNode *node, std::string &currentWord, std::ostream &out) const;

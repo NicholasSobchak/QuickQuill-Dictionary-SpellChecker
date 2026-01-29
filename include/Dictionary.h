@@ -17,23 +17,24 @@ public:
     Dictionary();
     ~Dictionary() = default;
 
+	// Dictionary
     bool addWord(std::string_view word); // fix logic
     bool removeWord(std::string_view word); // implement databse logic
+	bool loadInfo(const std::string &filename);
+	void suggestFromPrefix(std::string_view prefix, std::vector<std::string> &results, std::size_t limit) const;
+	bool search(std::string_view word) const; 
+	
+	// Trie wrapper 
 	bool isTrieEmpty() const;
 	bool trieContainsWord(std::string_view word) const;
-	bool loadInfo(const std::string &filename);
-	bool isDBEmpty() const;
-
-	void suggestFromPrefix(std::string_view prefix, std::vector<std::string> &results, std::size_t limit) const;
-    void printTrie() const; 
+	void printTrie() const; 
     void dumpTrie() const;
 	void dumpTrieWord(std::string_view word) const;
     void clearTrie();
+
+	// Database wrapper 
+	bool isDBEmpty() const;	
 	void clearDB();
-  
-	bool search(std::string_view word) const; 
-	// getters
-	
 
 private:
 	// represent word info from the db in memory (acts a 'cache')
@@ -69,10 +70,8 @@ private:
     // Helper declarations go here
     **********************************/
 	
-    bool loadjson(const std::string &filename); 
-
-	void buildTrie(Database &db); // implement lemma logic
-
 	std::string normalize(std::string_view word) const; 
+	void buildTrie(Database &db); 
+    bool loadjson(const std::string &filename); 
 };
 #endif

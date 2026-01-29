@@ -4,7 +4,7 @@
 Dictionary::Dictionary() : m_db{dct::g_dictDb}
 {
 	m_db.createTables();	
-	buildTrie(m_db); // implement lemma logic 
+	buildTrie(m_db);  
 }
 
 bool Dictionary::addWord(std::string_view word)
@@ -17,6 +17,7 @@ bool Dictionary::addWord(std::string_view word)
 	return true;	
 }
 
+// Dictionary 
 bool Dictionary::removeWord(std::string_view word)
 { 
 	if (m_trie.isEmpty()) return false;
@@ -29,20 +30,6 @@ bool Dictionary::removeWord(std::string_view word)
 
 	return true;
 }
-
-bool Dictionary::trieContainsWord(std::string_view word) const
-{
-	if (m_trie.isEmpty()) return false;
-
-	std::string cleanWord{ normalize(word) };
-	if (cleanWord.empty()) return false;
-
-	return m_trie.contains(cleanWord);
-}
-
-bool Dictionary::isTrieEmpty() const { return m_trie.isEmpty(); }
-
-bool Dictionary::isDBEmpty() const { return m_db.isEmpty(); }
 
 bool Dictionary::loadInfo(const std::string &filename)
 {
@@ -100,6 +87,19 @@ void Dictionary::suggestFromPrefix(std::string_view prefix, std::vector<std::str
 	results.erase(std::remove(results.begin(), results.end(), prefix), results.end());
 }
 
+// Trie wrapper
+bool Dictionary::trieContainsWord(std::string_view word) const
+{
+	if (m_trie.isEmpty()) return false;
+
+	std::string cleanWord{ normalize(word) };
+	if (cleanWord.empty()) return false;
+
+	return m_trie.contains(cleanWord);
+}
+
+bool Dictionary::isTrieEmpty() const { return m_trie.isEmpty(); }
+
 void Dictionary::printTrie() const { m_trie.print(); } 
 
 void Dictionary::dumpTrie() const { m_trie.dump(); }
@@ -108,7 +108,10 @@ void Dictionary::dumpTrieWord(std::string_view word) const { m_trie.dumpWord(wor
 
 void Dictionary::clearTrie() { m_trie.clear(); }
 
+// Database wrapper
 void Dictionary::clearDB() { m_db.clearDB(); }
+
+bool Dictionary::isDBEmpty() const { return m_db.isEmpty(); }
 
 /*********************************
 // Dictionary Helper Functions

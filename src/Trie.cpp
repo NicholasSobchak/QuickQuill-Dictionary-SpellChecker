@@ -7,12 +7,12 @@ Trie::~Trie() { deleteTrie(m_root); }
 
 bool Trie::insert(std::string_view word, int word_id)
 {
-    TrieNode *node {m_root};
+    TrieNode *node{ m_root };
 
     // traverse to the last node in the word
     for (char c : word)
     {
-        int index { c - 'a' }; 
+        int index{ c - 'a' }; 
 
         // check if there is an existing child node
         if (!node->m_children[index]) 
@@ -30,7 +30,7 @@ bool Trie::insert(std::string_view word, int word_id)
     return true;
 }
 
-bool Trie::remove(std::string &word) { return remove(m_root, word); }
+bool Trie::remove(std::string &word) { return removeWord(m_root, word); }
 
 bool Trie::contains(std::string_view word) const
 {
@@ -238,7 +238,7 @@ void Trie::dumpNode(const TrieNode *node, const std::string &prefix) const
 	}
 }
 
-bool Trie::remove(TrieNode *&node, std::string_view word)
+bool Trie::removeWord(TrieNode *&node, std::string_view word)
 {
 	if (!node) return false;
 
@@ -264,7 +264,7 @@ bool Trie::remove(TrieNode *&node, std::string_view word)
 	
 	// find child index
 	int index{ word[0] - 'a' };
-	if (remove(node->m_children[index], word.substr(1))) // recursively remove the rest of the word
+	if (removeWord(node->m_children[index], word.substr(1))) // recursively remove the rest of the word
 	{
 		if (node->m_isEndOfWord) return true; // if the current node marks the end of another word, preserve it
 
