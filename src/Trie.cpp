@@ -47,21 +47,6 @@ bool Trie::contains(std::string_view word) const
     return node->m_isEndOfWord; // word not found
 }
 
-bool Trie::startsWith(std::string_view prefix) const
-{
-	const TrieNode *node{ m_root };
-
-	// DFS
-	for (char c : prefix)
-	{
-		int index{ c - 'a' };
-		if (!node || !node->m_children[index]) return false;
-		node = node->m_children[index];
-	}
-
-	return true;
-}
-
 std::string Trie::getPrefix(std::string_view word) const
 {
 	const TrieNode *node{ m_root };
@@ -96,23 +81,8 @@ void Trie::collectWithPrefix(std::string_view prefix, std::vector<std::string> &
 	}
 	
 	// build words
-	collectFromNode(node, currentWord, out, limit);
+	wordsFromNode(node, currentWord, out, limit);
 }
-
-void Trie::writeAll(std::ostream &out) const
-{
-	// write words to given output
-	if (!out)
-	{
-		std::cerr << "output stream is invalid\n";
-		return;
-	}
-
-	std::string currentWord;
-	rewrite(m_root, currentWord, out); // call recursive write function
-}
-
-void Trie::print() const { writeAll(std::cout); } // same as writeAll logic
 
 void Trie::dump() const
 {
@@ -185,24 +155,6 @@ void Trie::deleteTrie(TrieNode *node)
 	}
 	
 	delete node;
-}
-
-void Trie::rewrite(const TrieNode *node, std::string &currentWord, std::ostream &out) const
-{ // similar to collectFromNode 
-	if (!node) return;
-	if (node->m_isEndOfWord) out << currentWord << '\n'; // write complete word
-	
-	// DFS
-	for (int i{0}; i < dct::g_alpha; ++i)
-	{
-		if (node->m_children[i])
-		{
-			char letter{ static_cast<char>('a' + i) };
-			currentWord.push_back(letter); // build word 
-			rewrite(node->m_children[i], currentWord, out);
-			currentWord.pop_back(); // backtrack (undo complete word) works because of recursive rewrite
-		}
-	}
 }
 
 void Trie::dumpNode(const TrieNode *node, const std::string &prefix) const
@@ -283,7 +235,7 @@ bool Trie::removeWord(TrieNode *&node, std::string_view word)
 	return false;
 }
 
-void Trie::collectFromNode(const TrieNode *node, std::string &currentWord, std::vector<std::string> &out, std::size_t limit) const
+void Trie::wordsFromNode(const TrieNode *node, std::string &currentWord, std::vector<std::string> &out, std::size_t limit) const
 { // similar to rewrite
 	if (!node || out.size() >= limit) return;
 	if (node->m_isEndOfWord) out.push_back(currentWord); // add complete word to results vector
@@ -294,7 +246,7 @@ void Trie::collectFromNode(const TrieNode *node, std::string &currentWord, std::
 		{
 			char letter{ static_cast<char>('a' + i) };
 			currentWord.push_back(letter); // build word
-			collectFromNode(node->m_children[i], currentWord, out, limit);
+			wordsFromNode(node->m_children[i], currentWord, out, limit);
 			currentWord.pop_back(); // backtrack (undo complete word) works because of recursive collectFromNode 
 		}
 	}	

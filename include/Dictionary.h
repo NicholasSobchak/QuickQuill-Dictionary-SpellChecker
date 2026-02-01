@@ -3,46 +3,20 @@
 #include "Trie.h"
 #include "Database.h"
 #include "../nlohmann/json.hpp"
+#include <unordered_map>
 #include <fstream>
-
-class Tester;
-//class Trie;
-//class Database;
 
 class Dictionary
 {
 public:
     friend class Tester;
 
-    Dictionary();
-    ~Dictionary() = default;
-
-	// Dictionary
-    bool addWord(std::string_view word); // fix logic
-    bool removeWord(std::string_view word); // implement databse logic
-	bool loadInfo(const std::string &filename);
-	void suggestFromPrefix(std::string_view prefix, std::vector<std::string> &results, std::size_t limit) const;
-	bool search(std::string_view word) const; 
-	
-	// Trie wrapper 
-	bool isTrieEmpty() const;
-	bool trieContainsWord(std::string_view word) const;
-	void printTrie() const; 
-    void dumpTrie() const;
-	void dumpTrieWord(std::string_view word) const;
-    void clearTrie();
-
-	// Database wrapper 
-	bool isDBEmpty() const;	
-	void clearDB();
-
-private:
-	// represent word info from the db in memory (acts a 'cache')
-	struct WordInfo
+	// returned information	
+    struct WordInfo
 	{
-       	std::string lemma; // word
+       	std::string lemma; 
 	    std::vector<std::string> etymology;
-	    int id{-1}; // ??
+	    int id{-1}; 
         
 	    // plurals or alternative spellings
 	    struct Form
@@ -63,15 +37,27 @@ private:
 	    std::vector<Sense> senses; 
 	};
 
-    Trie m_trie;
+    Dictionary();
+    ~Dictionary() = default;
+
+	bool loadInfo(const std::string &filename); // populate database (file only)	
+	WordInfo getWordInfo(std::string_view word) const;	
+	
+	void suggestFromPrefix(std::string_view prefix, std::vector<std::string> &results, std::size_t limit) const;
+
+private:	
+	// Cache storage
+	std::unordered_map<int, WordInfo> m_cache; // IMPLEMENT CACHE
+	
+	// Internals
+	Trie m_trie;
 	Database m_db;
 
     /*********************************
     // Helper declarations go here
-    **********************************/
-	
-	std::string normalize(std::string_view word) const; 
-	void buildTrie(Database &db); 
+    **********************************/	
+	std::string cleanWord(std::string_view word) const; 
+	void loadTrie(Database &db); // populate Trie using Database 
     bool loadjson(const std::string &filename); 
 };
 #endif

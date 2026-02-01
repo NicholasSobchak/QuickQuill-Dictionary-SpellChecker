@@ -1,34 +1,9 @@
 #include "Dictionary.h"
 #include "Utils.h"
 
-Dictionary::Dictionary() : m_db{dct::g_dictDb}
+Dictionary::Dictionary() : m_db{ dct::g_dictDb }
 {
 	m_db.createTables();	
-	buildTrie(m_db);  
-}
-
-bool Dictionary::addWord(std::string_view word)
-{ // fix logic
-	std::string cleanWord{ normalize(word) };
-	if (cleanWord.empty()) return false;
-
-	// IMPLEMENT 
-	
-	return true;	
-}
-
-// Dictionary 
-bool Dictionary::removeWord(std::string_view word)
-{ 
-	if (m_trie.isEmpty()) return false;
-	
-	// IMPLEMENT 
-	std::string cleanWord{ normalize(word) };
-	if (cleanWord.empty()) return false;
-
-	if (!m_trie.remove(cleanWord)) return false;
-
-	return true;
 }
 
 bool Dictionary::loadInfo(const std::string &filename)
@@ -43,7 +18,7 @@ bool Dictionary::loadInfo(const std::string &filename)
 	// parse filename
 	std::size_t p {filename.find_last_of('.')};
 	std::string extension{ "" };
-	bool success{ false };
+	bool success{ true };
 
 	if (p == std::string::npos) std::cerr << "Error: file has no extension!" << std::endl;
 	else extension = filename.substr(p);
@@ -51,7 +26,7 @@ bool Dictionary::loadInfo(const std::string &filename)
 	// temporary
 	if (extension == ".json")
 	{
-	    success = loadjson(filename);
+	    success = success && loadjson(filename);
 	} else
 	{
 		std::cerr << "Error: file extension not recognized." << std::endl;
@@ -73,13 +48,20 @@ bool Dictionary::loadInfo(const std::string &filename)
 	
 	else std::cout << "Error: file extension not recognized." << std::endl;
 #endif
-
+	loadTrie(m_db);
 	return success;
+}
+
+Dictionary::WordInfo Dictionary::getWordInfo(std::string_view word) const
+{
+	WordInfo wi;
+	return wi;
 }
 
 void Dictionary::suggestFromPrefix(std::string_view prefix, std::vector<std::string> &results, std::size_t limit) const 
 {
-	std::string cleanPrefix{ normalize(prefix) };
+	if (m_trie.isEmpty()) return;
+	std::string cleanPrefix{ cleanWord(prefix) };
 	if (cleanPrefix.empty()) return;
 	m_trie.collectWithPrefix(cleanPrefix, results, limit+1); // LOGIC ERROR: (off by 1) - balance the prefix being removed from the results
 
@@ -87,78 +69,63 @@ void Dictionary::suggestFromPrefix(std::string_view prefix, std::vector<std::str
 	results.erase(std::remove(results.begin(), results.end(), prefix), results.end());
 }
 
-// Trie wrapper
-bool Dictionary::trieContainsWord(std::string_view word) const
-{
-	if (m_trie.isEmpty()) return false;
-
-	std::string cleanWord{ normalize(word) };
-	if (cleanWord.empty()) return false;
-
-	return m_trie.contains(cleanWord);
-}
-
-bool Dictionary::isTrieEmpty() const { return m_trie.isEmpty(); }
-
-void Dictionary::printTrie() const { m_trie.print(); } 
-
-void Dictionary::dumpTrie() const { m_trie.dump(); }
-
-void Dictionary::dumpTrieWord(std::string_view word) const { m_trie.dumpWord(word); }
-
-void Dictionary::clearTrie() { m_trie.clear(); }
-
-// Database wrapper
-void Dictionary::clearDB() { m_db.clearDB(); }
-
-bool Dictionary::isDBEmpty() const { return m_db.isEmpty(); }
-
 /*********************************
 // Dictionary Helper Functions
 **********************************/
-std::string Dictionary::normalize(std::string_view word) const 
+std::string Dictionary::cleanWord(std::string_view word) const 
 {
-	std::string cleanWord{ "" };
+	std::string clean{ "" };
 	for (char c : word)
 	{
 		if (!isalpha(static_cast<unsigned char>(c))) continue;
 		{
 		    // tolower() returns int, passing a negative value = undefined behavior
-		    cleanWord.push_back(tolower(static_cast<unsigned char>(c))); 
+		    clean.push_back(tolower(static_cast<unsigned char>(c))); 
 		}	
 	}
-	return cleanWord;
+	return clean;
 }
 
-void Dictionary::buildTrie(Database &db) 
+void Dictionary::loadTrie(Database &db) 
 {
     sqlite3* sqlDB{ m_db.getDB() };
-    sqlite3_stmt* stmt;
+    sqlite3_stmt* stmt{ nullptr };
 
-	// insert all lemmas
+    // insert all lemmas
     const char* q1 = "SELECT id, lemma FROM words;";
-    sqlite3_prepare_v2(sqlDB, q1, -1, &stmt, nullptr);
-
-    while (sqlite3_step(stmt) == SQLITE_ROW) 
-	{
-	    int id{ sqlite3_column_int(stmt, 0) };
-        const unsigned char* text{ sqlite3_column_text(stmt, 1) };
-        std::string lemma{ reinterpret_cast<const char*>(text) };
-        m_trie.insert(lemma, id);  
-	}
-
-	// insert all forms
-    const char* q2 = "SELECT word_id, form FROM forms;";
-    sqlite3_prepare_v2(sqlDB, q2, -1, &stmt, nullptr);
+    if (sqlite3_prepare_v2(sqlDB, q1, -1, &stmt, nullptr) != SQLITE_OK)
+        return;
 
     while (sqlite3_step(stmt) == SQLITE_ROW)
     {
         int id{ sqlite3_column_int(stmt, 0) };
+
         const unsigned char* text{ sqlite3_column_text(stmt, 1) };
+        if (!text) continue;
+
         std::string lemma{ reinterpret_cast<const char*>(text) };
-        std::string form = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
-        m_trie.insert(form, id);
+        m_trie.insert(cleanWord(lemma), id);
     }
+
+    sqlite3_finalize(stmt); // finalize before next preparation
+
+
+    // insert all forms
+    const char* q2 = "SELECT word_id, form FROM forms;";
+    if (sqlite3_prepare_v2(sqlDB, q2, -1, &stmt, nullptr) != SQLITE_OK)
+        return;
+
+    while (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        int id{ sqlite3_column_int(stmt, 0) };
+
+        const unsigned char* text{ sqlite3_column_text(stmt, 1) };
+        if (!text) continue;
+
+        std::string form{ reinterpret_cast<const char*>(text) };
+        m_trie.insert(cleanWord(form), id);
+    }
+
     sqlite3_finalize(stmt);
 }
 
@@ -179,10 +146,10 @@ bool Dictionary::loadjson(const std::string &filename)
 
 			// retrieve json word data into "word" and insert into DB
             WordInfo word;
-            word.lemma = j["word"];
+            word.lemma = j["word"]; // cleanWord for Trie lookup
 
             // insert and get word ID from database
-            word.id = m_db.insertWord((word.lemma));
+            word.id = m_db.insertWord(cleanWord(word.lemma));
 
             // Etymology
             if (j.contains("etymology_text"))
@@ -206,14 +173,13 @@ bool Dictionary::loadjson(const std::string &filename)
                     WordInfo::Form form;
                     
 					// Form
-                    form.form = f.value("form", "");
+                    form.form = cleanWord(f.value("form", "")); // clean word for Trie lookup
 
 					// Tag (if there is one)
                     form.tag = f.contains("tags") && !f["tags"].empty() ? f["tags"][0].get<std::string>() : "";
                     word.forms.push_back(form); // vector of Forms for autocomplete / sepllchecking
 
-                    m_db.insertForm(word.id, form.form, form.tag);
-                }
+                    m_db.insertForm(word.id, cleanWord(form.form), form.tag);                 }
             }
 
             // Senses
@@ -270,7 +236,7 @@ bool Dictionary::loadjson(const std::string &filename)
                 }
             }
 
-			//m_words[word.lemma] = word; // add to Dictionary storage??? (map<string, WordInfo>)
+			//m_cache[word.lemma] = word; // add to Dictionary storage??? (map<string, WordInfo>)
         }
         catch (const std::exception& e)
         {
@@ -278,13 +244,5 @@ bool Dictionary::loadjson(const std::string &filename)
         }
     }
 
-	// build the trie
-	buildTrie(m_db);
-
     return true;
-}
-
-bool Dictionary::search(std::string_view word) const
-{
-	return false;
 }

@@ -1,20 +1,11 @@
 #include "SpellChecker.h"
 #include "Utils.h"
 
-SpellChecker::SpellChecker(const Dictionary &dict) : m_dict{dict} {}
-
-bool SpellChecker::check(std::string_view word) const
-{
-	// returns false if word is mispelled or not found in dictionary
-	return (!m_dict.search(word) ? false : true);
-}
+SpellChecker::SpellChecker(const Dictionary &dict) : m_dict{ dict } {}
 
 std::vector<std::string> SpellChecker::suggest(std::string_view prefix) const 
 { 
-	std::vector<std::string> results;
-
-	if (m_dict.isTrieEmpty()) return results;	
-	
+	std::vector<std::string> results;	
 	if (!prefix.empty()) m_dict.suggestFromPrefix(prefix, results, dct::g_maxSuggest);
 
 	return results; 

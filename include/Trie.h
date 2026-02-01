@@ -9,18 +9,17 @@
 class Trie
 {
 public:
+	friend class Tester;
+
     Trie();
     ~Trie();
 
     bool insert(std::string_view word, int word_id);
     bool remove(std::string &word);
     bool contains(std::string_view word) const;
-	bool startsWith(std::string_view prefix) const; // why?
 	bool isEmpty() const;
 
 	void collectWithPrefix(std::string_view prefix, std::vector<std::string> &out, std::size_t limit) const;
-    void writeAll(std::ostream &out) const;
-    void print() const;
     void dump() const;
 	void dumpWord(std::string_view word) const;
     void clear();
@@ -50,8 +49,7 @@ private:
     bool removeWord(TrieNode *&node, std::string_view word);
 
     void deleteTrie(TrieNode *node);
-    void rewrite(const TrieNode *node, std::string &currentWord, std::ostream &out) const;
     void dumpNode(const TrieNode *node, const std::string &prefix) const;
-	void collectFromNode(const TrieNode *node, std::string &currentWord, std::vector<std::string> &out, std::size_t limit) const;
+	void wordsFromNode(const TrieNode *node, std::string &currentWord, std::vector<std::string> &out, std::size_t limit) const;
 };
 #endif
