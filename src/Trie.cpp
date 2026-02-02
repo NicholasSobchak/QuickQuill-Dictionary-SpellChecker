@@ -73,6 +73,7 @@ int Trie::getWordId(std::string_view word) const
 	for (char c : word)
 	{
 		int index{ c - 'a' };
+        if (!node->m_children[index]) return -1; // not found
 		node = node->m_children[index];
 	}	
 	if (node->m_isEndOfWord) return node->m_wordID;

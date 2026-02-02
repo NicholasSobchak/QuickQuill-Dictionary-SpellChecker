@@ -1,0 +1,10 @@
+This is a more in depth explanation of this program...
+
+
+Open DB
+Create tables (if not exist)
+if (isEmpty())
+    load JSON into DB
+Load Trie from DB
+Start server
+

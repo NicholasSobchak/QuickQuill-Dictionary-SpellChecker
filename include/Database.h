@@ -36,7 +36,7 @@ public:
 	sqlite3 *getDB();
 
 private:
-	sqlite3 *db;
+	sqlite3 *m_db;
 
 	/*********************************
     // Helper declarations go here

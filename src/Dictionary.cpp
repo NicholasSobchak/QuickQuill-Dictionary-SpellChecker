@@ -54,21 +54,22 @@ bool Dictionary::loadInfo(const std::string &filename)
 
 WordInfo Dictionary::getWordInfo(std::string_view word) const
 { // this is where word will be added to cache if it is not found 
-	WordInfo wi;
-	
-	if (!contains(word) && m_trie.contains(word)) 
+	WordInfo info;
+
+	// check if its already cached	
+	if (contains(word)) 
 	{
-		// add word to cache
+		// return word back to user 
 	} 
 
-	// implement
+	// add word to cache from the db	
 
-	return wi;
+	return info;
 }
 
 bool Dictionary::contains(std::string_view word) const
 {
-	int id = m_trie.getWordId(word);
+	int id = m_trie.getWordId(cleanWord(word));
 	if (id == -1) return false; // -1 sentinal for no id  
 	return m_cache.find(id) != m_cache.end();
 }

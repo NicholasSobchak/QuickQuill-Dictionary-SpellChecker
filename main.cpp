@@ -7,7 +7,7 @@ class Tester {
 	public: 
 		Tester() : dict_(), checker_(dict_)
 		{
-		    dict_.loadInfo("nlohmann/testdb.json");
+			dict_.loadInfo("nlohmann/testdb.json");
 		}
 
 		//bool dictTestLoadInfo() 
@@ -20,11 +20,7 @@ class Tester {
 
 		void trieTestDump() { dict_.m_trie.dump(); }
 
-		void trieTestGetWordId() 
-		{ 
-			int id = dict_.m_trie.getWordId(testWord_);
-			std::cout << id;
-		}
+		int trieTestGetWordId() { return dict_.m_trie.getWordId(testWord_); }
 
 	private:
 		Dictionary dict_;
@@ -49,9 +45,9 @@ int main()
 	test.trieTestDump();
 	std::cout << "\n\n";
 
-	std::cout << "Testing trieTestGetWordId()...\nID: ";
-	test.trieTestGetWordId();
-	std::cout << "\n\n";
+	std::cout << "Testing trieTestGetWordId()...\nID: "
+		<< test.trieTestGetWordId()
+		<< "\n\n";
 
 #endif
 

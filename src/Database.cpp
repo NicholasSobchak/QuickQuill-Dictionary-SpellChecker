@@ -3,12 +3,12 @@
 Database::Database(const std::string& filename) 
 { 
 	// open database
-	if (sqlite3_open(filename.c_str(), &db)) throw std::runtime_error("Error: Can't open database\n");
+	if (sqlite3_open(filename.c_str(), &m_db)) throw std::runtime_error("Error: Can't open database\n");
 }
 
-Database::~Database() { sqlite3_close(db); }
+Database::~Database() { sqlite3_close(m_db); }
 
-sqlite3* Database::getDB() { return db; }
+sqlite3* Database::getDB() { return m_db; }
 
 void Database::createTables() 
 {
@@ -69,7 +69,7 @@ void Database::createTables()
 	};
 
     char* errMsg{ nullptr };
-    sqlite3_exec(db, sql, nullptr, nullptr, &errMsg);
+    sqlite3_exec(m_db, sql, nullptr, nullptr, &errMsg);
 }
 
 int Database::insertWord(const std::string& lemma) 
@@ -84,7 +84,7 @@ int Database::insertWord(const std::string& lemma)
 	&stmt → where to store the compiled statement
 	nullptr → ignore unused output
 	*/	
-    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) return -1;
+    if (sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr) != SQLITE_OK) return -1;
 
 	/*
 	stmt → prepared statement
@@ -102,7 +102,7 @@ int Database::insertWord(const std::string& lemma)
 		return -1;
 	}
 	sqlite3_finalize(stmt); // free the statement from memory to avoid leaks
-    return static_cast<int>(sqlite3_last_insert_rowid(db)); // word inserted successfully
+    return static_cast<int>(sqlite3_last_insert_rowid(m_db)); // word inserted successfully
 
 }
 
@@ -110,7 +110,7 @@ int Database::insertSense(int word_id, const std::string& pos, const std::string
 {
     sqlite3_stmt* stmt;
     const char* sql{ "INSERT INTO senses (word_id, pos, definition) VALUES (?, ?, ?);" };
-    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) return -1;
+    if (sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr) != SQLITE_OK) return -1;
 
 	// fill values
     sqlite3_bind_int(stmt, 1, word_id);
@@ -123,14 +123,14 @@ int Database::insertSense(int word_id, const std::string& pos, const std::string
         return -1;	
 	}
     sqlite3_finalize(stmt);
-	return static_cast<int>(sqlite3_last_insert_rowid(db));
+	return static_cast<int>(sqlite3_last_insert_rowid(m_db));
 }
 
 bool Database::insertEtymology(int word_id, const std::vector<std::string> &etymology)
 { 
 	sqlite3_stmt* stmt;
 	const char* sql{ "INSERT INTO etymologies (word_id, etymology) VALUES (?, ?);" };
-	if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) return false;
+	if (sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr) != SQLITE_OK) return false;
 
 	// fill value with vector
 	for (const auto& line : etymology)
@@ -156,7 +156,7 @@ bool Database::insertForm(int word_id, const std::string &form, const std::strin
 { 
 	sqlite3_stmt* stmt;
 	const char* sql{ "INSERT INTO forms (word_id, form, tag) VALUES (?, ?, ?);" };
-	if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) return false;
+	if (sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr) != SQLITE_OK) return false;
 
 	// fill value
 	sqlite3_bind_int(stmt, 1, word_id);
@@ -176,7 +176,7 @@ bool Database::insertExample(int word_id, const std::string &example)
 { 
 	sqlite3_stmt* stmt;
 	const char* sql{ "INSERT INTO examples (word_id, example) VALUES (?, ?);" };
-	if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) return false;
+	if (sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr) != SQLITE_OK) return false;
 
 	// fill value
 	sqlite3_bind_int(stmt, 1, word_id);
@@ -195,7 +195,7 @@ bool Database::insertSynonym(int word_id, const std::string &synonym)
 { 
 	sqlite3_stmt* stmt;
 	const char* sql{ "INSERT INTO synonyms (word_id, synonym) VALUES (?, ?);" };
-	if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) return false;
+	if (sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr) != SQLITE_OK) return false;
 
 	// fill value
 	sqlite3_bind_int(stmt, 1, word_id);
@@ -214,7 +214,7 @@ bool Database::insertAntonym(int word_id, const std::string &antonym)
 { 
 	sqlite3_stmt* stmt;
 	const char* sql{ "INSERT INTO antonyms (word_id, antonym) VALUES (?, ?);" };
-	if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) return false;
+	if (sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr) != SQLITE_OK) return false;
 
 	// fill value
 	sqlite3_bind_int(stmt, 1, word_id);
@@ -230,8 +230,16 @@ bool Database::insertAntonym(int word_id, const std::string &antonym)
 }
 
 bool Database::isEmpty() const
-{ // implement
-	return false;
+{ 
+	sqlite3_stmt* stmt;
+
+	const char* sql{ "SELECT 1 FROM words LIMIT 1;" };
+	if (sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr) != SQLITE_OK) return true; // error = empty
+	
+	int rc = sqlite3_step(stmt);
+	sqlite3_finalize(stmt);
+
+	return (rc != SQLITE_ROW);
 }
 
 bool Database::removeWord(int word_id)
@@ -260,7 +268,7 @@ void Database::clearDB()
 	};
 
 	char* errMsg{ nullptr };
-    int rc{ sqlite3_exec(db, sql, nullptr, nullptr, &errMsg) };
+    int rc{ sqlite3_exec(m_db, sql, nullptr, nullptr, &errMsg) };
 
     if (rc != SQLITE_OK)
     {
