@@ -5,20 +5,32 @@
 
 class Tester {
 	public: 
-		Tester() : _db(dct::g_dictDb), _dict(), _checker(_dict)
+		Tester() : dict_(), checker_(dict_)
 		{
-		    _dict.loadInfo("nlohmann/testdb.json");
-			_dict.m_trie.dump();
+		    dict_.loadInfo("nlohmann/testdb.json");
 		}
 
-		//bool dictTestLoadInfo() { return _dict.contains("run"); }
+		//bool dictTestLoadInfo() 
+		//{
+		//	_dict.getWordInfo(testWord_); 
+		//	return _dict.contains(testWord_); 
+		//}
 
-		bool trieTestContains() { return _dict.m_trie.contains("run"); }
+		bool trieTestContains() { return dict_.m_trie.contains(testWord_); }
+
+		void trieTestDump() { dict_.m_trie.dump(); }
+
+		void trieTestGetWordId() 
+		{ 
+			int id = dict_.m_trie.getWordId(testWord_);
+			std::cout << id;
+		}
 
 	private:
-		Database _db;	
-		Dictionary _dict;
-		SpellChecker _checker;
+		Dictionary dict_;
+		SpellChecker checker_;
+
+		const std::string testWord_{ "run" };
 };
 
 int main()
@@ -31,7 +43,16 @@ int main()
 
 	std::cout << "Testing trieTestContains()..."
 		<< (test.trieTestContains() ? "passed" : "failed")
-		<< "\n\n";	
+		<< "\n\n";
+
+	std::cout << "Testing trieTestDump()...\n";
+	test.trieTestDump();
+	std::cout << "\n\n";
+
+	std::cout << "Testing trieTestGetWordId()...\nID: ";
+	test.trieTestGetWordId();
+	std::cout << "\n\n";
+
 #endif
 
     return 0;

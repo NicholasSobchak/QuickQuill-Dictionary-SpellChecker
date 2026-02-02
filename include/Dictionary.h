@@ -1,5 +1,6 @@
 #ifndef DICTIONARY_H
 #define DICTIONARY_H
+#include "WordInfo.h"
 #include "Trie.h"
 #include "Database.h"
 #include "../nlohmann/json.hpp"
@@ -9,39 +10,14 @@
 class Dictionary
 {
 public:
-    friend class Tester;
-
-	// returned information	
-    struct WordInfo
-	{
-       	std::string lemma; 
-	    std::vector<std::string> etymology;
-	    int id{-1}; 
-        
-	    // plurals or alternative spellings
-	    struct Form
-        {
-	    	std::string form;
-	    	std::string tag;
-	    };
-	    std::vector<Form> forms; 
-        
-	    struct Sense
-	 	{
-	 	    std::string pos; // noun, verb, adj, etc.
-	 	    std::string definition;
-	 	    std::vector<std::string> examples;
-      	    std::vector<std::string> synonyms;
-     	    std::vector<std::string> antonyms;
-     	};
-	    std::vector<Sense> senses; 
-	};
+    friend class Tester; 
 
     Dictionary();
     ~Dictionary() = default;
 
 	bool loadInfo(const std::string &filename); // populate database (file only)	
-	WordInfo getWordInfo(std::string_view word) const;	
+	WordInfo getWordInfo(std::string_view word) const;
+	bool contains(std::string_view word) const;	
 	
 	void suggestFromPrefix(std::string_view prefix, std::vector<std::string> &results, std::size_t limit) const;
 

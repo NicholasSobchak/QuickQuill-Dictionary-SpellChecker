@@ -52,10 +52,25 @@ bool Dictionary::loadInfo(const std::string &filename)
 	return success;
 }
 
-Dictionary::WordInfo Dictionary::getWordInfo(std::string_view word) const
-{
+WordInfo Dictionary::getWordInfo(std::string_view word) const
+{ // this is where word will be added to cache if it is not found 
 	WordInfo wi;
+	
+	if (!contains(word) && m_trie.contains(word)) 
+	{
+		// add word to cache
+	} 
+
+	// implement
+
 	return wi;
+}
+
+bool Dictionary::contains(std::string_view word) const
+{
+	int id = m_trie.getWordId(word);
+	if (id == -1) return false; // -1 sentinal for no id  
+	return m_cache.find(id) != m_cache.end();
 }
 
 void Dictionary::suggestFromPrefix(std::string_view prefix, std::vector<std::string> &results, std::size_t limit) const 
@@ -170,7 +185,7 @@ bool Dictionary::loadjson(const std::string &filename)
             {
                 for (auto &f : j["forms"])
                 {
-                    WordInfo::Form form;
+                    Form form;
                     
 					// Form
                     form.form = cleanWord(f.value("form", "")); // clean word for Trie lookup
@@ -187,7 +202,7 @@ bool Dictionary::loadjson(const std::string &filename)
             {
                 for (auto &sense_json : j["senses"])
                 {
-                    WordInfo::Sense sense;
+                    Sense sense;
 
                     // POS (part of speech)
                     sense.pos = sense_json.value("pos", j.value("pos", ""));

@@ -65,6 +65,20 @@ std::string Trie::getPrefix(std::string_view word) const
 	return prefix;
 }
 
+int Trie::getWordId(std::string_view word) const
+{
+	TrieNode *node{ m_root };
+
+	// DFS
+	for (char c : word)
+	{
+		int index{ c - 'a' };
+		node = node->m_children[index];
+	}	
+	if (node->m_isEndOfWord) return node->m_wordID;
+	return -1; 
+}
+
 void Trie::collectWithPrefix(std::string_view prefix, std::vector<std::string> &out, std::size_t limit) const
 {
 	const TrieNode *node{ m_root };

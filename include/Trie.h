@@ -19,6 +19,8 @@ public:
     bool contains(std::string_view word) const;
 	bool isEmpty() const;
 
+	int getWordId(std::string_view word) const;
+
 	void collectWithPrefix(std::string_view prefix, std::vector<std::string> &out, std::size_t limit) const;
     void dump() const;
 	void dumpWord(std::string_view word) const;
@@ -30,7 +32,7 @@ private:
     struct TrieNode {
         TrieNode *m_children[26];
         bool m_isEndOfWord{ false };
-		int m_wordID { -1 };
+		int m_wordID{ -1 };
 
         TrieNode()
         {

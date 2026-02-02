@@ -29,7 +29,6 @@ public:
 		
 	int insertWord(const std::string &lemma);
 	int insertSense(int word_id, const std::string &pos, const std::string &definition);
-	int getWordID(const std::string &lemma) const;
 
 	void dumpWord() const;
 	void clearDB();

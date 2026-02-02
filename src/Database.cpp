@@ -102,7 +102,8 @@ int Database::insertWord(const std::string& lemma)
 		return -1;
 	}
 	sqlite3_finalize(stmt); // free the statement from memory to avoid leaks
-    return getWordID(lemma); // word inserted successfully
+    return static_cast<int>(sqlite3_last_insert_rowid(db)); // word inserted successfully
+
 }
 
 int Database::insertSense(int word_id, const std::string& pos, const std::string& definition) 
@@ -238,28 +239,6 @@ bool Database::removeWord(int word_id)
 	if (isEmpty()) return false;
 	
 	return false;
-}
-
-int Database::getWordID(const std::string &lemma) const
-{
-	sqlite3_stmt* stmt;
-	const char* sql {"SELECT id FROM words WHERE lemma = ?;"};
-
-	// prepare the sql statement
-	if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) return -1;
-
-	// bind the word into the ?
-	sqlite3_bind_text(stmt, 1, lemma.c_str(), -1, SQLITE_STATIC);
-
-	// execute the query
-	int word_id = -1;
-	if (sqlite3_step(stmt) == SQLITE_ROW)
-	{
-		word_id = sqlite3_column_int(stmt, 0);
-	}
-
-	sqlite3_finalize(stmt);
-	return word_id;
 }
 
 void Database::clearDB()
