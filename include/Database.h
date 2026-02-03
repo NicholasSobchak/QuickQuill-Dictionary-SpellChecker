@@ -25,7 +25,7 @@ public:
 	bool insertAntonym(int word_id, const std::string &antonym);
 	bool removeWord(int word_id); // implement
 	bool isEmpty() const;
-
+	bool contains(std::string_view word) const;
 		
 	int insertWord(const std::string &lemma);
 	int insertSense(int word_id, const std::string &pos, const std::string &definition);

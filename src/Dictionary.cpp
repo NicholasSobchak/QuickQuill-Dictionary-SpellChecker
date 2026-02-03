@@ -4,6 +4,7 @@
 Dictionary::Dictionary() : m_db{ dct::g_dictDb }
 {
 	m_db.createTables();	
+	loadTrie(m_db);
 }
 
 bool Dictionary::loadInfo(const std::string &filename)
@@ -48,7 +49,6 @@ bool Dictionary::loadInfo(const std::string &filename)
 	
 	else std::cout << "Error: file extension not recognized." << std::endl;
 #endif
-	loadTrie(m_db);
 	return success;
 }
 
@@ -69,9 +69,20 @@ WordInfo Dictionary::getWordInfo(std::string_view word) const
 
 bool Dictionary::contains(std::string_view word) const
 {
-	int id = m_trie.getWordId(cleanWord(word));
+	int id{ m_trie.getWordId(cleanWord(word)) };
 	if (id == -1) return false; // -1 sentinal for no id  
 	return m_cache.find(id) != m_cache.end();
+}
+
+bool Dictionary::removeWord(const std::string& word)
+{	
+	int id{ m_trie.getWordId(cleanWord(word)) };
+	if (id == -1) return false;
+
+	m_db.removeWord(id);
+	m_trie.remove(word);
+	m_cache.erase(id);
+	return true;
 }
 
 void Dictionary::suggestFromPrefix(std::string_view prefix, std::vector<std::string> &results, std::size_t limit) const 

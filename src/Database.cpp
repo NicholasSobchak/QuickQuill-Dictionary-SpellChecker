@@ -232,7 +232,6 @@ bool Database::insertAntonym(int word_id, const std::string &antonym)
 bool Database::isEmpty() const
 { 
 	sqlite3_stmt* stmt;
-
 	const char* sql{ "SELECT 1 FROM words LIMIT 1;" };
 	if (sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr) != SQLITE_OK) return true; // error = empty
 	
@@ -246,8 +245,34 @@ bool Database::removeWord(int word_id)
 { // implement
 	if (isEmpty()) return false;
 	
-	return false;
+	sqlite3_stmt* stmt;
+	const char* sql{ "DELETE FROM words WHERE id = ?;" };
+	sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr);
+    
+	sqlite3_bind_int(stmt, 1, word_id);
+    sqlite3_step(stmt);
+
+    sqlite3_finalize(stmt);
+	
+	return true;
 }
+
+bool Database::contains(std::string_view word) const
+{
+	if (isEmpty()) return false;
+	
+	sqlite3_stmt* stmt;
+	const char* sql{ ";" };
+	sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr);
+    
+	sqlite3_bind_int(stmt, 1, word_id);
+    sqlite3_step(stmt);
+
+    sqlite3_finalize(stmt);
+	
+	return true;
+}
+
 
 void Database::clearDB()
 {

@@ -17,7 +17,8 @@ public:
 
 	bool loadInfo(const std::string &filename); // populate database (file only)	
 	WordInfo getWordInfo(std::string_view word) const;
-	bool contains(std::string_view word) const;	
+	bool contains(std::string_view word) const;
+	bool removeWord(const std::string& word);	
 	
 	void suggestFromPrefix(std::string_view prefix, std::vector<std::string> &results, std::size_t limit) const;
 

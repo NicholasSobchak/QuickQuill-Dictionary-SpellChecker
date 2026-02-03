@@ -30,7 +30,7 @@ bool Trie::insert(std::string_view word, int word_id)
     return true;
 }
 
-bool Trie::remove(std::string &word) { return removeWord(m_root, word); }
+bool Trie::remove(const std::string &word) { return removeWord(m_root, word); }
 
 bool Trie::contains(std::string_view word) const
 {

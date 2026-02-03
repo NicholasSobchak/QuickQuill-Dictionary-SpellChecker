@@ -15,7 +15,7 @@ public:
     ~Trie();
 
     bool insert(std::string_view word, int word_id);
-    bool remove(std::string &word);
+    bool remove(const std::string &word);
     bool contains(std::string_view word) const;
 	bool isEmpty() const;
 
