@@ -55,11 +55,12 @@ bool Dictionary::loadInfo(const std::string &filename)
 WordInfo Dictionary::getWordInfo(std::string_view word) const
 { // this is where word will be added to cache if it is not found 
 	WordInfo info;
+	int id = m_trie.getWordId(cleanWord(word));
 
 	// check if its already cached	
 	if (contains(word)) 
 	{
-		// return word back to user 
+		return info;
 	} 
 
 	// add word to cache from the db	
@@ -72,17 +73,6 @@ bool Dictionary::contains(std::string_view word) const
 	int id{ m_trie.getWordId(cleanWord(word)) };
 	if (id == -1) return false; // -1 sentinal for no id  
 	return m_cache.find(id) != m_cache.end();
-}
-
-bool Dictionary::removeWord(const std::string& word)
-{	
-	int id{ m_trie.getWordId(cleanWord(word)) };
-	if (id == -1) return false;
-
-	m_db.removeWord(id);
-	m_trie.remove(word);
-	m_cache.erase(id);
-	return true;
 }
 
 void Dictionary::suggestFromPrefix(std::string_view prefix, std::vector<std::string> &results, std::size_t limit) const 

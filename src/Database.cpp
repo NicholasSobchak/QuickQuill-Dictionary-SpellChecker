@@ -1,9 +1,10 @@
 #include "Database.h"
+#include "Utils.h"
 
-Database::Database(const std::string& filename) 
+Database::Database(std::string_view filename) 
 { 
 	// open database
-	if (sqlite3_open(filename.c_str(), &m_db)) throw std::runtime_error("Error: Can't open database\n");
+	if (sqlite3_open(filename.data(), &m_db)) throw std::runtime_error("Error: Can't open database\n");
 }
 
 Database::~Database() { sqlite3_close(m_db); }
@@ -99,7 +100,7 @@ int Database::insertWord(const std::string& lemma)
 	if (sqlite3_step(stmt) != SQLITE_DONE) 
 	{ 
 		sqlite3_finalize(stmt); // free the statement from memory to avoid leaks
-		return -1;
+		return dct::g_defaultId;
 	}
 	sqlite3_finalize(stmt); // free the statement from memory to avoid leaks
     return static_cast<int>(sqlite3_last_insert_rowid(m_db)); // word inserted successfully
@@ -120,7 +121,7 @@ int Database::insertSense(int word_id, const std::string& pos, const std::string
 	if (sqlite3_step(stmt) != SQLITE_DONE)
 	{  
         sqlite3_finalize(stmt);
-        return -1;	
+        return dct::g_defaultId;
 	}
     sqlite3_finalize(stmt);
 	return static_cast<int>(sqlite3_last_insert_rowid(m_db));
@@ -241,36 +242,24 @@ bool Database::isEmpty() const
 	return (rc != SQLITE_ROW);
 }
 
-bool Database::removeWord(int word_id)
-{ // implement
-	if (isEmpty()) return false;
-	
-	sqlite3_stmt* stmt;
-	const char* sql{ "DELETE FROM words WHERE id = ?;" };
-	sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr);
-    
-	sqlite3_bind_int(stmt, 1, word_id);
-    sqlite3_step(stmt);
-
-    sqlite3_finalize(stmt);
-	
-	return true;
-}
-
 bool Database::contains(std::string_view word) const
-{
+{ 
 	if (isEmpty()) return false;
 	
 	sqlite3_stmt* stmt;
-	const char* sql{ ";" };
-	sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr);
-    
-	sqlite3_bind_int(stmt, 1, word_id);
-    sqlite3_step(stmt);
+	const char* sql{ "SELECT 1 FROM words WHERE word = ? LIMIT 1;" };
+	if (sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr) != SQLITE_OK) return false; // word not found
 
-    sqlite3_finalize(stmt);
+	if (sqlite3_bind_text(stmt, 1, word.data(), static_cast<int>(word.size()), SQLITE_STATIC) != SQLITE_OK)
+    {
+        sqlite3_finalize(stmt);
+        return false;
+    }
 	
-	return true;
+	bool exists = (sqlite3_step(stmt) == SQLITE_ROW);
+
+	sqlite3_finalize(stmt);
+	return exists;
 }
 
 
@@ -303,7 +292,12 @@ void Database::clearDB()
     }
 }
 
-void Database::dumpWord() const
-{
+void Database::dumpWord(std::string_view word) const
+{ // implement
+}
 
+WordInfo Database::getInfo(int word_id) const
+{
+	WordInfo info;
+	return info;
 }

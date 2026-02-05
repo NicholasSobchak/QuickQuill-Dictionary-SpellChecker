@@ -3,7 +3,8 @@
 #include "Dictionary.h"
 #include "SpellChecker.h"
 
-class Tester {
+class Tester 
+{	
 	public: 
 		Tester() : dict_(), checker_(dict_)
 		{
@@ -20,13 +21,6 @@ class Tester {
 		//	return _dict.contains(testWord_); 
 		//}
 		
-		bool dictTestRemoveWord()
-		{
-			dict_.removeWord(testWord_);
-			return (!dict_.m_db.contains(testWord_) && dict_.m_trie.contains(testWord_) && dict_.contains(testWord_));
-		}
-
-
 		// Trie
 		bool trieTestContains() { return dict_.m_trie.contains(testWord_); }
 
@@ -36,12 +30,8 @@ class Tester {
 
 
 		// Database
-		bool databaseTestClear()
-		{
-			dict_.m_db.clearDB();
-			return (!dict_.m_db.isEmpty());
-		}
-
+		bool databaseTestIsEmpty() { return dict_.m_db.isEmpty(); }
+	
 	private:
 		Dictionary dict_;
 		SpellChecker checker_;
