@@ -31,6 +31,8 @@ class Tester
 
 		// Database
 		bool databaseTestIsEmpty() { return dict_.m_db.isEmpty(); }
+
+		void databaseTestDumpWord() { dict_.m_db.dumpWord(testWord_); }
 	
 	private:
 		Dictionary dict_;
@@ -58,6 +60,10 @@ int main()
 	std::cout << "Testing trieTestGetWordId()...\nID: "
 		<< test.trieTestGetWordId()
 		<< "\n\n";
+	
+	std::cout << "Testing databaseTestDumpWord()...\n";
+	test.databaseTestDumpWord();
+	std::cout << "\n\n";
 
 #endif
 

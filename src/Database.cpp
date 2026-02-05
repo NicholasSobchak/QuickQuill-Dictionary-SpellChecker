@@ -294,6 +294,110 @@ void Database::clearDB()
 
 void Database::dumpWord(std::string_view word) const
 { // implement
+	sqlite3_stmt* stmt;
+
+	const char* wordSql{ "SELECT id, lemma FROM words WHERE lemma = ? LIMIT 1;" };
+	if (sqlite3_prepare_v2(m_db, wordSql, -1, &stmt, nullptr) != SQLITE_OK)
+        return;
+
+    sqlite3_bind_text(stmt, 1, word.data(), static_cast<int>(word.size()), SQLITE_STATIC);
+    if (sqlite3_step(stmt) != SQLITE_ROW)
+    {
+        std::cout << "Word not found: " << word << "\n";
+        sqlite3_finalize(stmt);
+        return;
+    }
+	
+	// ─────────────────────────────
+    // 1) Dump word 
+    // ─────────────────────────────
+    int wordId = sqlite3_column_int(stmt, 0);
+    const char* lemma{ reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)) };
+
+    std::cout << "Word: " << (lemma ? lemma : "") << "\n";
+    std::cout << "ID:   " << wordId << "\n\n";
+
+    sqlite3_finalize(stmt);
+
+    // ─────────────────────────────
+    // 2) Dump forms
+    // ─────────────────────────────
+    const char* formSql{ "SELECT form, tag FROM forms WHERE word_id = ?;" };
+
+    sqlite3_prepare_v2(m_db, formSql, -1, &stmt, nullptr);
+    sqlite3_bind_int(stmt, 1, wordId);
+
+    std::cout << "Forms:\n";
+    while (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        const char* form =
+            reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+        const char* tag =
+            reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+
+        std::cout << "  - " << (form ? form : "")
+                  << " (" << (tag ? tag : "") << ")\n";
+    }
+    sqlite3_finalize(stmt);
+
+    // ─────────────────────────────
+    // 3) Dump senses
+    // ─────────────────────────────
+    const char* senseSql =
+        "SELECT id, pos, definition FROM senses WHERE word_id = ?;";
+
+    sqlite3_prepare_v2(m_db, senseSql, -1, &stmt, nullptr);
+    sqlite3_bind_int(stmt, 1, wordId);
+
+    std::cout << "\nSenses:\n";
+
+    while (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        int senseId = sqlite3_column_int(stmt, 0);
+        const char* pos{ reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)) };
+        const char* def{ reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)) };
+
+        std::cout << "\n  [" << (pos ? pos : "") << "] "
+                  << (def ? def : "") << "\n";
+
+        // Examples
+        sqlite3_stmt* exStmt = nullptr;
+        sqlite3_prepare_v2( m_db, "SELECT text FROM examples WHERE sense_id = ?;", -1, &exStmt, nullptr);
+
+        sqlite3_bind_int(exStmt, 1, senseId);
+        while (sqlite3_step(exStmt) == SQLITE_ROW)
+        {
+            const char* ex{ reinterpret_cast<const char*>(sqlite3_column_text(exStmt, 0)) };
+            std::cout << "     example: " << (ex ? ex : "") << "\n";
+        }
+        sqlite3_finalize(exStmt);
+
+        // Synonyms
+        sqlite3_stmt* synStmt = nullptr;
+        sqlite3_prepare_v2( m_db, "SELECT text FROM synonyms WHERE sense_id = ?;", -1, &synStmt, nullptr);
+
+        sqlite3_bind_int(synStmt, 1, senseId);
+        while (sqlite3_step(synStmt) == SQLITE_ROW)
+        {
+            const char* syn{ reinterpret_cast<const char*>(sqlite3_column_text(synStmt, 0)) };
+            std::cout << "     synonym: " << (syn ? syn : "") << "\n";
+        }
+        sqlite3_finalize(synStmt);
+
+        // Antonyms
+        sqlite3_stmt* antStmt = nullptr;
+        sqlite3_prepare_v2( m_db, "SELECT text FROM antonyms WHERE sense_id = ?;", -1, &antStmt, nullptr);
+
+        sqlite3_bind_int(antStmt, 1, senseId);
+        while (sqlite3_step(antStmt) == SQLITE_ROW)
+        {
+            const char* ant{ reinterpret_cast<const char*>(sqlite3_column_text(antStmt, 0)) };
+            std::cout << "     antonym: " << (ant ? ant : "") << "\n";
+        }
+        sqlite3_finalize(antStmt);
+    }
+
+    sqlite3_finalize(stmt);
 }
 
 WordInfo Database::getInfo(int word_id) const
