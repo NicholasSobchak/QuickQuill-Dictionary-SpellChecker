@@ -3,69 +3,32 @@
 #include "Dictionary.h"
 #include "SpellChecker.h"
 
-class Tester 
-{	
-	public: 
-		Tester() : dict_(), checker_(dict_)
-		{
-			if (dict_.m_db.isEmpty()) 
-			{
-				dict_.loadInfo("nlohmann/testdb.json");
-			}
-		}
+class Tester
+{
+public:
+	Tester(Dictionary& d) 
+		: dict_{ d }, checker_{ dict_ } {}
 
-		// Dictionary
-		//bool dictTestLoadInfo() 
-		//{
-		//	_dict.getWordInfo(testWord_); // adds word to cache 
-		//	return _dict.contains(testWord_); 
-		//}
-		
-		// Trie
-		bool trieTestContains() { return dict_.m_trie.contains(testWord_); }
-
-		void trieTestDump() { dict_.m_trie.dump(); }
-
-		int trieTestGetWordId() { return dict_.m_trie.getWordId(testWord_); }
-
-
-		// Database
-		bool databaseTestIsEmpty() { return dict_.m_db.isEmpty(); }
-
-		void databaseTestDumpWord() { dict_.m_db.dumpWord(testWord_); }
+	void testDump() { dict_.m_trie.dump(); }
+	void testDBdump(std::string_view word) { dict_.m_db.dumpWord(word); }
+	void testDumpWord(std::string_view word) { dict_.m_trie.dumpWord(word); }
 	
-	private:
-		Dictionary dict_;
-		SpellChecker checker_;
 
-		const std::string testWord_{ "run" };
+
+private:
+	Dictionary& dict_;
+	SpellChecker checker_;
 };
-
 int main()
 {
-	Tester test;
-#if 1
-//	std::cout << "Testing dictTestLoadInfo()..."
-//		<< (test.dictTestLoadInfo() ? "passed" : "failed")
-//		<< "\n\n";
-
-	std::cout << "Testing trieTestContains()..."
-		<< (test.trieTestContains() ? "passed" : "failed")
-		<< "\n\n";
-
-	std::cout << "Testing trieTestDump()...\n";
-	test.trieTestDump();
-	std::cout << "\n\n";
-
-	std::cout << "Testing trieTestGetWordId()...\nID: "
-		<< test.trieTestGetWordId()
-		<< "\n\n";
+	Dictionary dict;
 	
-	std::cout << "Testing databaseTestDumpWord()...\n";
-	test.databaseTestDumpWord();
-	std::cout << "\n\n";
-
-#endif
+	Tester test(dict);
+	
+	test.testDump();
+	test.testDBdump("dictionary");
+	test.testDBdump("bright");
+	test.testDumpWord("running");
 
     return 0;
 }

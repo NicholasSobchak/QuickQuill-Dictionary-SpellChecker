@@ -10,7 +10,6 @@ class Trie
 {
 public:
 	friend class Tester;
-
     Trie();
     ~Trie();
 

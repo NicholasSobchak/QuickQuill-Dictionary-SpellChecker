@@ -6,7 +6,6 @@ class SpellChecker
 {
 public:
 	friend class Tester;
-
 	explicit SpellChecker(const Dictionary &dict);
 	~SpellChecker() = default;
 	

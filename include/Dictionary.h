@@ -10,8 +10,7 @@
 class Dictionary
 {
 public:
-    friend class Tester; 
-
+	friend class Tester;
     Dictionary();
     ~Dictionary() = default;
 

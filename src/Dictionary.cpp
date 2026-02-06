@@ -4,6 +4,11 @@
 Dictionary::Dictionary() : m_db{ dct::g_dictDb }
 {
 	m_db.createTables();	
+		
+	// temp
+	m_db.clearDB();
+	loadInfo("nlohmann/testdb.json");
+
 	loadTrie(m_db);
 }
 
@@ -217,25 +222,25 @@ bool Dictionary::loadjson(const std::string &filename)
                     }
 
                     // Examples
-                    if (sense_json.contains("examples"))
-                    {
-                        for (auto &ex : sense_json["examples"])
-                            sense.examples.push_back(ex.get<std::string>()); // build examples vector
-                    }
+					if (sense_json.contains("examples") && sense_json["examples"].is_array())
+					{
+						for (auto &ex : sense_json["examples"])
+							sense.examples.push_back(ex.get<std::string>());
+					}
 
-                    // Synonyms
-                    if (sense_json.contains("synonyms"))
-                    {
-                        for (auto &syn : sense_json["synonyms"])
-                            sense.synonyms.push_back(syn.get<std::string>()); // build synonyms vector
-                    }
+					// Synonyms
+					if (sense_json.contains("synonyms") && sense_json["synonyms"].is_array())
+					{
+						for (auto &syn : sense_json["synonyms"])
+							sense.synonyms.push_back(syn.get<std::string>());
+					}
 
-                    // Antonyms
-                    if (sense_json.contains("antonyms"))
-                    {
-                        for (auto &ant : sense_json["antonyms"])
-                            sense.antonyms.push_back(ant.get<std::string>()); // build antonyms vector
-                    }
+					// Antonyms
+					if (sense_json.contains("antonyms") && sense_json["antonyms"].is_array())
+					{
+						for (auto &ant : sense_json["antonyms"])
+							sense.antonyms.push_back(ant.get<std::string>());
+					}
 
                     word.senses.push_back(sense); // vector of senses for potentinal quick lookups
 
