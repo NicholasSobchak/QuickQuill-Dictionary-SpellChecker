@@ -10,9 +10,12 @@ public:
 		: dict_{ d }, checker_{ dict_ } {}
 
 	void testDump() { dict_.m_trie.dump(); }
-	void testDBdump(std::string_view word) { dict_.m_db.dumpWord(word); }
 	void testDumpWord(std::string_view word) { dict_.m_trie.dumpWord(word); }
-	
+	void testGetWordInfo(std::string_view word) 
+	{ 
+		WordInfo info = dict_.getWordInfo(word);
+		dict_.printInfo(info);
+	}	
 
 
 private:
@@ -24,11 +27,9 @@ int main()
 	Dictionary dict;
 	
 	Tester test(dict);
-	
+
 	test.testDump();
-	test.testDBdump("dictionary");
-	test.testDBdump("bright");
-	test.testDumpWord("running");
+	test.testGetWordInfo("dictionary");	
 
     return 0;
 }

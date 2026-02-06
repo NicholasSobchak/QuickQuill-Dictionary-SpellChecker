@@ -30,7 +30,6 @@ public:
 	int insertSense(int word_id, const std::string &pos, const std::string &definition);
 
 	void createTables();
-	void dumpWord(std::string_view word) const;
 	void clearDB();
 
 	WordInfo getInfo(int word_id) const;
@@ -46,7 +45,8 @@ private:
 	/*********************************
     // Helper declarations go here
     **********************************/
-
+	std::vector<std::string> fetchStrings(std::string_view sql, int id) const;
+	std::vector<Form> fetchForms(int word_id) const;	
 	
 };
 #endif 

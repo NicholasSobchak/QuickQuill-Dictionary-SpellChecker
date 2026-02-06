@@ -58,18 +58,24 @@ bool Dictionary::loadInfo(const std::string &filename)
 }
 
 WordInfo Dictionary::getWordInfo(std::string_view word) const
-{ // this is where word will be added to cache if it is not found 
+{ 
 	WordInfo info;
 	int id = m_trie.getWordId(cleanWord(word));
+	if (id == dct::g_defaultId) return info;
 
 	// check if its already cached	
 	if (contains(word)) 
 	{
-		return info;
+	    info = m_cache.find(id)->second;	
+	    return info; 	
 	} 
 
-	// add word to cache from the db	
+	// word not in cache, return using db
+	info = m_db.getInfo(id);
 
+	// add to cache
+	m_cache.try_emplace(id, info); // try_emplace() - doesn't overwrite, doesn't construct info unless needed (efficient)
+		
 	return info;
 }
 
@@ -94,6 +100,56 @@ void Dictionary::suggestFromPrefix(std::string_view prefix, std::vector<std::str
 /*********************************
 // Dictionary Helper Functions
 **********************************/
+// temp
+void Dictionary::printInfo(const WordInfo &word) const
+{
+	std::cout << "Word: " << word.lemma << std::endl;
+    if (!word.etymology.empty())
+    {
+        std::cout << "Etymology:" << std::endl;
+        for (const auto &line : word.etymology)
+            std::cout << "  " << line << std::endl;
+    }
+
+    if (!word.forms.empty())
+    {
+        std::cout << "Forms:" << std::endl;
+        for (const auto &form : word.forms)
+            std::cout << "  " << form.form << " (" << form.tag << ")" << std::endl;
+    }
+
+    if (!word.senses.empty())
+    {
+        std::cout << "Senses:" << std::endl;
+        for (const auto &sense : word.senses)
+        {
+            std::cout << "  - POS: " << sense.pos << std::endl;
+            std::cout << "    Definition: " << sense.definition << std::endl;
+
+            if (!sense.examples.empty())
+            {
+                std::cout << "    Examples:" << std::endl;
+                for (const auto &ex : sense.examples)
+                    std::cout << "      - " << ex << std::endl;
+            }
+
+            if (!sense.synonyms.empty())
+            {
+                std::cout << "    Synonyms:" << std::endl;
+                for (const auto &syn : sense.synonyms)
+                    std::cout << "      - " << syn << std::endl;
+            }
+
+            if (!sense.antonyms.empty())
+            {
+                std::cout << "    Antonyms:" << std::endl;
+                for (const auto &ant : sense.antonyms)
+                    std::cout << "      - " << ant << std::endl;
+            }
+        }
+    }	
+}
+
 std::string Dictionary::cleanWord(std::string_view word) const 
 {
 	std::string clean{ "" };

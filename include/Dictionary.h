@@ -27,7 +27,7 @@ public:
 
 private:	
 	// Cache storage
-	std::unordered_map<int, WordInfo> m_cache; // IMPLEMENT CACHE
+	mutable std::unordered_map<int, WordInfo> m_cache; // IMPLEMENT CACHE
 	
 	// Internals
 	Trie m_trie;
@@ -39,5 +39,8 @@ private:
 	std::string cleanWord(std::string_view word) const; 
 	void loadTrie(Database &db); // populate Trie using Database 
     bool loadjson(const std::string &filename); 
+
+	// temp
+	void printInfo(const WordInfo &word) const;
 };
 #endif
