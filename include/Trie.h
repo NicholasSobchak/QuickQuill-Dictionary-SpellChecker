@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include "Utils.h"
 
 class Trie
 {
@@ -29,13 +30,13 @@ public:
 
 private:
     struct TrieNode {
-        TrieNode *m_children[26];
+        TrieNode *m_children[dct::g_alpha];
         bool m_isEndOfWord{ false };
-		int m_wordID{ -1 };
+        int m_wordID{ dct::g_defaultId };
 
         TrieNode()
         {
-            for (int i = 0; i < 26; ++i)
+            for (int i = 0; i < dct::g_alpha; ++i)
             {
                 m_children[i] = nullptr;
             }
@@ -44,6 +45,8 @@ private:
 
     TrieNode *m_root;
 
+    static int indexForChar(char c);
+
     /*********************************
     // Helper declarations go here
     **********************************/
@@ -51,6 +54,6 @@ private:
 
     void deleteTrie(TrieNode *node);
     void dumpNode(const TrieNode *node, const std::string &prefix) const;
-	void wordsFromNode(const TrieNode *node, std::string &currentWord, std::vector<std::string> &out, std::size_t limit) const;
+    void wordsFromNode(const TrieNode *node, std::string &currentWord, std::vector<std::string> &out, std::size_t limit) const;
 };
 #endif

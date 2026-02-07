@@ -6,6 +6,7 @@
 #include "../nlohmann/json.hpp"
 #include <unordered_map>
 #include <fstream>
+#include <algorithm>
 
 class Dictionary
 {
@@ -18,7 +19,9 @@ public:
 	WordInfo getWordInfo(std::string_view word) const;
 	bool contains(std::string_view word) const;
 	
-	void suggestFromPrefix(std::string_view prefix, std::vector<std::string> &results, std::size_t limit) const; // fix class access, spellchecker friend class?
+	void suggestFromPrefix(std::string_view prefix, std::vector<std::string> &results, std::size_t limit) const;
+
+	void printInfo(const WordInfo &word) const;
 
 	/* implement??
 	bool addWord(std::string_view word);
@@ -36,11 +39,9 @@ private:
     /*********************************
     // Helper declarations go here
     **********************************/	
-	std::string cleanWord(std::string_view word) const; 
+	std::string cleanWord(std::string_view word) const;
 	void loadTrie(Database &db); // populate Trie using Database 
     bool loadjson(const std::string &filename); 
 
-	// temp
-	void printInfo(const WordInfo &word) const;
 };
 #endif

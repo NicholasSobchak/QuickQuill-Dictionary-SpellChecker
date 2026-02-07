@@ -1,1 +1,9 @@
 nlohmann/kaikki.org-dictionary-English.jsonl
+*.o
+*.obj
+*.exe
+/build/
+/bin/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake

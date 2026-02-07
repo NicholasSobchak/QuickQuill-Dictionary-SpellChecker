@@ -1,32 +1,41 @@
 #include "Trie.h"
 #include "Utils.h"
 
+#include <cctype>
+
+int Trie::indexForChar(char c)
+{
+    unsigned char lower = static_cast<unsigned char>(std::tolower(static_cast<unsigned char>(c)));
+    if (lower < 'a' || lower > 'z') return -1;
+    return lower - 'a';
+}
+
 Trie::Trie() : m_root{ new TrieNode() } {}
 
 Trie::~Trie() { deleteTrie(m_root); }
 
 bool Trie::insert(std::string_view word, int word_id)
 {
+    if (word.empty()) return false;
+
     TrieNode *node{ m_root };
 
-    // traverse to the last node in the word
     for (char c : word)
     {
-        int index{ c - 'a' }; 
+        int index = indexForChar(c);
+        if (index < 0) return false;
 
-        // check if there is an existing child node
-        if (!node->m_children[index]) 
-		{
+        if (!node->m_children[index])
+        {
             node->m_children[index] = new TrieNode();
         }
         node = node->m_children[index];
     }
 
-    // check if word is already in Trie (node is last letter of the word)
     if (node->m_isEndOfWord) return false;
 
     node->m_isEndOfWord = true;
-	node->m_wordID = word_id;
+    node->m_wordID = word_id;
     return true;
 }
 
@@ -34,17 +43,18 @@ bool Trie::remove(const std::string &word) { return removeWord(m_root, word); }
 
 bool Trie::contains(std::string_view word) const
 {
+    if (word.empty()) return false;
+
     TrieNode *node{ m_root };
 
-    // traverse to the last node in the word (DFS)
     for (char c : word)
     {
-        int index{ c - 'a' };
-        if (!node->m_children[index]) return false; // not found
+        int index = indexForChar(c);
+        if (index < 0 || !node->m_children[index]) return false;
         node = node->m_children[index];
     }
 
-    return node->m_isEndOfWord; // word not found
+    return node->m_isEndOfWord;
 }
 
 std::string Trie::getPrefix(std::string_view word) const
@@ -52,13 +62,12 @@ std::string Trie::getPrefix(std::string_view word) const
 	const TrieNode *node{ m_root };
 	std::string prefix;
 
-	// DFS
 	for (char c : word)
 	{
-		int index{ c - 'a' };
-		if (!node || !node->m_children[index]) break;
+		int index = indexForChar(c);
+		if (index < 0 || !node || !node->m_children[index]) break;
 		
-		prefix.push_back(c);
+		prefix.push_back(static_cast<char>('a' + index));
 		node = node->m_children[index];
 	}
 
@@ -67,17 +76,19 @@ std::string Trie::getPrefix(std::string_view word) const
 
 int Trie::getWordId(std::string_view word) const
 {
-	TrieNode *node{ m_root };
+    if (word.empty()) return dct::g_defaultId;
 
-	// DFS
-	for (char c : word)
-	{
-		int index{ c - 'a' };
-        if (!node->m_children[index]) return -1; // not found
-		node = node->m_children[index];
-	}	
-	if (node->m_isEndOfWord) return node->m_wordID;
-	return -1; 
+    TrieNode *node{ m_root };
+
+    for (char c : word)
+    {
+        int index = indexForChar(c);
+        if (index < 0 || !node->m_children[index]) return dct::g_defaultId;
+        node = node->m_children[index];
+    }
+
+    if (node->m_isEndOfWord) return node->m_wordID;
+    return dct::g_defaultId;
 }
 
 void Trie::collectWithPrefix(std::string_view prefix, std::vector<std::string> &out, std::size_t limit) const
@@ -88,8 +99,8 @@ void Trie::collectWithPrefix(std::string_view prefix, std::vector<std::string> &
 	// DFS
 	for (char c : prefix)
 	{
-		int index{ c - 'a' };
-		if (!node || !node->m_children[index]) return; // prefix not found
+		int index = indexForChar(c);
+		if (index < 0 || !node || !node->m_children[index]) return; // prefix not found
 
 		currentWord.push_back(c);
 		node = node->m_children[index];
@@ -116,10 +127,9 @@ void Trie::dumpWord(std::string_view word) const
 
 	for (char c : word) 
 	{
-		int index{ c - 'a' };
+		int index = indexForChar(c);
 
-		// print graphics
-		if (!node->m_children[index])
+		if (index < 0 || !node->m_children[index])
 		{
 			std::cout << std::string(depth * 4, ' ') 
 				<< "└── " << c << "(missing)\n";
@@ -167,6 +177,7 @@ void Trie::deleteTrie(TrieNode *node)
 	for (int i{0}; i < dct::g_alpha; ++i)
 	{
 		deleteTrie(node->m_children[i]);
+		node->m_children[i] = nullptr;
 	}
 	
 	delete node;
@@ -207,62 +218,63 @@ void Trie::dumpNode(const TrieNode *node, const std::string &prefix) const
 
 bool Trie::removeWord(TrieNode *&node, std::string_view word)
 {
-	if (!node) return false;
+    if (!node) return false;
 
-	// check if end of word (words because of word.substr(1) on line 267) 	
-	if (word.empty())
-	{
-		if (!node->m_isEndOfWord) return false; // word is not stored
-	
-		node->m_isEndOfWord = false;
+    if (word.empty())
+    {
+        if (!node->m_isEndOfWord) return false;
 
-		// check if the node has children
-		for (int i{0}; i < dct::g_alpha; ++i)
-		{
-			// if the node has children it's still needed for another word
-			if (node->m_children[i]) return true;
-		}
+        node->m_isEndOfWord = false;
+        node->m_wordID = dct::g_defaultId;
 
-		// if it has no children we can safely remove the node
-		delete node;
-		node = nullptr;
-		return true;
-	}
-	
-	// find child index
-	int index{ word[0] - 'a' };
-	if (removeWord(node->m_children[index], word.substr(1))) // recursively remove the rest of the word
-	{
-		if (node->m_isEndOfWord) return true; // if the current node marks the end of another word, preserve it
+        for (int i{0}; i < dct::g_alpha; ++i)
+        {
+            if (node->m_children[i]) return true;
+        }
 
-		// check if node has any children and is still needed
-		for (int i{0}; i < dct::g_alpha; ++i)
-		{
-			if (node->m_children[i]) return true;
-		}
-		
-		// if the node is not the end of a word and has no children
-		delete node;
-		node = nullptr;
-		return true;
-	}
-	
-	return false;
+        delete node;
+        node = nullptr;
+        return true;
+    }
+
+    int index = indexForChar(word.front());
+    if (index < 0) return false;
+
+    if (removeWord(node->m_children[index], word.substr(1)))
+    {
+        if (node->m_isEndOfWord) return true;
+
+        for (int i{0}; i < dct::g_alpha; ++i)
+        {
+            if (node->m_children[i]) return true;
+        }
+
+        delete node;
+        node = nullptr;
+        return true;
+    }
+
+    return false;
 }
 
 void Trie::wordsFromNode(const TrieNode *node, std::string &currentWord, std::vector<std::string> &out, std::size_t limit) const
-{ // similar to rewrite
-	if (!node || out.size() >= limit) return;
-	if (node->m_isEndOfWord) out.push_back(currentWord); // add complete word to results vector
+{
+    if (!node || out.size() >= limit) return;
 
-	for (int i{0}; i < dct::g_alpha && out.size() < limit; ++i)
-	{
-		if (node->m_children[i])
-		{
-			char letter{ static_cast<char>('a' + i) };
-			currentWord.push_back(letter); // build word
-			wordsFromNode(node->m_children[i], currentWord, out, limit);
-			currentWord.pop_back(); // backtrack (undo complete word) works because of recursive collectFromNode 
-		}
-	}	
+    if (node->m_isEndOfWord)
+    {
+        out.push_back(currentWord);
+        if (out.size() >= limit) return;
+    }
+
+    for (int i{0}; i < dct::g_alpha && out.size() < limit; ++i)
+    {
+        if (node->m_children[i])
+        {
+            char letter{ static_cast<char>('a' + i) };
+            currentWord.push_back(letter);
+            wordsFromNode(node->m_children[i], currentWord, out, limit);
+            currentWord.pop_back();
+        }
+    }
 }

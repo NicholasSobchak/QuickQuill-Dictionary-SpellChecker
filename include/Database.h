@@ -20,9 +20,9 @@ public:
 
 	bool insertEtymology(int word_id, const std::vector<std::string> &etymology);
 	bool insertForm(int word_id, const std::string &form, const std::string &tag);
-	bool insertExample(int word_id, const std::string &example);
-	bool insertSynonym(int word_id, const std::string &synonym);
-	bool insertAntonym(int word_id, const std::string &antonym);
+	bool insertExample(int sense_id, const std::string &example);
+	bool insertSynonym(int sense_id, const std::string &synonym);
+	bool insertAntonym(int sense_id, const std::string &antonym);
 	bool isEmpty() const;
 	bool contains(std::string_view word) const;
 		
