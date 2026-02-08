@@ -4,20 +4,6 @@
 Dictionary::Dictionary() : m_db{ dct::g_dictDb }
 {
     m_db.createTables();
-
-	m_db.clearDB();
-    try
-    {
-        if (m_db.isEmpty())
-        {
-            loadInfo("nlohmann/testdb.json");
-        }
-    }
-    catch (const std::exception &e)
-    {
-        std::cerr << "Failed to load dictionary: " << e.what() << '\n';
-    }
-
     loadTrie(m_db);
 }
 
@@ -166,10 +152,7 @@ void Dictionary::printInfo(const WordInfo &word) const
     }	
 }
 
-std::string Dictionary::cleanWord(std::string_view word) const
-{
-    return dct::sanitizeWord(word);
-}
+std::string Dictionary::cleanWord(std::string_view word) const { return dct::sanitizeWord(word); }
 
 void Dictionary::loadTrie(Database &db) 
 {

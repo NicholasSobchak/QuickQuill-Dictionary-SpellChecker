@@ -1,11 +1,11 @@
 #ifndef TRIE_H
 #define TRIE_H
+#include "Utils.h"
 #include <string_view>
 #include <ostream>
 #include <vector>
 #include <string>
 #include <iostream>
-#include "Utils.h"
 
 class Trie
 {

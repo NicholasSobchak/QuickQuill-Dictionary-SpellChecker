@@ -6,7 +6,6 @@
 #include "../nlohmann/json.hpp"
 #include <unordered_map>
 #include <fstream>
-#include <algorithm>
 
 class Dictionary
 {

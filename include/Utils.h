@@ -1,9 +1,7 @@
 #ifndef UTILS_H
 #define UTILS_H
-
-#include <cctype>
-#include <string>
 #include <string_view>
+#include <string>
 
 namespace dct
 {

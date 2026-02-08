@@ -1,8 +1,6 @@
 #ifndef SPELLCHECKER_H
 #define SPELLCHECKER_H
 #include "Dictionary.h"
-#include <iostream>
-#include <vector>
 #include <string>
 
 class SpellChecker

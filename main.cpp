@@ -29,7 +29,6 @@ int main()
     Dictionary dict;
     SpellChecker checker(dict);
 	Tester test(dict);
-	test.testDump();
 
     std::cout << "Dictionary Spell Checker\n";
     std::cout << "Type command (lookup <word>, suggest <prefix>, correct <word>, autofill <prefix>, exit):\n";
