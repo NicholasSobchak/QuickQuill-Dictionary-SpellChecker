@@ -5,7 +5,7 @@
 #include <vector>
 #include <string_view>
 #include <string>
-
+#include <iostream>
 
 // This class acts as a wrapper around a C library
 class Database
