@@ -1,3 +1,5 @@
+https://www.dropbox.com/home/dictionary-db-sql
+
 # Dictionary & Spell Checker (Trie + Database Engine)
 
 This project is a C++ dictionary and spell-checking engine powered by a Trie (prefix tree) and a relational database. It loads large Wiktionary-style JSON data, organizes it efficiently, and provides fast word lookup, spell checking, autocomplete, and rich linguistic information.
