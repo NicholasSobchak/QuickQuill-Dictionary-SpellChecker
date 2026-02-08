@@ -1,4 +1,4 @@
-https://www.dropbox.com/home/dictionary-db-sql
+[https://www.dropbox.com/home/dictionary-db-sql](https://www.dropbox.com/scl/fi/ydtk44m0pi5e745qi6uii/dictionary-db.zip?rlkey=gpaelm6fxwlyqqhtxmlmij48s&st=w0ldr97i&dl=0)
 
 # Dictionary & Spell Checker (Trie + Database Engine)
 
