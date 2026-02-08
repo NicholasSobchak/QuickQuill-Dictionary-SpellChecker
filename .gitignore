@@ -1,6 +1,7 @@
 nlohmann/kaikki.org-dictionary-English.jsonl
 dictionary.db
 dictionary-db.zip
+dict
 *.o
 *.obj
 *.exe
