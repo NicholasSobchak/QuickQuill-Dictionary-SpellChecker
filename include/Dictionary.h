@@ -1,75 +1,46 @@
 #ifndef DICTIONARY_H
 #define DICTIONARY_H
+#include "WordInfo.h"
 #include "Trie.h"
 #include "Database.h"
 #include "../nlohmann/json.hpp"
+#include <unordered_map>
 #include <fstream>
-
-class Tester;
-//class Trie;
-//class Database;
 
 class Dictionary
 {
 public:
-    friend class Tester;
-
+	friend class Tester;
     Dictionary();
     ~Dictionary() = default;
 
-    bool addWord(std::string_view word);
-    bool removeWord(std::string_view word); // implement databse logic
-	bool search(std::string_view word) const; 
-	bool isEmpty() const;
-
-	void suggestFromPrefix(std::string_view prefix, std::vector<std::string> &results, std::size_t limit) const;
-    void print() const; 
-    void dump() const;
-	void dumpWord(std::string_view word) const;
-    void eraseAll();
-	void loadInfo(const std::string &filename);
-  
-	// getters
+	bool loadInfo(const std::string &filename); // populate database (file only)	
+	WordInfo getWordInfo(std::string_view word) const;
+	bool contains(std::string_view word) const;
 	
+	void suggestFromPrefix(std::string_view prefix, std::vector<std::string> &results, std::size_t limit) const;
 
-private:
-	// represent word info from the db in memory
-	struct WordInfo
-	{
-       	std::string lemma; // word
-	    std::vector<std::string> etymology;
-	    int id{-1}; // ??
-        
-	    // plurals or alternative spellings
-	    struct Form
-        {
-	    	std::string form;
-	    	std::string tag;
-	    };
-	    std::vector<Form> forms; 
-        
-	    struct Sense
-	 	{
-	 	    std::string pos; // noun, verb, adj, etc.
-	 	    std::string definition;
-	 	    std::vector<std::string> examples;
-      	    std::vector<std::string> synonyms;
-     	    std::vector<std::string> antonyms;
-     	};
-	    std::vector<Sense> senses; // acts a 'cache'
-	};
+	void printInfo(const WordInfo &word) const;
 
-    Trie m_trie;
+	/* implement??
+	bool addWord(std::string_view word);
+	bool removeWord(const std::string& word);	
+	*/
+
+private:	
+	// Cache storage
+	mutable std::unordered_map<int, WordInfo> m_cache; // IMPLEMENT CACHE
+	
+	// Internals
+	Trie m_trie;
 	Database m_db;
 
     /*********************************
     // Helper declarations go here
-    **********************************/
-	
-    bool loadjson(const std::string &filename); // make public for now (load into db)
-	
-	void buildTrie(Database &db); // implement lemma logic
+    **********************************/	
+	std::string cleanWord(std::string_view word) const;
+	void loadTrie(Database &db); // populate Trie using Database 
+    bool loadjson(const std::string &filename); 
 
-	std::string normalize(std::string_view word) const; 
 };
 #endif

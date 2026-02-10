@@ -1,40 +1,51 @@
-#ifndef DATABASE_H // alternative (#pragma once)
+#ifndef DATABASE_H 
 #define DATABASE_H
+#include "WordInfo.h"
 #include <sqlite3.h>
 #include <vector>
+#include <string_view>
 #include <string>
 #include <iostream>
-
 
 // This class acts as a wrapper around a C library
 class Database
 {
 public:
-	Database(const std::string &filename);
+	friend class Tester;
+	Database(std::string_view filename);
 	~Database();
-	
-	void createTables();
 
-	// inserters
-	bool insertWord(const std::string &lemma);
+	sqlite3 *getDB();
+
 	bool insertEtymology(int word_id, const std::vector<std::string> &etymology);
 	bool insertForm(int word_id, const std::string &form, const std::string &tag);
-	bool insertSense(int word_id, const std::string &pos, const std::string &definition);
-	bool insertExample(int word_id, const std::string &example);
-	bool insertSynonym(int word_id, const std::string &synonym);
-	bool insertAntonym(int word_id, const std::string &antonym);
+	bool insertExample(int sense_id, const std::string &example);
+	bool insertSynonym(int sense_id, const std::string &synonym);
+	bool insertAntonym(int sense_id, const std::string &antonym);
+	bool isEmpty() const;
+	bool contains(std::string_view word) const;
+		
+	int insertWord(const std::string &lemma);
+	int insertSense(int word_id, const std::string &pos, const std::string &definition);
 
-	bool removeWord(int word_id); // implement
-	
-	// getters
-	sqlite3 *getDB();
-	int getWordID(const std::string &lemma);
+	void createTables();
+	void clearDB();
+
+	WordInfo getInfo(int word_id) const;
+
+	/* implement??
+	bool addWord(string_view word);	
+	bool removeWord(int word_id); 
+	*/
 
 private:
-	sqlite3 *db;
+	sqlite3 *m_db;
 
 	/*********************************
     // Helper declarations go here
     **********************************/
+	std::vector<std::string> fetchStrings(std::string_view sql, int id) const;
+	std::vector<Form> fetchForms(int word_id) const;	
+	
 };
 #endif 

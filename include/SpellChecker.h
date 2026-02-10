@@ -1,14 +1,14 @@
 #ifndef SPELLCHECKER_H
 #define SPELLCHECKER_H
 #include "Dictionary.h"
+#include <string>
 
 class SpellChecker
 {
 public:
+	friend class Tester;
 	explicit SpellChecker(const Dictionary &dict);
 	~SpellChecker() = default;
-
-	bool check(std::string_view word) const;
 	
 	void printSuggest(const std::vector<std::string> &out) const; // placeholder to print suggestions
 	

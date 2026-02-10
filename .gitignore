@@ -1,1 +1,14 @@
 nlohmann/kaikki.org-dictionary-English.jsonl
+dictionary.db
+dictionary-db.zip
+dictionary-db.shm
+dictionary.db-wal
+dict
+*.o
+*.obj
+*.exe
+/build/
+/bin/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
