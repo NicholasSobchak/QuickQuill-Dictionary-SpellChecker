@@ -3,7 +3,14 @@
 #include "Dictionary.h"
 #include "SpellChecker.h"
 
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <unistd.h>
+
+#include <sstream>
 #include <iostream>
+
+using json = nlohmann::json;
 
 class Tester
 {
@@ -28,11 +35,88 @@ int main()
 {
     Dictionary dict;
     SpellChecker checker(dict);
-	Tester test(dict);
+	// Tester test(dict);
 
-    std::cout << "Dictionary Spell Checker\n";
-    std::cout << "Type command (lookup <word>, suggest <prefix>, correct <word>, autofill <prefix>, exit):\n";
+    std::cout << "Running Dictionary Spell Checker host...\n";
+    // std::cout << "Type command (lookup <word>, suggest <prefix>, correct <word>, autofill <prefix>, exit):\n";
 
+	int serverSocket = socket(AF_INET, SOCK_STREAM, 0); // create the server socket
+														// AF_INET: IPv4 protocol
+														// SOCK_STREAM: TCP socket
+
+	sockaddr_in serverAddress; //{} sockaddr_in: datatype used to store the address of the socket
+	serverAddress.sin_family = AF_INET;
+	serverAddress.sin_port = htons(8080); // htons: used to convert unsigned int from machine byte order to netword byte order
+	serverAddress.sin_addr.s_addr = INADDR_ANY; // INADDR_ANY: don't want to bind socket to any particular IP address, listens to all available IPs
+
+	bind(serverSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)); // bind socket to address
+	listen(serverSocket, 5); // listen for incoming connections
+
+	while (true)
+	{
+		int clientSocket = accept(serverSocket, nullptr, nullptr); // accept client connection
+
+		// revieve data from client
+		char buffer[2048] = {0};
+		int n = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
+		if (n <= 0) { close(clientSocket); continue; }
+
+		// read request
+		std::string request(buffer, n);
+		std::istringstream iss(request);
+		std::string method, target;
+		iss >> method >> target;
+
+		// find query
+		std::string word;
+		auto qpos = target.find("?word=");
+		if (qpos != std::string::npos) word = target.substr(qpos + 6);
+
+		json body;
+		int status = 200;
+		std::string statusText = "OK";
+
+		if (method != "GET" || target.rfind("/lookup", 0) != 0 || word.empty())
+		{
+			status = 400;
+			statusText = "Bad Request";
+			body = {{"error", "use /lookup?word=..."}};
+		}
+		else
+		{
+			WordInfo info = dict.getWordInfo(word);
+			if (info.lemma.empty())
+			{
+				status = 404;
+				statusText = "Not Found";
+				body = {{"error", "word not found"}};
+			}
+			else
+			{
+				body = {{"lemma", info.lemma}, {"id", info.id}};
+			}
+		}
+
+		
+		std::string out = body.dump();
+		std::ostringstream response;
+		response << "HTTP/1.1 " << status << " " << statusText << "\r\n";
+		response << "Content-Type: application/json\r\n";
+		response << "Content-Length: " << out.size() << "\r\n";
+		response << "Connection: close\r\n\r\n";
+		response << out;
+		
+		std::cout << response.str() << std::endl; // debugging
+		
+		// return body and status
+		auto s = response.str();
+		send(clientSocket, s.c_str(), s.size(), 0);
+		close(clientSocket);
+	}
+
+	close(serverSocket); // close server socket
+
+#if 0
     std::string command;
     while (std::cout << "> " && std::cin >> command)
     {
@@ -84,7 +168,7 @@ int main()
             std::cout << "Unknown command" << '\n';
         }
     }
+#endif
 
     return 0;
 }
-
