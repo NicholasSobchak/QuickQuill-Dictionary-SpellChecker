@@ -9,7 +9,6 @@ namespace http
 		nlohmann::json j;
 		j["id"] = info.id;
 		j["lemma"] = info.lemma;
-		j["etymology"] = info.etymology;
 
 		j["forms"] = nlohmann::json::array();
 		for (const auto& f : info.forms)
@@ -28,6 +27,8 @@ namespace http
 				{"antonyms", s.antonyms}
 			});
 		}
+
+		j["etymology"] = info.etymology;
 
 		return j.dump();
 	}
