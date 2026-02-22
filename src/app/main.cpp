@@ -9,66 +9,178 @@
 
 #include <sstream>
 #include <iostream>
+#include <string>
 
 using json = nlohmann::json;
 
-class Tester
+namespace
 {
-public:
-	Tester(Dictionary& d) 
-		: dict_{ d }, checker_{ dict_ } {}
+    void printList(const std::vector<std::string>& values, const std::string& emptyText)
+    {
+        if (values.empty())
+        {
+            std::cout << emptyText << '\n';
+            return;
+        }
 
-	void testDump() { dict_.m_trie.dump(); }
-	void testDumpWord(std::string_view word) { dict_.m_trie.dumpWord(word); }
-	void testGetWordInfo(std::string_view word) 
-	{ 
-		WordInfo info = dict_.getWordInfo(word);
-		dict_.printInfo(info);
-	}	
+        for (const auto& v : values)
+        {
+            std::cout << "- " << v << '\n';
+        }
+    }
 
+    void printWord(const WordInfo& info)
+    {
+        std::vector<std::string> synonyms;
+        std::vector<std::string> antonyms;
 
-private:
-	Dictionary& dict_;
-	SpellChecker checker_;
-};
+        std::cout << "Lemma: " << (info.lemma.empty() ? "Unknown" : info.lemma) << "\n\n";
+
+        std::cout << "Definition\n";
+        if (!info.senses.empty())
+        {
+            for (const auto& s : info.senses)
+            {
+                const std::string pos = s.pos.empty() ? "" : "[" + s.pos + "] ";
+                std::cout << "- " << pos << s.definition << '\n';
+
+                synonyms.insert(synonyms.end(), s.synonyms.begin(), s.synonyms.end());
+                antonyms.insert(antonyms.end(), s.antonyms.begin(), s.antonyms.end());
+            }
+        }
+        else
+        {
+            std::cout << "No definitions available.\n";
+        }
+
+        std::cout << "\nSynonyms\n";
+        printList(synonyms, "No synonyms available.");
+
+        std::cout << "\nAntonyms\n";
+        printList(antonyms, "No antonyms available.");
+
+        std::cout << "\nForms\n";
+        if (!info.forms.empty())
+        {
+            for (const auto& f : info.forms)
+            {
+                if (f.tag.empty()) std::cout << "- " << f.form << '\n';
+                else std::cout << "- " << f.form << " (" << f.tag << ")\n";
+            }
+        }
+        else
+        {
+            std::cout << "No forms available.\n";
+        }
+
+        std::cout << "\nEtymology\n";
+        printList(info.etymology, "No etymology available.");
+        std::cout << '\n';
+    }
+
+    [[maybe_unused]] json toJson(const WordInfo& info)
+	{
+		json j;
+		j["id"] = info.id;
+		j["lemma"] = info.lemma;
+		j["forms"] = json::array();
+		for (const auto& f : info.forms)
+		{
+			j["forms"].push_back({{"form", f.form}, {"tag", f.tag}});
+		}
+		j["senses"] = json::array();
+		for (const auto& s : info.senses)
+		{
+			j["senses"].push_back({
+				{"pos", s.pos},
+				{"definition", s.definition},
+				{"examples", s.examples},
+				{"synonyms", s.synonyms},
+				{"antonyms", s.antonyms}
+			});
+		}
+		j["etymology"] = info.etymology;
+		return j;
+	}
+}
+
 int main()
 {
     Dictionary dict;
     SpellChecker checker(dict);
-	// Tester test(dict);
+    std::cout << "TEST BUILD: lookup <word>, correct <word>, exit\n";
 
-    std::cout << "Hosting Dictionary Spell Checker...\n";
+	std::string line;
+	while (std::cout << "> " && std::getline(std::cin, line))
+	{
+		if (line.empty()) continue;
+		std::istringstream iss(line);
+		std::string command;
+		std::string arg;
+		iss >> command >> arg;
 
-	// basic HTTP TCP server build
+		if (command == "exit")
+		{
+			break;
+		}
+
+		if (arg.empty())
+		{
+			std::cout << "Usage: lookup <word> | correct <word> | exit\n";
+			continue;
+		}
+
+		if (command == "lookup")
+		{
+			WordInfo info = dict.getWordInfo(arg);
+			if (info.lemma.empty())
+			{
+				std::cout << "word not found\n";
+				continue;
+			}
+
+            printWord(info);
+			continue;
+		}
+
+		if (command == "correct")
+		{
+			const auto corrections = checker.correct(arg);
+			std::cout << json({
+				{"word", arg},
+				{"corrections", corrections}
+			}).dump(2) << '\n';
+			continue;
+		}
+
+		std::cout << "Unknown command. Use: lookup <word> | correct <word> | exit\n";
+	}
+
+    // basic HTTP TCP server build
 #if 0
-	int serverSocket = socket(AF_INET, SOCK_STREAM, 0); // create the server socket
-														// AF_INET: IPv4 protocol
-														// SOCK_STREAM: TCP socket
+	int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 
-	sockaddr_in serverAddress; //{} sockaddr_in: datatype used to store the address of the socket
+	sockaddr_in serverAddress{};
 	serverAddress.sin_family = AF_INET;
-	serverAddress.sin_port = htons(8080); // htons: used to convert unsigned int from machine byte order to netword byte order
-	serverAddress.sin_addr.s_addr = INADDR_ANY; // INADDR_ANY: don't want to bind socket to any particular IP address, listens to all available IPs
+	serverAddress.sin_port = htons(8080);
+	serverAddress.sin_addr.s_addr = INADDR_ANY;
 
-	bind(serverSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)); // bind socket to address
-	listen(serverSocket, 5); // listen for incoming connections
+	bind(serverSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress));
+	listen(serverSocket, 5);
 
 	while (true)
 	{
-		int clientSocket = accept(serverSocket, nullptr, nullptr); // accept client connection
+		int clientSocket = accept(serverSocket, nullptr, nullptr);
 
-		// revieve data from client
 		char buffer[2048] = {0};
 		int n = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
 		if (n <= 0) { close(clientSocket); continue; }
 
-		// read request
 		std::string request(buffer, n);
 		std::istringstream iss(request);
 		std::string method, target;
 		iss >> method >> target;
 
-		// find query
 		std::string word;
 		auto qpos = target.find("?word=");
 		if (qpos != std::string::npos) word = target.substr(qpos + 6);
@@ -94,11 +206,10 @@ int main()
 			}
 			else
 			{
-				body = {{"lemma", info.lemma}, {"id", info.id}};
+				body = toJson(info);
 			}
 		}
 
-		
 		std::string out = body.dump();
 		std::ostringstream response;
 		response << "HTTP/1.1 " << status << " " << statusText << "\r\n";
@@ -106,73 +217,13 @@ int main()
 		response << "Content-Length: " << out.size() << "\r\n";
 		response << "Connection: close\r\n\r\n";
 		response << out;
-		
-		std::cout << response.str() << std::endl; // debugging
-		
-		// return body and status
+
 		auto s = response.str();
 		send(clientSocket, s.c_str(), s.size(), 0);
 		close(clientSocket);
 	}
 
-	close(serverSocket); // close server socket
-#endif
-
-	// terminal build
-#if 0
-    std::cout << "Type command (lookup <word>, suggest <prefix>, correct <word>, autofill <prefix>, exit):\n";
-
-    std::string command;
-    while (std::cout << "> " && std::cin >> command)
-    {
-        if (command == "exit") break;
-
-        if (command == "lookup")
-        {
-            std::string word;
-            std::cin >> word;
-            WordInfo info = dict.getWordInfo(word);
-            if (info.lemma.empty())
-            {
-                std::cout << "Word not found" << '\n';
-            }
-            else
-            {
-                dict.printInfo(info);
-            }
-        }
-        else if (command == "suggest")
-        {
-            std::string prefix;
-            std::cin >> prefix;
-            auto suggestions = checker.suggest(prefix);
-            checker.printSuggest(suggestions);
-        }
-        else if (command == "correct")
-        {
-            std::string word;
-            std::cin >> word;
-            auto corrections = checker.correct(word);
-            if (corrections.empty())
-            {
-                std::cout << "No corrections found" << '\n';
-            }
-            else
-            {
-                checker.printSuggest(corrections);
-            }
-        }
-        else if (command == "autofill")
-        {
-            std::string prefix;
-            std::cin >> prefix;
-            std::cout << checker.autofill(prefix) << '\n';
-        }
-        else
-        {
-            std::cout << "Unknown command" << '\n';
-        }
-    }
+	close(serverSocket);
 #endif
 
     return 0;

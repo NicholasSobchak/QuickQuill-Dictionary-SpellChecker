@@ -1,177 +1,144 @@
-If you wish to run this locally, get started by downloading the complete database...
-```
-[https://www.dropbox.com/home/dictionary-db-sql](https://www.dropbox.com/scl/fi/ydtk44m0pi5e745qi6uii/dictionary-db.zip?rlkey=gpaelm6fxwlyqqhtxmlmij48s&st=w0ldr97i&dl=0)
-```
-# Dictionary & Spell Checker (Trie + Database Engine)
+  ____        _      _      ____        _ _ _
+ / __ \      (_)    | |    / __ \      (_) | |
+| |  | |_   _ _  ___| | __| |  | |_   _ _| | |
+| |  | | | | | |/ __| |/ /| |  | | | | | | | |
+| |__| | |_| | | (__|   < | |__| | |_| | | | |
+ \___\_\\__,_|_|\___|_|\_\ \___\_\\__,_|_|_|_|
 
-This project is a C++ dictionary and spell-checking engine powered by a Trie (prefix tree) and a relational database. It loads large Wiktionary-style JSON data, organizes it efficiently, and provides fast word lookup, spell checking, autocomplete, and rich linguistic information.
+# QuickQuill Dictionary & Spell Checker
 
-- Lemmas vs word forms (run → running, ran, runs)
-- Multiple definitions (senses) per word
-- Parts of speech
-- Examples
-- Synonyms and antonyms
-- Etymology
-- Alternate spellings and plurals
+QuickQuill is a C++ dictionary + spell-check backend with a lightweight web UI.
+It supports fast word lookup, spell correction, and rich dictionary data (definitions, examples, synonyms, antonyms, forms, etymology).
 
-## 🎯 Project Goal
+## 📦 Database Download (Run Locally)
 
-The goal of this project is to serve as the backend engine for a full dictionary website, capable of powering fast word search, autocomplete, spell checking, and detailed dictionary entries for a large vocabulary.
+If you want to run this with the full prebuilt database, download:
 
-It is designed to demonstrate how efficient data structures and database design can work together to support a scalable, high-performance online dictionary platform.
+`https://www.dropbox.com/scl/fi/ydtk44m0pi5e745qi6uii/dictionary-db.zip?rlkey=gpaelm6fxwlyqqhtxmlmij48s&st=w0ldr97i&dl=0`
 
-## 🚀 What This Project Demonstrates
+Then place `dictionary.db` in the project root.
 
-This project applies core data structures and database design to a real-world language problem.
+## 🚀 What This Project Includes
 
-You gain experience with:
+- Trie-based lookup and autocomplete behavior
+- SQLite-backed dictionary storage
+- HTTP API via Crow (`dict_crow`)
+- Local console test mode (`dict`)
+- JSONL import pipeline for Kaikki/Wiktionary-style data
 
-- Trie implementation (O(L) lookup time)
-- Recursion and node traversal
-- JSON parsing of large datasets
-- Relational database schema design
-- Mapping linguistic data into structured storage
-- Designing fast lookup + rich data retrieval systems
-- Building a mini dictionary engine similar to those used in search engines and word processors
+## ✨ Core Features
 
-## 🧠 Core Idea
+- `lookup <word>` returns structured word data
+- `correct <word>` returns spelling corrections
+- Multi-sense entries with POS and definitions
+- Synonyms and antonyms per sense (when present in source data)
+- Forms/inflections and etymology
 
-The Trie is used for speed.
-The Database is used for depth of information.
+## 🏛️ Project Layout
 
-```
-User searches: "running"
-        │
-        ▼
-      Trie
-        │
- finds lemma "run" using stored forms
-        │
-        ▼
-   Database (word_id)
-        │
-        ▼
- Returns definitions, examples, synonyms, etymology...
+- `src/app/main.cpp`: local console test entrypoint
+- `src/app/main_crow.cpp`: web server entrypoint
+- `src/http/*`: routes, handlers, DTOs
+- `src/core/*`: dictionary, trie, spell checker
+- `src/data/*`: SQLite persistence layer
+- `web/index.html`: frontend
+- `scripts/import_kaikki.py`: database import script
+
+## 🛠️ Build
+
+```bash
+make dict
+make dict_crow
 ```
 
-## 🏛️ System Architecture
+## ▶️ Run
 
-### 1. Trie Structure (Fast Lookup)
+### 1) Console test mode
 
-The Trie performs prefix searching, spell checking, and autocomplete.
-
-```
-(root)
-  ├── r
-  │    └── u
-  │         └── n  (word_id = 42)
-  ├── d
-  │    └── i
-  │         └── c ...
+```bash
+./dict
 ```
 
-Each completed word in the Trie stores a word_id that links to the database.
+Commands:
 
-### 2. Database Structure (Word Information)
+- `lookup <word>`
+- `correct <word>`
+- `exit`
 
-The database stores all rich linguistic data for each word.
+### 2) Web server
 
-**words**
-| word_id | lemma |
-|---------|-------|
-| 42 | run |
-| 51 | dictionary |
-
-**forms**
-| word_id | form | tag |
-|---------|------|-----|
-| 42 | running | present-participle |
-| 42 | ran | past |
-| 42 | runs | third-person |
-
-**senses**
-| sense_id | word_id | pos | definition |
-|----------|---------|-----|-----------|
-| 1 | 42 | verb | to move quickly |
-| 2 | 42 | noun | an act of running |
-
-Additional tables store:
-- examples
-- synonyms
-- antonyms
-- etymology
-
-### 3. In-Memory Word Structure
-
-During runtime, a WordInfo struct mirrors the database for fast access:
-
-```
-WordInfo
- ├─ lemma: "run"
- ├─ id: 42
- ├─ etymology: [...]
- └─ senses:
-      ├─ pos: verb
-      │   ├─ definition: "to move quickly"
-      │   ├─ examples: [...]
-      │   ├─ synonyms: [...]
-      │   └─ antonyms: [...]
+```bash
+./dict_crow
 ```
 
-This avoids constant database queries while the program runs.
+Open:
 
-## ✨ Features
+- `http://localhost:8080/`
 
-- Load large dictionary JSON files (Wiktionary format)
-- Build Trie from lemmas and forms
-- Spell check words
-- Suggest similar words using Trie traversal
-- Prefix autocomplete
-- Retrieve full dictionary entries:
-  - Definitions
-  - Parts of speech
-  - Examples
-  - Synonyms / antonyms
-  - Etymology
-- Handle alternate spellings and plurals
-- Alphabetical dictionary display
+## 🔌 API
 
-## ⚡ Performance
+### Health
 
-Trie search time is O(L) where L = length of the word, making lookups extremely fast even with very large dictionaries.
+```http
+GET /api/health
+```
 
-The database allows scalable storage of millions of word relations without slowing down lookup speed.
+### Word lookup
 
-## 🧩 Real-World Comparison
+```http
+GET /api/word/<word>
+```
 
-This system mimics how:
+Response shape:
 
-- Search engines autocomplete words
-- Phone keyboards predict words
-- Word processors perform spell checking
-- Online dictionaries organize word data
+```json
+{
+  "id": 123,
+  "lemma": "word",
+  "forms": [{ "form": "words", "tag": "plural" }],
+  "senses": [
+    {
+      "pos": "noun",
+      "definition": "...",
+      "examples": ["..."],
+      "synonyms": ["..."],
+      "antonyms": ["..."]
+    }
+  ],
+  "etymology": ["..."]
+}
+```
 
-## 🛠️ Technologies Used
+## 🔄 Data Import / Refresh
 
-- C++
-- Trie (prefix tree)
-- SQLite / relational database
-- nlohmann JSON parser
-- File I/O and data parsing
+Use the import script to build or refresh `dictionary.db` from Kaikki JSONL:
 
+```bash
+python3 scripts/import_kaikki.py --json nlohmann/kaikki.org-dictionary-English-words.jsonl --db dictionary.db
+```
+
+If you recently changed parsing behavior (for example synonym/antonym extraction), re-import so the DB reflects the fix.
+
+## ⚠️ Notes on Antonyms Coverage
+
+Not every lemma has antonyms in source data. Missing antonyms for many words is expected. The UI/API returns empty arrays when unavailable.
+
+## 🧰 Tech Stack
+
+- C++17
+- SQLite3
+- Crow (HTTP)
+- nlohmann/json
 
 ## ⚠️ Academia Use & Data Attribution
 
-This project is developed for academic and educational purposes.
-The dictionary data used to build this system is derived from Wiktionary content processed through Wiktextract.
+Dictionary source data is derived from Wiktionary content processed by Wiktextract/Kaikki.
 
 If this project or its data is referenced in academic work, please cite:
-```
-Tatu Ylonen. Wiktextract: Wiktionary as Machine-Readable Structured Data.
-Proceedings of the 13th Conference on Language Resources and Evaluation (LREC),
-pp. 1317–1325, Marseille, 20–25 June 2022.
-```
-Linking to the Wiktextract project website is also appreciated: 
-```
-https://kaikki.org/
-```
+
+Tatu Ylonen. *Wiktextract: Wiktionary as Machine-Readable Structured Data.*
+Proceedings of LREC 2022.
+
+Wiktextract / Kaikki project site:
+
+`https://kaikki.org/`
