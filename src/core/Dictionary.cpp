@@ -1,47 +1,6 @@
 #include "Dictionary.h"
 #include "Utils.h"
 
-namespace
-{
-    std::vector<std::string> extractJsonTextList(const nlohmann::json& arrayField, std::string_view preferredKey)
-    {
-        std::vector<std::string> values;
-        if (!arrayField.is_array()) return values;
-
-        for (const auto& item : arrayField)
-        {
-            std::string value;
-
-            if (item.is_string())
-            {
-                value = item.get<std::string>();
-            }
-            else if (item.is_object())
-            {
-                auto takeIfString = [&](const char* key) -> bool
-                {
-                    auto it = item.find(key);
-                    if (it != item.end() && it->is_string())
-                    {
-                        value = it->get<std::string>();
-                        return true;
-                    }
-                    return false;
-                };
-
-                takeIfString(preferredKey.data());
-                if (value.empty()) takeIfString("text");
-                if (value.empty()) takeIfString("sense");
-                if (value.empty()) takeIfString("translation");
-            }
-
-            if (!value.empty()) values.push_back(value);
-        }
-
-        return values;
-    }
-}
-
 Dictionary::Dictionary() : m_db{ dct::g_dictDb }
 {
     m_db.createTables();
@@ -247,7 +206,9 @@ bool Dictionary::loadjson(const std::string &filename)
     }
 
 	std::string line;
-    sqlite3* dbHandle = m_db.getDB();
+   
+	// import in bulk rather than row-by-row (improves load time)	
+	sqlite3* dbHandle = m_db.getDB();
     char* err = nullptr;
     if (sqlite3_exec(dbHandle, "BEGIN TRANSACTION;", nullptr, nullptr, &err) != SQLITE_OK)
     {
@@ -255,7 +216,8 @@ bool Dictionary::loadjson(const std::string &filename)
         sqlite3_free(err);
         err = nullptr;
     }
-
+	
+	// parse json and load to transaction
     while (std::getline(file, line))
     {
         try
@@ -324,15 +286,26 @@ bool Dictionary::loadjson(const std::string &filename)
                             sense.definition += g.get<std::string>() + " "; // concatenate multiple glosses
                     }
 
-					// These fields can be string arrays or object arrays in Kaikki dumps.
-					if (sense_json.contains("examples"))
-                        sense.examples = extractJsonTextList(sense_json["examples"], "text");
+                    // Examples
+					if (sense_json.contains("examples") && sense_json["examples"].is_array())
+					{
+						for (auto &ex : sense_json["examples"])
+							sense.examples.push_back(ex.get<std::string>());
+					}
 
-                    if (sense_json.contains("synonyms"))
-                        sense.synonyms = extractJsonTextList(sense_json["synonyms"], "word");
+					// Synonyms
+					if (sense_json.contains("synonyms") && sense_json["synonyms"].is_array())
+					{
+						for (auto &syn : sense_json["synonyms"])
+							sense.synonyms.push_back(syn.get<std::string>());
+					}
 
-                    if (sense_json.contains("antonyms"))
-                        sense.antonyms = extractJsonTextList(sense_json["antonyms"], "word");
+					// Antonyms
+					if (sense_json.contains("antonyms") && sense_json["antonyms"].is_array())
+					{
+						for (auto &ant : sense_json["antonyms"])
+							sense.antonyms.push_back(ant.get<std::string>());
+					}
 
                     word.senses.push_back(sense); // vector of senses for potentinal quick lookups
 
@@ -362,7 +335,8 @@ bool Dictionary::loadjson(const std::string &filename)
             std::cerr << "Skipping bad line: " << e.what() << "\n";
         }
     }
-
+	
+	// commit transaction to Database (bulk transaction)
     if (sqlite3_exec(dbHandle, "COMMIT;", nullptr, nullptr, &err) != SQLITE_OK)
     {
         std::cerr << "Failed to commit transaction: " << (err ? err : "?") << '\n';

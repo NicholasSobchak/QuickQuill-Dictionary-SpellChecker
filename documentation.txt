@@ -1,43 +1,38 @@
 This is a more in depth explanation of this program...
 
+To organize my thoughts...
 
+THE GENERAL FLOW:
 Open DB
 Create tables (if not exist)
 if (isEmpty())
     load JSON into DB
-Load Trie from DB
+Load Trie from DB (lemma and all forms)
 Start server
 
-• Refactored Database class with complete CRUD operations and helper methods
-  - Changed db member to m_db, updated parameter types to std::string_view
-  - Implemented all insert functions (Etymology, Form, Example, Synonym, Antonym)
-  - Added isEmpty(), contains(), clearDB(), and getInfo() methods
-  - Fixed table schema (renamed etymologys to etymologies, antonyms column to antonym)
-• Restructured Dictionary class with caching and improved word lookup
-  - Replaced addWord(), removeWord(), search() with getWordInfo() and contains()
-  - Added m_cache for storing WordInfo objects by word ID
-  - Renamed buildTrie() to loadTrie() and updated to load both lemmas and forms
-  - Refactored loadjson() with transaction support and proper sense ID handling
-• Enhanced Trie implementation with character validation and word ID retrieval
-  - Added indexForChar() static method for safe character-to-index conversion
-  - Implemented getWordId() method to retrieve word IDs from Trie
-  - Renamed remove() to removeWord() and collectFromNode() to wordsFromNode()
-  - Removed unused startsWith(), print(), writeAll(), and rewrite() methods
-• Improved SpellChecker with working suggest, correct, and autofill implementations
-  - Implemented suggest() with prefix-based word suggestions
-  - Implemented correct() with fallback to prefix matching
-  - Implemented autofill() returning first suggestion
-• Created WordInfo header file with shared data structures
-  - Extracted WordInfo, Sense, and Form structs into separate header
-  - Allows reuse across Database and Dictionary classes
-• Added Python import script for Kaikki dictionary population
-  - import_kaikki.py streams JSONL file and populates SQLite database
-  - Includes transaction batching and progress reporting
-• Updated main.cpp with interactive CLI and Tester class
-  - Implemented command-based interface (lookup, suggest, correct, autofill, exit)
-  - Added Tester class for debugging and testing functionality
-• Added utility scripts and test data
-  - download_dictionary.sh for fetching word list
-  - build_dictionary_json.sh for converting word list to JSON format
-  - testdb.json with sample entries (serendipity, hath)
-• Updated README with Dropbox database download link and setup instructions
+TODO:
+frontend:
+- deploy website
+- implement JS to work with html
+- isolate relevant word information to be returned first
+
+backend:
+- implement spellchecking logic
+- implement autofill logic
+- add service layer between route and DB
+- add Unit tests
+- reseed the DB ***
+
+
+
+DONE:
+frontend:
+
+backend:
+- implemented crow to work with a 8080 localhost
+- create DB with kaikki dictionary
+- parsed json to load DB
+- made Trie data structure for quick spellchecking and leverging c++ speed
+- made outline for spellchecking class
+- Dictionary talks to all classes and handles caching
+
