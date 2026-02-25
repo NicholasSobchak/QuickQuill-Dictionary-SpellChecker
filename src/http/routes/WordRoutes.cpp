@@ -9,14 +9,14 @@ namespace http
 {
 	namespace
 	{
-		crow::response jsonResponse(std::string_view body, int status = 200)
+		crow::response jsonResponse(const std::string& body, int status = 200)
 		{
 			crow::response response(status, body);
 			response.set_header("Content-Type", "application/json");
 			return response;
 		}
 
-		crow::response htmlResponseFromFile(std::string_view path)
+		crow::response htmlResponseFromFile(const std::string& path)
 		{
 			std::ifstream file(path);
 			if (!file)
@@ -31,7 +31,7 @@ namespace http
 			return response;
 		}
 
-		crow::response fileResponseFromFile(std::string_view path, std::string_view contentType)
+		crow::response fileResponseFromFile(const std::string& path, const std::string& contentType)
 		{
 			std::ifstream file(path, std::ios::binary);
 			if (!file)
