@@ -1,4 +1,4 @@
-![QuickQuill Logo](QuickQuill-logo.png)
+<img src="QuickQuill-logo.png" alt="QuickQuill Logo" style="background: transparent;" />
 
 # QuickQuill Dictionary & Spell Checker
 
@@ -104,20 +104,6 @@ Response shape:
 }
 ```
 
-## 🔄 Data Import / Refresh
-
-Use the import script to build or refresh `dictionary.db` from Kaikki JSONL:
-
-```bash
-python3 scripts/import_kaikki.py --json nlohmann/kaikki.org-dictionary-English-words.jsonl --db dictionary.db
-```
-
-If you recently changed parsing behavior (for example synonym/antonym extraction), re-import so the DB reflects the fix.
-
-## ⚠️ Notes on Antonyms Coverage
-
-Not every lemma has antonyms in source data. Missing antonyms for many words is expected. The UI/API returns empty arrays when unavailable.
-
 ## 🧰 Tech Stack
 
 - C++17
@@ -127,13 +113,18 @@ Not every lemma has antonyms in source data. Missing antonyms for many words is 
 
 ## ⚠️ Academia Use & Data Attribution
 
-Dictionary source data is derived from Wiktionary content processed by Wiktextract/Kaikki.
+This project is developed for academic and educational purposes. The dictionary data used to build this system is derived from Wiktionary content processed through Wiktextract.
 
 If this project or its data is referenced in academic work, please cite:
 
-Tatu Ylonen. *Wiktextract: Wiktionary as Machine-Readable Structured Data.*
-Proceedings of LREC 2022.
+```
+Tatu Ylonen. Wiktextract: Wiktionary as Machine-Readable Structured Data.
+Proceedings of the 13th Conference on Language Resources and Evaluation (LREC),
+pp. 1317–1325, Marseille, 20–25 June 2022.
+Linking to the Wiktextract project website is also appreciated:
+```
 
-Wiktextract / Kaikki project site:
+```
+https://kaikki.org/
+```
 
-`https://kaikki.org/`
