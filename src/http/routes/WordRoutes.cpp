@@ -9,14 +9,14 @@ namespace http
 {
 	namespace
 	{
-		crow::response jsonResponse(const std::string& body, int status = 200)
+		crow::response jsonResponse(std::string_view body, int status = 200)
 		{
 			crow::response response(status, body);
 			response.set_header("Content-Type", "application/json");
 			return response;
 		}
 
-		crow::response htmlResponseFromFile(const std::string& path)
+		crow::response htmlResponseFromFile(std::string_view path)
 		{
 			std::ifstream file(path);
 			if (!file)
@@ -30,6 +30,21 @@ namespace http
 			response.set_header("Content-Type", "text/html; charset=utf-8");
 			return response;
 		}
+
+		crow::response fileResponseFromFile(std::string_view path, std::string_view contentType)
+		{
+			std::ifstream file(path, std::ios::binary);
+			if (!file)
+			{
+				return crow::response(404, "File not found.");
+			}
+
+			std::ostringstream ss;
+			ss << file.rdbuf();
+			crow::response response(200, ss.str());
+			response.set_header("Content-Type", contentType);
+			return response;
+		}
 	}
 
 
@@ -38,6 +53,22 @@ namespace http
 		// GET requests
 		CROW_ROUTE(app, "/") ([] {
 			return htmlResponseFromFile("web/index.html");
+		});
+
+		CROW_ROUTE(app, "/assets/Quotex.otf") ([] {
+			return fileResponseFromFile("web/assets/Quotex.otf", "font/otf");
+		});
+
+		CROW_ROUTE(app, "/assets/fonts.css") ([] {
+			return fileResponseFromFile("web/assets/fonts.css", "text/css; charset=utf-8");
+		});
+
+		CROW_ROUTE(app, "/assets/quill.png") ([] {
+			return fileResponseFromFile("web/assets/quill.png", "image/png");
+		});
+
+		CROW_ROUTE(app, "/assets/nevermore-logo-no-bg.png") ([] {
+			return fileResponseFromFile("web/assets/nevermore-logo-no-bg.png", "image/png");
 		});
 
 		CROW_ROUTE(app, "/api/health") ([] {
