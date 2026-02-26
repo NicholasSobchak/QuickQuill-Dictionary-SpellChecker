@@ -2,6 +2,7 @@
 #define DATABASE_H
 #include "WordInfo.h"
 #include <sqlite3.h>
+#include <unordered_map>
 #include <vector>
 #include <string_view>
 #include <string>
@@ -40,12 +41,17 @@ public:
 
 private:
 	sqlite3 *m_db;
-
+	
 	/*********************************
     // Helper declarations go here
     **********************************/
-	std::vector<std::string> fetchStrings(std::string_view sql, int id) const;
+	std::vector<std::string> fetchStrings(std::string_view sql, int id) const; // currently unsused
 	std::vector<Form> fetchForms(int word_id) const;	
-	
+	std::unordered_map<int, std::vector<std::string>> fetchGroupedStrings( 
+	    std::string_view table, 
+	    std::string_view value_col, 
+	    std::string_view id_col, 
+	    const std::vector<int> &ids) const;
+
 };
 #endif 

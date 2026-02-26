@@ -2,7 +2,10 @@ This is a more in depth explanation of this program...
 
 To organize my thoughts...
 
-ADD:
+ADD
+{
+	lexicon levissimum definition (insert myslef)
+}
 
 
 THE GENERAL FLOW:
@@ -13,29 +16,41 @@ if (isEmpty())
 Load Trie from DB (lemma and all forms)
 Start server
 
-TODO:
-frontend:
-- deploy website
-- implement JS to work with html
-- isolate relevant word information to be returned first
+TODO
+{
+frontend
+	{
+		- deploy website
+		- implement JS to work with html
+		- isolate relevant word information to be returned first
+		- add ghost autofill
+		- add "see more" option to fields with large amounts of information
+	}
 
-backend:
-- implement spellchecking logic
-- implement autofill logic
-- add service layer between route and DB
-- add Unit tests
-- reseed the DB ***
+	backend
+	{
+		- implement spellchecking logic
+		- implement autofill logic
+		- add service layer between route and DB
+		- add Unit tests
+		- add batching to improve performance
+	}
+}
 
+DONE
+{
+	frontend
+	{
+	}
 
-
-DONE:
-frontend:
-
-backend:
-- implemented crow to work with a 8080 localhost
-- create DB with kaikki dictionary
-- parsed json to load DB
-- made Trie data structure for quick spellchecking and leverging c++ speed
-- made outline for spellchecking class
-- Dictionary talks to all classes and handles caching
-
+	backend
+	{
+		- cut down on query times
+		- implemented crow to work with a 8080 localhost
+		- create DB with kaikki dictionary
+		- parsed json to load DB
+		- made Trie data structure for quick spellchecking and leverging c++ speed
+		- made outline for spellchecking class
+		- Dictionary talks to all classes and handles caching
+	{
+}

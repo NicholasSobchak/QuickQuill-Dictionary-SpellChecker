@@ -28,4 +28,10 @@ namespace http
 
 		return toWordJson(info);
 	}
+
+	void warmupDictionary()
+	{
+		// forces static Dictionary to construct and touches DB
+		dict().getWordInfo("warmup"); // or any common word
+	}
 }

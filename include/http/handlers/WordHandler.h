@@ -7,6 +7,7 @@ namespace http
 {
 	// Returns full dictionary entry JSON for a single searched word.
 	std::string search(const std::string& word);
+	void warmupDictionary();
 }
 
 #endif

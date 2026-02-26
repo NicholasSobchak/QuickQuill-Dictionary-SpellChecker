@@ -326,6 +326,26 @@
         antSection.appendChild(empty);
       }
 
+      const exSection = addSection("Examples");
+      const examples = Array.isArray(data.senses)
+        ? data.senses.flatMap((s) => Array.isArray(s.examples) ? s.examples : [])
+        : [];
+      if (examples.length) {
+        const list = document.createElement("ul");
+        list.className = "list";
+        examples.forEach((line) => {
+          const item = document.createElement("li");
+          item.textContent = line;
+          list.appendChild(item);
+        });
+        exSection.appendChild(list);
+      } else {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "No examples available.";
+        exSection.appendChild(empty);
+      }
+
       const formsSection = addSection("Forms");
       if (Array.isArray(data.forms) && data.forms.length) {
         const wrap = document.createElement("div");

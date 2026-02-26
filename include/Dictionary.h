@@ -29,7 +29,7 @@ public:
 
 private:	
 	// Cache storage
-	mutable std::unordered_map<int, WordInfo> m_cache; // IMPLEMENT CACHE
+	mutable std::unordered_map<int, WordInfo> m_cache; 
 	
 	// Internals
 	Trie m_trie;

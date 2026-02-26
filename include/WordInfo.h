@@ -5,6 +5,7 @@
 
 struct Sense
 {
+	int id{};
 	std::string pos; // noun, verb, adj, etc.
 	std::string definition;
 	std::vector<std::string> examples;
