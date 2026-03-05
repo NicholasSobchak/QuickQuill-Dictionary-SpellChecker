@@ -25,10 +25,16 @@ frontend
 		- isolate relevant word information to be returned first
 		- add ghost autofill
 		- add "see more" option to fields with large amounts of information
+		- fix the reutrn word in big letters to acommodate multiple word entries or punctuation e.g. "you're" comes up as "youre"
+		- suggest a word when user searches for a word that is not in the dictionary (DB)
+		- add "did you mean?" (correct)
+		- add "similar words" field (comes from suggest)
 	}
 
 	backend
 	{
+		- implement "did you mean ...?" (spellchecker::correct)
+		- fix word suggestions
 		- implement spellchecking logic
 		- implement autofill logic
 		- add service layer between route and DB
@@ -41,11 +47,12 @@ DONE
 {
 	frontend
 	{
+		- set up basic html frontend
 	}
 
 	backend
 	{
-		- cut down on query times
+		- cut down on query times / warm-up query
 		- implemented crow to work with a 8080 localhost
 		- create DB with kaikki dictionary
 		- parsed json to load DB

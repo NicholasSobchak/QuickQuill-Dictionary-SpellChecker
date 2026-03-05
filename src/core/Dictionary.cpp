@@ -84,9 +84,7 @@ bool Dictionary::contains(std::string_view word) const
     if (clean.empty()) return false;
 
     int id = m_trie.getWordId(clean);
-    if (id == dct::g_defaultId) return false;
-
-    return m_cache.find(id) != m_cache.end();
+    return id != dct::g_defaultId;
 }
 
 void Dictionary::suggestFromPrefix(std::string_view prefix, std::vector<std::string> &results, std::size_t limit) const 
@@ -94,9 +92,10 @@ void Dictionary::suggestFromPrefix(std::string_view prefix, std::vector<std::str
 	if (m_trie.isEmpty()) return;
 	std::string cleanPrefix{ cleanWord(prefix) };
 	if (cleanPrefix.empty()) return;
-	m_trie.collectWithPrefix(cleanPrefix, results, limit);
+	m_trie.collectWithPrefix(cleanPrefix, results, limit); // function call
 
-	results.erase(std::remove(results.begin(), results.end(), cleanPrefix), results.end());
+	// shouldn't need this
+	// results.erase(std::remove(results.begin(), results.end(), cleanPrefix), results.end());
 }
 
 /*********************************

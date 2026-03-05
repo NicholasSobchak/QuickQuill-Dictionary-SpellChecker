@@ -13,6 +13,7 @@
 
 using json = nlohmann::json;
 
+// simple printing functions concerning format
 namespace
 {
     void printList(const std::vector<std::string>& values, const std::string& emptyText)
@@ -108,7 +109,7 @@ int main()
 {
     Dictionary dict;
     SpellChecker checker(dict);
-    std::cout << "TEST BUILD: lookup <word>, correct <word>, exit\n";
+    std::cout << "TEST BUILD: lookup <word>, correct <word>, suggest <word>, exit\n";
 
 	std::string line;
 	while (std::cout << "> " && std::getline(std::cin, line))
@@ -126,7 +127,7 @@ int main()
 
 		if (arg.empty())
 		{
-			std::cout << "Usage: lookup <word> | correct <word> | exit\n";
+			std::cout << "Usage: lookup <word> | correct <word> | suggest <word> | exit\n";
 			continue;
 		}
 
@@ -145,15 +146,24 @@ int main()
 
 		if (command == "correct")
 		{
-			const auto corrections = checker.correct(arg);
-			std::cout << json({
-				{"word", arg},
-				{"corrections", corrections}
-			}).dump(2) << '\n';
+			const std::string correction = checker.correct(arg);
+			if (correction.empty())
+			{
+				std::cout << "No suggestions found.\n";
+				continue;
+			}
+
+			std::cout << "Did you mean " << correction << "?\n";
 			continue;
 		}
 
-		std::cout << "Unknown command. Use: lookup <word> | correct <word> | exit\n";
+		if (command == "suggest")
+		{
+			checker.printSuggest(checker.suggest(arg));	
+			continue;
+		}
+
+		std::cout << "Unknown command. Use: lookup <word> | correct <word> | suggest <word> | exit\n";
 	}
 
     // basic HTTP TCP server build
