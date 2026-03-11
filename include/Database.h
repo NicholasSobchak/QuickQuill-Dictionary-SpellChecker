@@ -12,7 +12,6 @@
 class Database
 {
 public:
-	friend class Tester;
 	Database(std::string_view filename);
 	~Database();
 

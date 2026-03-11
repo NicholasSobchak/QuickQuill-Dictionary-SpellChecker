@@ -2,7 +2,6 @@
 #include "http/handlers/WordHandler.h"
 
 // TODO: Crow entrypoint.
-// Suggested flow:
 // 1) Load dictionary/service state.
 // 2) Call http::runServer(port).
 

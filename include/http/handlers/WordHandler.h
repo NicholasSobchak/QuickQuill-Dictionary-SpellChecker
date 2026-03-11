@@ -5,8 +5,14 @@
 
 namespace http
 {
-	// Returns full dictionary entry JSON for a single searched word.
-	std::string search(const std::string& word);
+	struct SearchResult
+	{
+		std::string body;
+		int status{ 200 };
+	};
+
+	// Returns JSON body and HTTP status for a single searched word.
+	SearchResult search(const std::string& word);
 	void warmupDictionary();
 }
 

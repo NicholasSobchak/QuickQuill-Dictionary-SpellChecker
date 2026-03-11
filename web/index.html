@@ -187,6 +187,11 @@
       color: var(--muted);
       font-style: italic;
     }
+    .error {
+      color: #ff6666;
+      font-weight: 400;
+      font-size: 13px;
+    }
 
     .status {
       margin-top: 10px;
@@ -225,6 +230,7 @@
       </div>
       <div id="status" class="status">
         <span id="spinner" class="spinner"></span>
+        <span id="statusText"></span>
       </div>
       <div id="result" class="result"></div>
     </section>
@@ -234,11 +240,17 @@
     const input = document.getElementById("word");
     const result = document.getElementById("result");
     const spinner = document.getElementById("spinner");
+    const statusText = document.getElementById("statusText");
     const button = document.getElementById("go");
     let spinnerTimer = null;
 
     function clearResult() {
       while (result.firstChild) result.removeChild(result.firstChild);
+    }
+
+    function setStatus(text, isError = false) {
+      statusText.textContent = text || "";
+      statusText.style.color = isError ? "#ff6666" : "var(--muted)";
     }
 
     function addSection(title) {
@@ -252,20 +264,32 @@
       return section;
     }
 
-    function renderWord(data) {
+    function displayWord(text) {
+      if (!text) return "";
+      // Allow letters, numbers, spaces, apostrophes, and hyphens; replace anything else with a space, then collapse.
+      return text
+        .replace(/[^A-Za-z0-9'’ -]+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function renderWord(data, requestedWord) {
       clearResult();
 
       if (data.error) {
-        const err = document.createElement("div");
-        err.className = "empty";
-        err.textContent = data.error;
-        result.appendChild(err);
+        const requested = requestedWord || "";
+        if (data.error === "Enter a word") {
+          setStatus("400: Enter a word", true);
+        } else {
+          setStatus("404: word not found", true);
+        }
         return;
       }
 
       const lemma = document.createElement("h2");
       lemma.className = "lemma";
-      lemma.textContent = data.lemma || "Unknown";
+      const heading = displayWord(data.query || data.lemma);
+      lemma.textContent = heading || "Unknown";
       result.appendChild(lemma);
 
       const sensesSection = addSection("Definition");
@@ -383,7 +407,18 @@
 
     async function lookup() {
       const word = input.value.trim();
-      if (!word) return;
+      if (!word) {
+        clearResult();
+        renderWord({ error: "Enter a word" }, "");
+        input.focus();
+        return;
+      }
+      if (!/^[A-Za-z'-]+$/.test(word)) {
+        clearResult();
+        setStatus("404: word not found", true);
+        input.focus();
+        return;
+      }
 
       button.disabled = true;
       // spinner only
@@ -399,16 +434,22 @@
       clearResult();
 
       try {
+      setStatus("Looking up…");
         const res = await fetch(`/api/word/${encodeURIComponent(word)}`);
         const data = await res.json();
-        renderWord(data);
-        // errors are shown in the result area
+        if (!res.ok) {
+          renderWord(data, word); // renderWord sets status for errors
+        } else {
+          renderWord(data, word);
+          setStatus("");
+        }
       } catch (err) {
         clearResult();
         const msg = document.createElement("div");
         msg.className = "empty";
         msg.textContent = String(err);
         result.appendChild(msg);
+        setStatus("Network error.", true);
       } finally {
         button.disabled = false;
         spinner.style.display = "none";

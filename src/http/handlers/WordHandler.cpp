@@ -5,29 +5,41 @@
 
 namespace http
 {
-	namespace
+	namespace // declare internal linkage 
 	{
 		Dictionary& dict()
 		{
-			static Dictionary instance;
+			static Dictionary instance; 
 			return instance;
 		}
 	}
 
-	std::string search(const std::string& word)
-	{
-		WordInfo info = dict().getWordInfo(word);
-		if (info.lemma.empty())
+	// returns (JSON body, status)
+		SearchResult search(const std::string& word)
 		{
-			nlohmann::json body = {
-				{"error", "word not found"},
-				{"word", word}
-			};
-			return body.dump();
-		}
+			const bool allowedChars = std::all_of(word.begin(), word.end(), [](unsigned char c) {
+				return std::isalpha(c) || c == '\'' || c == '-';
+			});
 
-		return toWordJson(info);
-	}
+			if (word.empty() || !allowedChars)
+			{
+				nlohmann::json body = {
+					{"error", "Enter a word"}
+				};
+				return { body.dump(), 400 };
+			}
+
+			WordInfo info = dict().getWordInfo(word);
+			if (info.lemma.empty())
+			{
+				nlohmann::json body = {
+					{"error", "Word not found"}
+				};
+				return { body.dump(), 404 };
+			}
+
+			return { toWordJson(info, std::string(word)), 200 };
+		}
 
 	void warmupDictionary()
 	{

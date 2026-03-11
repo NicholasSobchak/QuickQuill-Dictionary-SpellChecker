@@ -38,8 +38,9 @@ frontend
 		- implement spellchecking logic
 		- implement autofill logic
 		- add service layer between route and DB
-		- add Unit tests
+		- continue Unit tests
 		- add batching to improve performance
+		- keeep punctuation in the word that is returned
 	}
 }
 

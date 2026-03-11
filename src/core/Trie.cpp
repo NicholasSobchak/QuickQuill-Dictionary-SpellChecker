@@ -38,7 +38,12 @@ bool Trie::insert(std::string_view word, int word_id)
     return true;
 }
 
-bool Trie::remove(const std::string &word) { return removeWord(m_root, word); }
+bool Trie::remove(const std::string &word)
+{
+    bool removed = removeWord(m_root, word);
+    if (!m_root) m_root = new TrieNode(); // recreate root just in case if its deleted
+    return removed;
+}
 
 bool Trie::contains(std::string_view word) const
 {

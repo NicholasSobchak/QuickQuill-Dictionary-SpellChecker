@@ -7,7 +7,7 @@
 
 namespace http
 {
-	namespace
+	namespace // actual API endpoints
 	{
 		crow::response jsonResponse(const std::string& body, int status = 200)
 		{
@@ -47,7 +47,7 @@ namespace http
 		}
 	}
 
-
+	// Requests
 	void registerWordRoutes(crow::SimpleApp& app)
 	{
 		// GET requests
@@ -77,7 +77,8 @@ namespace http
 
 		CROW_ROUTE(app, "/api/word/<string>")
 		([](const std::string& word) {
-			return jsonResponse(search(word));
+			auto result = search(word);
+			return jsonResponse(result.body, result.status);
 		});
 	}
 }
