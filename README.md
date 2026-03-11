@@ -9,7 +9,7 @@ It supports fast word lookup, spell correction, and rich dictionary data (defini
 
 If you want to run this with the full prebuilt database, download:
 
-`https://www.dropbox.com/scl/fi/ydtk44m0pi5e745qi6uii/dictionary-db.zip?rlkey=gpaelm6fxwlyqqhtxmlmij48s&st=w0ldr97i&dl=0`
+```https://www.dropbox.com/home/dictionary-db-sql/dictionary-db?preview=dictionary.db```
 
 Then place `dictionary.db` in the project root.
 
