@@ -233,7 +233,7 @@ bool Dictionary::loadjson(const std::string &filename)
             auto cleanLemma = cleanWord(word.lemma);
             if (cleanLemma.empty()) continue;
 
-            word.id = m_db.insertWord(cleanLemma);
+            word.id = m_db.insertWord(cleanLemma, word.lemma);
 
             // Etymology
             if (j.contains("etymology_text"))

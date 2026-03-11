@@ -23,7 +23,8 @@ struct Form
 struct WordInfo
 {
 	int id{};   
-    std::string lemma; 
+    std::string lemma;
+	std::string displayLemma;	
 
 	std::vector<std::string> etymology;
 	std::vector<Form> forms; 

@@ -27,12 +27,12 @@
     }
 
     .shell {
-      max-width: 860px;
+      max-width: 1200px;
       margin: 0 auto;
       padding: 48px 20px 80px;
     }
 
-    header {
+  header {
       margin-bottom: 18px;
       text-align: center;
     }
@@ -132,11 +132,31 @@
       outline: none;
     }
 
-    button {
+    #go {
       display: none;
     }
 
-    button:disabled {
+    .toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin: 8px auto 0;
+      padding: 0;
+      background: transparent;
+      color: var(--muted);
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: "Courier New", "Liberation Mono", "Menlo", "Consolas", monospace;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    .toggle-btn .arrow {
+      font-family: Arial, sans-serif;
+    }
+
+    .toggle-btn:disabled {
       opacity: 0.6;
       cursor: not-allowed;
     }
@@ -181,7 +201,11 @@
     .list {
       margin: 0;
       padding-left: 18px;
+      list-style-position: outside;
     }
+
+    .extra { display: none; }
+    .list.show-all .extra { display: list-item; }
 
     .empty {
       color: var(--muted);
@@ -264,6 +288,45 @@
       return section;
     }
 
+    function appendNumberedList(section, items) {
+      const list = document.createElement("ol");
+      list.className = "list";
+
+      items.forEach((text, idx) => {
+        const item = document.createElement("li");
+        item.textContent = text;
+        if (idx >= 5) item.classList.add("extra");
+        list.appendChild(item);
+      });
+
+      section.appendChild(list);
+
+      if (items.length > 5) {
+        const toggle = document.createElement("button");
+        toggle.type = "button";
+        toggle.className = "toggle-btn";
+        const label = document.createTextNode("see more ");
+        const arrow = document.createElement("span");
+        arrow.className = "arrow";
+        arrow.textContent = "v";
+        toggle.appendChild(label);
+        toggle.appendChild(arrow);
+        toggle.setAttribute("aria-expanded", "false");
+        toggle.addEventListener("click", () => {
+          const expanded = list.classList.toggle("show-all");
+          label.textContent = expanded ? "see less " : "see more ";
+          arrow.textContent = expanded ? "^" : "v";
+          toggle.setAttribute("aria-expanded", expanded);
+        });
+        const toggleWrap = document.createElement("div");
+        toggleWrap.style.display = "flex";
+        toggleWrap.style.justifyContent = "center";
+        toggleWrap.style.transform = "translateX(0px)";
+        toggleWrap.appendChild(toggle);
+        section.appendChild(toggleWrap);
+      }
+    }
+
     function displayWord(text) {
       if (!text) return "";
       // Allow letters, numbers, spaces, apostrophes, and hyphens; replace anything else with a space, then collapse.
@@ -288,21 +351,40 @@
 
       const lemma = document.createElement("h2");
       lemma.className = "lemma";
-      const heading = displayWord(data.query || data.lemma);
-      lemma.textContent = heading || "Unknown";
+      const rawHeading = data.display_lemma || data.query || data.lemma || "";
+      let decodedHeading = rawHeading;
+      try {
+        decodedHeading = decodeURIComponent(rawHeading);
+      } catch (_) {
+        // keep rawHeading if decode fails
+      }
+      const heading = displayWord(decodedHeading);
+      const punctuated = heading && heading.toLowerCase() === "lexicon levissimum"
+        ? `${heading}!`
+        : heading;
+      lemma.textContent = punctuated || "Unknown";
+      if (heading && heading.toLowerCase() === "nevermore") {
+        const link = document.createElement("a");
+        link.href = "https://www.nevermoreacademy.com/";
+        link.target = "_blank";
+        link.rel = "noreferrer noopener";
+        link.textContent = " https://www.nevermoreacademy.com/";
+        link.style.color = "var(--ink)";
+        link.style.fontFamily = '"Courier New", "Liberation Mono", "Menlo", "Consolas", monospace';
+        link.style.fontSize = "15px";
+        link.style.fontWeight = "400";
+        link.style.marginLeft = "8px";
+        lemma.appendChild(link);
+      }
       result.appendChild(lemma);
 
       const sensesSection = addSection("Definition");
       if (Array.isArray(data.senses) && data.senses.length) {
-        const list = document.createElement("ul");
-        list.className = "list";
-        data.senses.forEach((s) => {
-          const item = document.createElement("li");
+        const items = data.senses.map((s) => {
           const pos = s.pos ? `[${s.pos}] ` : "";
-          item.textContent = `${pos}${s.definition || ""}`.trim();
-          list.appendChild(item);
+          return `${pos}${s.definition || ""}`.trim();
         });
-        sensesSection.appendChild(list);
+        appendNumberedList(sensesSection, items);
       } else {
         const empty = document.createElement("div");
         empty.className = "empty";
@@ -355,14 +437,7 @@
         ? data.senses.flatMap((s) => Array.isArray(s.examples) ? s.examples : [])
         : [];
       if (examples.length) {
-        const list = document.createElement("ul");
-        list.className = "list";
-        examples.forEach((line) => {
-          const item = document.createElement("li");
-          item.textContent = line;
-          list.appendChild(item);
-        });
-        exSection.appendChild(list);
+        appendNumberedList(exSection, examples);
       } else {
         const empty = document.createElement("div");
         empty.className = "empty";
@@ -389,14 +464,7 @@
 
       const etySection = addSection("Etymology");
       if (Array.isArray(data.etymology) && data.etymology.length) {
-        const list = document.createElement("ul");
-        list.className = "list";
-        data.etymology.forEach((line) => {
-          const item = document.createElement("li");
-          item.textContent = line;
-          list.appendChild(item);
-        });
-        etySection.appendChild(list);
+        appendNumberedList(etySection, data.etymology);
       } else {
         const empty = document.createElement("div");
         empty.className = "empty";
@@ -413,9 +481,9 @@
         input.focus();
         return;
       }
-      if (!/^[A-Za-z'-]+$/.test(word)) {
+      if (!/^[A-Za-z' -]+$/.test(word)) {
         clearResult();
-        setStatus("404: word not found", true);
+        setStatus("400: Enter a word", true);
         input.focus();
         return;
       }
@@ -434,7 +502,7 @@
       clearResult();
 
       try {
-      setStatus("Looking up…");
+        setStatus("Looking up…");
         const res = await fetch(`/api/word/${encodeURIComponent(word)}`);
         const data = await res.json();
         if (!res.ok) {
@@ -445,11 +513,8 @@
         }
       } catch (err) {
         clearResult();
-        const msg = document.createElement("div");
-        msg.className = "empty";
-        msg.textContent = String(err);
-        result.appendChild(msg);
-        setStatus("Network error.", true);
+        const reason = err && err.message ? err.message : "failed to fetch";
+        setStatus(`Network error: ${reason}`, true);
       } finally {
         button.disabled = false;
         spinner.style.display = "none";

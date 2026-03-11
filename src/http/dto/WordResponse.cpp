@@ -9,6 +9,7 @@ namespace http
 			nlohmann::json j;
 			j["id"] = info.id;
 			j["lemma"] = info.lemma;
+			if (!info.displayLemma.empty()) j["display_lemma"] = info.displayLemma;
 			if (!query.empty()) j["query"] = query;
 
 		j["forms"] = nlohmann::json::array();

@@ -25,7 +25,7 @@ public:
 	bool isEmpty() const;
 	bool contains(std::string_view word) const;
 		
-	int insertWord(const std::string &lemma);
+	int insertWord(const std::string &lemma, const std::string &displayLemma);
 	int insertSense(int word_id, const std::string &pos, const std::string &definition);
 
 	void createTables();

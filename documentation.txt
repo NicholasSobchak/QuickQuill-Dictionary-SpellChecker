@@ -4,7 +4,12 @@ To organize my thoughts...
 
 ADD
 {
-	lexicon levissimum definition (insert myslef)
+	- add Neil Martini to the dictionary (manually)
+	- add Sobchak to the dictionary (manually) 
+	- add Nicholas Sobchak to the dictionary (manually)
+	- email signup
+	- word of the day
+	- tabs to different pages	
 }
 
 
@@ -18,15 +23,17 @@ Start server
 
 TODO
 {
-frontend
+	general changes 
 	{
 		- deploy website
+		- create staging build
+	}
+		
+	frontend
+	{
 		- implement JS to work with html
 		- isolate relevant word information to be returned first
 		- add ghost autofill
-		- add "see more" option to fields with large amounts of information
-		- fix the reutrn word in big letters to acommodate multiple word entries or punctuation e.g. "you're" comes up as "youre"
-		- suggest a word when user searches for a word that is not in the dictionary (DB)
 		- add "did you mean?" (correct)
 		- add "similar words" field (comes from suggest)
 	}
@@ -40,15 +47,24 @@ frontend
 		- add service layer between route and DB
 		- continue Unit tests
 		- add batching to improve performance
-		- keeep punctuation in the word that is returned
 	}
 }
 
 DONE
 {
+	general
+	{
+		- lexicon levissimum definition (manually)
+		- update nevermore definition (manually)
+	}
+	
 	frontend
 	{
 		- set up basic html frontend
+		- updated graphics
+		- incorporate status on errors
+		- fix the reutrn word in big letters to acommodate multiple word entries or punctuation e.g. "you're" comes up as "youre"
+		- add "see more" option to fields with large amounts of information
 	}
 
 	backend
@@ -60,5 +76,6 @@ DONE
 		- made Trie data structure for quick spellchecking and leverging c++ speed
 		- made outline for spellchecking class
 		- Dictionary talks to all classes and handles caching
+		- keeep punctuation in the word that is returned (displayLemma)
 	{
 }

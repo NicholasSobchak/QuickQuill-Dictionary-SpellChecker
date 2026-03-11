@@ -1,3 +1,4 @@
+#AL
 #!/usr/bin/env python3
 """Populate dictionary.db with the Kaikki English dictionary dump.
 
@@ -51,10 +52,15 @@ def ensure_tables(conn: sqlite3.Connection) -> None:
     if table_exists(conn, "antonyms") and not table_has_column(conn, "antonyms", "antonym"):
         conn.execute("DROP TABLE antonyms;")
 
+    # Add display_lemma column if missing.
+    if table_exists(conn, "words") and not table_has_column(conn, "words", "display_lemma"):
+        conn.execute("ALTER TABLE words ADD COLUMN display_lemma TEXT;")
+
     statements = [
         """CREATE TABLE IF NOT EXISTS words (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                lemma TEXT UNIQUE
+                lemma TEXT UNIQUE,
+                display_lemma TEXT
             );""",
         """CREATE TABLE IF NOT EXISTS etymologies (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -131,8 +137,11 @@ def clear_db(conn: sqlite3.Connection) -> None:
         cur.close()
 
 
-def insert_word(cur: sqlite3.Cursor, lemma: str) -> Tuple[int | None, bool]:
-    cur.execute("INSERT OR IGNORE INTO words (lemma) VALUES (?);", (lemma,))
+def insert_word(cur: sqlite3.Cursor, lemma: str, display_lemma: str) -> Tuple[int | None, bool]:
+    cur.execute(
+        "INSERT OR IGNORE INTO words (lemma, display_lemma) VALUES (?, ?);",
+        (lemma, display_lemma),
+    )
     inserted = cur.rowcount == 1
     cur.execute("SELECT id FROM words WHERE lemma = ?;", (lemma,))
     row = cur.fetchone()
@@ -293,11 +302,11 @@ def process_file(
                 if entry.get("lang_code") not in {None, "en"}:
                     continue
 
-                lemma = sanitize_word(entry.get("word"))
+                raw_word = entry.get("word") or ""
+                lemma = sanitize_word(raw_word)
                 if not lemma:
                     continue
-
-                word_id, inserted = insert_word(cur, lemma)
+                word_id, inserted = insert_word(cur, lemma, raw_word)
                 if not word_id:
                     continue
 
