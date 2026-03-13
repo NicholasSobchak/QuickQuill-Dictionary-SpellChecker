@@ -1,19 +1,29 @@
-<img src="QuickQuill-logo.png" alt="QuickQuill Logo" style="background: transparent;" />
+<p align="center"><img src="QuickQuill-logo.png" alt="QuickQuill Logo" width=600 style="background: transparent;" /></p>
+<h4 align="center">A Quick Lookup Dictionary at your service.</h4>
 
-# QuickQuill Dictionary & Spell Checker
+## Description
 
 QuickQuill is a C++ dictionary + spell-check backend with a lightweight web UI.
 It supports fast word lookup, spell correction, and rich dictionary data (definitions, examples, synonyms, antonyms, forms, etymology).
 
-## 📦 Database Download (Run Locally)
+You can find the QuickQuill website here.
 
+### Features
+  - Multi-sense entries with POS and definitions
+  - Synonyms and antonyms per sense (when present in source data)
+  - Forms/inflections and etymology
+
+
+## How to setup this project locally
+
+### Database Download
 If you want to run this with the full prebuilt database, download:
 
 ```https://www.dropbox.com/home/dictionary-db-sql/dictionary-db?preview=dictionary.db```
 
 Then place `dictionary.db` in the project root.
 
-## 🚀 What This Project Includes
+## What This Project Includes
 
 - Trie-based lookup and autocomplete behavior
 - SQLite-backed dictionary storage
@@ -21,15 +31,7 @@ Then place `dictionary.db` in the project root.
 - Local console test mode (`dict`)
 - JSONL import pipeline for Kaikki/Wiktionary-style data
 
-## ✨ Core Features
-
-- `lookup <word>` returns structured word data
-- `correct <word>` returns spelling corrections
-- Multi-sense entries with POS and definitions
-- Synonyms and antonyms per sense (when present in source data)
-- Forms/inflections and etymology
-
-## 🏛️ Project Layout
+## Project Layout
 
 - `src/app/main.cpp`: local console test entrypoint
 - `src/app/main_crow.cpp`: web server entrypoint
@@ -39,14 +41,14 @@ Then place `dictionary.db` in the project root.
 - `web/index.html`: frontend
 - `scripts/import_kaikki.py`: database import script
 
-## 🛠️ Build
+## Build
 
 ```bash
 make dict
 make dict_crow
 ```
 
-## ▶️ Run
+## Run
 
 ### 1) Console test mode
 
@@ -104,14 +106,14 @@ Response shape:
 }
 ```
 
-## 🧰 Tech Stack
+## Tech Stack
 
 - C++17
 - SQLite3
 - Crow (HTTP)
 - nlohmann/json
 
-## ⚠️ Academia Use & Data Attribution
+## Academia Use & Data Attribution
 
 This project is developed for academic and educational purposes. The dictionary data used to build this system is derived from Wiktionary content processed through Wiktextract.
 
