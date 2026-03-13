@@ -13,7 +13,6 @@ struct Sense
     std::vector<std::string> antonyms;
 };
 
-// plurals or alternative spellings
 struct Form
 {
 	std::string form;

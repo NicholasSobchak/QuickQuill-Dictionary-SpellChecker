@@ -16,21 +16,16 @@ public:
 	bool loadInfo(const std::string &filename); // populate database (file only)	
 	WordInfo getWordInfo(std::string_view word) const;
 	bool contains(std::string_view word) const;
-	
+
+	// bridge function from Trie to Spellchecker (placeholder)	
 	void suggestFromPrefix(std::string_view prefix, std::vector<std::string> &results, std::size_t limit) const;
 
 	void printInfo(const WordInfo &word) const;
-
-	/* implement??
-	bool addWord(std::string_view word);
-	bool removeWord(const std::string& word);	
-	*/
 
 private:	
 	// Cache storage
 	mutable std::unordered_map<int, WordInfo> m_cache; 
 	
-	// Internals
 	Trie m_trie;
 	Database m_db;
 

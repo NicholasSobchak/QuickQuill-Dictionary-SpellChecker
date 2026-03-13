@@ -3,6 +3,13 @@ CXX = g++
 CXXFLAGS = -std=c++17 -Wall -g -Iinclude -I. -Ithird_party/Crow/include
 LIBS = -lsqlite3
 
+# Catch2 (system-installed). If pkg-config available, append flags.
+PKG_CATCH_CFLAGS := $(shell pkg-config --cflags catch2-with-main 2>/dev/null)
+PKG_CATCH_LIBS   := $(shell pkg-config --libs catch2-with-main 2>/dev/null)
+
+CXXFLAGS += $(PKG_CATCH_CFLAGS)
+LIBS     += $(PKG_CATCH_LIBS)
+
 # Executable name
 TARGET = dict
 CROW_TARGET = dict_crow

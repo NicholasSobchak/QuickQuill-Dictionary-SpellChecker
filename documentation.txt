@@ -56,6 +56,7 @@ DONE
 	{
 		- lexicon levissimum definition (manually)
 		- update nevermore definition (manually)
+		- add quickquill to the dictionary (manually)
 	}
 	
 	frontend

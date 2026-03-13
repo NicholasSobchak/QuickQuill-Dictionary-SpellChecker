@@ -25,8 +25,7 @@ namespace http
 			out.reserve(in.size());
 			for (size_t i = 0; i < in.size(); ++i)
 			{
-				// return empty string
-				if (in[i] == '%')
+				if (in[i] == '%') // return empty string
 				{
 					if (i + 2 >= in.size()) return "";
 					auto hex = in.substr(i + 1, 2);

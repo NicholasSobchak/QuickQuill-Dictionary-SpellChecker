@@ -3,14 +3,14 @@
 
 namespace http
 {
-		// converts WordInfo into JSON response format
-		std::string toWordJson(const WordInfo& info, const std::string& query)
-		{
-			nlohmann::json j;
-			j["id"] = info.id;
-			j["lemma"] = info.lemma;
-			if (!info.displayLemma.empty()) j["display_lemma"] = info.displayLemma;
-			if (!query.empty()) j["query"] = query;
+	// converts WordInfo into JSON response format
+	std::string toWordJson(const WordInfo& info, const std::string& query)
+	{
+		nlohmann::json j;
+		j["id"] = info.id;
+		j["lemma"] = info.lemma;
+		if (!info.displayLemma.empty()) j["display_lemma"] = info.displayLemma;
+		if (!query.empty()) j["query"] = query;
 
 		j["forms"] = nlohmann::json::array();
 		for (const auto& f : info.forms)

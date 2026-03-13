@@ -13,95 +13,10 @@
 
 using json = nlohmann::json;
 
-// simple printing functions concerning format
 namespace
 {
-    void printList(const std::vector<std::string>& values, const std::string& emptyText)
-    {
-        if (values.empty())
-        {
-            std::cout << emptyText << '\n';
-            return;
-        }
-
-        for (const auto& v : values)
-        {
-            std::cout << "- " << v << '\n';
-        }
-    }
-
-    void printWord(const WordInfo& info)
-    {
-        std::vector<std::string> synonyms;
-        std::vector<std::string> antonyms;
-
-        std::cout << "Lemma: " << (info.lemma.empty() ? "Unknown" : info.lemma) << "\n\n";
-
-        std::cout << "Definition\n";
-        if (!info.senses.empty())
-        {
-            for (const auto& s : info.senses)
-            {
-                const std::string pos = s.pos.empty() ? "" : "[" + s.pos + "] ";
-                std::cout << "- " << pos << s.definition << '\n';
-
-                synonyms.insert(synonyms.end(), s.synonyms.begin(), s.synonyms.end());
-                antonyms.insert(antonyms.end(), s.antonyms.begin(), s.antonyms.end());
-            }
-        }
-        else
-        {
-            std::cout << "No definitions available.\n";
-        }
-
-        std::cout << "\nSynonyms\n";
-        printList(synonyms, "No synonyms available.");
-
-        std::cout << "\nAntonyms\n";
-        printList(antonyms, "No antonyms available.");
-
-        std::cout << "\nForms\n";
-        if (!info.forms.empty())
-        {
-            for (const auto& f : info.forms)
-            {
-                if (f.tag.empty()) std::cout << "- " << f.form << '\n';
-                else std::cout << "- " << f.form << " (" << f.tag << ")\n";
-            }
-        }
-        else
-        {
-            std::cout << "No forms available.\n";
-        }
-
-        std::cout << "\nEtymology\n";
-        printList(info.etymology, "No etymology available.");
-        std::cout << '\n';
-    }
-
-    [[maybe_unused]] json toJson(const WordInfo& info)
+	void printWordInfo(const WordInfo& info)
 	{
-		json j;
-		j["id"] = info.id;
-		j["lemma"] = info.lemma;
-		j["forms"] = json::array();
-		for (const auto& f : info.forms)
-		{
-			j["forms"].push_back({{"form", f.form}, {"tag", f.tag}});
-		}
-		j["senses"] = json::array();
-		for (const auto& s : info.senses)
-		{
-			j["senses"].push_back({
-				{"pos", s.pos},
-				{"definition", s.definition},
-				{"examples", s.examples},
-				{"synonyms", s.synonyms},
-				{"antonyms", s.antonyms}
-			});
-		}
-		j["etymology"] = info.etymology;
-		return j;
 	}
 }
 
@@ -111,6 +26,7 @@ int main()
     SpellChecker checker(dict);
     std::cout << "TEST BUILD: lookup <word>, correct <word>, suggest <word>, exit\n";
 
+	// currently testing funcitons needed to be implemented (printWordInfo, checker.correct, checker.suggest
 	std::string line;
 	while (std::cout << "> " && std::getline(std::cin, line))
 	{
@@ -140,7 +56,7 @@ int main()
 				continue;
 			}
 
-            printWord(info);
+			printWordInfo(info);
 			continue;
 		}
 

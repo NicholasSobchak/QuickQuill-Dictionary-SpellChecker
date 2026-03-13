@@ -22,15 +22,29 @@
       margin: 0;
       font-family: "Courier New", "Liberation Mono", "Menlo", "Consolas", monospace;
       color: var(--ink);
-      background: var(--bg-1);
+      background-color: #000000;
+      background-image:
+        radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 8%, rgba(0, 0, 0, 0.9) 30%, rgba(0, 0, 0, 0.97) 55%, rgba(0, 0, 0, 1) 72%, rgba(0, 0, 0, 1) 100%),
+        linear-gradient(to right, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0) 12%, rgba(0, 0, 0, 0) 88%, rgba(0, 0, 0, 1) 100%),
+        linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0) 14%, rgba(0, 0, 0, 0) 86%, rgba(0, 0, 0, 1) 100%),
+        linear-gradient(rgba(0, 0, 0, 0.99), rgba(0, 0, 0, 0.99)),
+        url("/assets/nevermore_backdrop.jpg");
+      background-size: 260% 260%, 100% 100%, 100% 100%, 100% 100%, contain;
+      background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+      background-position: center center, center center, center center, center center, center top;
+      background-attachment: fixed, fixed, fixed, fixed, fixed;
+      background-blend-mode: multiply, multiply, multiply, multiply, normal;
       min-height: 100vh;
+      padding-bottom: 72px;
     }
 
     .shell {
       max-width: 1200px;
       margin: 0 auto;
       padding: 48px 20px 80px;
+      flex: 1 0 auto;
     }
+
 
   header {
       margin-bottom: 18px;
@@ -41,6 +55,8 @@
       display: inline-flex;
       align-items: center;
       gap: 10px;
+      position: relative;
+      left: 50px;
     }
 
     .wordmark-wrap {
@@ -98,7 +114,6 @@
       border-radius: 0;
       padding: 0;
       box-shadow: none;
-      position: static;
       overflow: visible;
     }
 
@@ -127,7 +142,7 @@
       border: none;
       font-size: 15px;
 	  font-family: inherit;
-      background: #000;
+      background: transparent;
       color: var(--ink);
       outline: none;
     }
@@ -231,6 +246,22 @@
       display: none;
       color: var(--ink);
     }
+
+    .disclaimer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      color: #7a7a7a;
+      font-size: 12px;
+      text-align: center;
+      font-family: "Courier New", "Liberation Mono", "Menlo", "Consolas", monospace;
+      letter-spacing: 0.4px;
+      padding: 12px 0 16px;
+      margin: 0;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 10;
+    }
   </style>
 </head>
 <body>
@@ -258,7 +289,10 @@
       </div>
       <div id="result" class="result"></div>
     </section>
+
   </div>
+
+  <p class="disclaimer">QuickQuill is an independent project and has no affiliation with any organizations. All marks remain the property of their respective owners.</p>
 
   <script>
     const input = document.getElementById("word");

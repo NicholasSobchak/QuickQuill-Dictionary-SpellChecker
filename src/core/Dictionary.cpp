@@ -9,13 +9,6 @@ Dictionary::Dictionary() : m_db{ dct::g_dictDb }
 
 bool Dictionary::loadInfo(const std::string &filename)
 {
-	/*
-	   compatible file type:
-        .csv
-        .tsv
-        .json
-        .xml
-	*/
 	// parse filename
 	std::size_t p {filename.find_last_of('.')};
 	std::string extension{ "" };
@@ -33,27 +26,12 @@ bool Dictionary::loadInfo(const std::string &filename)
 	{
 	    success = success && loadjson(filename);
 	}
-	else
-	{
-	    std::cerr << "Error: file extension not recognized." << std::endl;
-	}
+    else
+    {
+        std::cerr << "Error: file extension not recognized." << std::endl;
+        success = false;
+    }
 
-#if 0
-	// control file calls
-	if (extension == ".csv") 
-		opencsv(filename); // .csv
-	
-	else if (extension == ".tsv") 
-		opentsv(filename); // .tsv
-	
-	else if (extension == ".json") 
-		openjson(filename); // .json
-	
-	else if (extension == ".xml") 
-		openxml(filename); // .xml
-	
-	else std::cout << "Error: file extension not recognized." << std::endl;
-#endif
 	return success;
 }
 

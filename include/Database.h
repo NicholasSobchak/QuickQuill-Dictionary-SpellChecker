@@ -33,11 +33,6 @@ public:
 
 	WordInfo getInfo(int word_id) const;
 
-	/* implement??
-	bool addWord(string_view word);	
-	bool removeWord(int word_id); 
-	*/
-
 private:
 	sqlite3 *m_db;
 	
