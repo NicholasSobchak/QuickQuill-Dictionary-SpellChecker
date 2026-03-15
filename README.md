@@ -32,8 +32,9 @@ Then place `dictionary.db` in the project root.
 
 ### This Project Uses
   - C++17
-  - SQLite3
-  - Crow (HTTP)
+  - SQLite3 (https://sqlite.org/cintro.html)
+  - Crow (HTTP) (https://crowcpp.org/master/)
+  - Catch2 (https://github.com/catchorg/Catch2)
   - nlohmann/json
 
 ### Project Layout
@@ -112,6 +113,7 @@ Response shape:
 }
 ```
 
+#
 ## Academia Use & Data Attribution
 
 This project is developed for academic and educational purposes. QuickQuill is an independent project and has no affiliation with any organizations. All marks remain the property of their respective owners. 
