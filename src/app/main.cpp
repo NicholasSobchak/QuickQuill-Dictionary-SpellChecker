@@ -15,8 +15,9 @@ using json = nlohmann::json;
 
 namespace
 {
-	void printWordInfo(const WordInfo& info)
+	void printWordInfo() //const WordInfo& info)
 	{
+		
 	}
 }
 

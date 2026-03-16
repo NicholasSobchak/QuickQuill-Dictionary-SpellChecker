@@ -1,12 +1,10 @@
 #include "Trie.h"
 
-#include <cctype>
-
 int Trie::indexForChar(char c)
 {
-    unsigned char lower = static_cast<unsigned char>(std::tolower(static_cast<unsigned char>(c)));
-    if (lower < 'a' || lower > 'z') return -1;
-    return lower - 'a';
+    unsigned char lowercase = static_cast<unsigned char>(std::tolower(static_cast<unsigned char>(c)));
+    if (lowercase < 'a' || lowercase > 'z') return -1; // all non-alpha will return -1
+    return lowercase - 'a';
 }
 
 Trie::Trie() : m_root{ new TrieNode() } {}
@@ -22,7 +20,7 @@ bool Trie::insert(std::string_view word, int word_id)
     for (char c : word)
     {
         int index = indexForChar(c);
-        if (index < 0) return false;
+        if (index < 0) return false; 
 
         if (!node->m_children[index])
         {
@@ -97,6 +95,7 @@ int Trie::getWordId(std::string_view word) const
 
 void Trie::collectWithPrefix(std::string_view prefix, std::vector<std::string> &out, std::size_t limit) const
 {
+	if (prefix.empty() || limit == 0) return; // collect nothing
 	const TrieNode *node{ m_root };
 	std::string currentWord;
 
