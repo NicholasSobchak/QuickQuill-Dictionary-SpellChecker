@@ -7,7 +7,7 @@
 
 namespace http
 {
-	namespace
+	namespace // actual API endpoints
 	{
 		crow::response jsonResponse(const std::string& body, int status = 200)
 		{
@@ -47,10 +47,10 @@ namespace http
 		}
 	}
 
-
+	// Requests
 	void registerWordRoutes(crow::SimpleApp& app)
 	{
-		// GET requests
+		// WEB setup
 		CROW_ROUTE(app, "/") ([] {
 			return htmlResponseFromFile("web/index.html");
 		});
@@ -71,13 +71,20 @@ namespace http
 			return fileResponseFromFile("web/assets/nevermore-logo-no-bg.png", "image/png");
 		});
 
+		CROW_ROUTE(app, "/assets/nevermore_backdrop.jpg") ([] {
+			return fileResponseFromFile("web/assets/nevermore_backdrop.jpg", "image/jpeg");
+		});
+
+
+		// GET requests
 		CROW_ROUTE(app, "/api/health") ([] {
 			return jsonResponse("{\"ok\":true}");
 		});
 
 		CROW_ROUTE(app, "/api/word/<string>")
 		([](const std::string& word) {
-			return jsonResponse(search(word));
+			auto result = search(word);
+			return jsonResponse(result.body, result.status);
 		});
 	}
 }

@@ -6,8 +6,9 @@
 
 namespace http
 {
-// TODO: Map WordInfo to JSON response payload.
-std::string toWordJson(const WordInfo& info);
+// maps WordInfo to JSON response payload.
+// `query` echoes the user's raw input (with punctuation preserved) when provided.
+std::string toWordJson(const WordInfo& info, const std::string& query = "");
 }
 
 #endif

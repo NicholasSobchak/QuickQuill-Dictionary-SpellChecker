@@ -9,6 +9,4 @@ dict
 *.exe
 /build/
 /bin/
-CMakeFiles/
-CMakeCache.txt
-cmake_install.cmake
+.venv/

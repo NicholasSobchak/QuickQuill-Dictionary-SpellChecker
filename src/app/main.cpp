@@ -15,92 +15,72 @@ using json = nlohmann::json;
 
 namespace
 {
-    void printList(const std::vector<std::string>& values, const std::string& emptyText)
-    {
-        if (values.empty())
-        {
-            std::cout << emptyText << '\n';
-            return;
-        }
-
-        for (const auto& v : values)
-        {
-            std::cout << "- " << v << '\n';
-        }
-    }
-
-    void printWord(const WordInfo& info)
-    {
-        std::vector<std::string> synonyms;
-        std::vector<std::string> antonyms;
-
-        std::cout << "Lemma: " << (info.lemma.empty() ? "Unknown" : info.lemma) << "\n\n";
-
-        std::cout << "Definition\n";
-        if (!info.senses.empty())
-        {
-            for (const auto& s : info.senses)
-            {
-                const std::string pos = s.pos.empty() ? "" : "[" + s.pos + "] ";
-                std::cout << "- " << pos << s.definition << '\n';
-
-                synonyms.insert(synonyms.end(), s.synonyms.begin(), s.synonyms.end());
-                antonyms.insert(antonyms.end(), s.antonyms.begin(), s.antonyms.end());
-            }
-        }
-        else
-        {
-            std::cout << "No definitions available.\n";
-        }
-
-        std::cout << "\nSynonyms\n";
-        printList(synonyms, "No synonyms available.");
-
-        std::cout << "\nAntonyms\n";
-        printList(antonyms, "No antonyms available.");
-
-        std::cout << "\nForms\n";
-        if (!info.forms.empty())
-        {
-            for (const auto& f : info.forms)
-            {
-                if (f.tag.empty()) std::cout << "- " << f.form << '\n';
-                else std::cout << "- " << f.form << " (" << f.tag << ")\n";
-            }
-        }
-        else
-        {
-            std::cout << "No forms available.\n";
-        }
-
-        std::cout << "\nEtymology\n";
-        printList(info.etymology, "No etymology available.");
-        std::cout << '\n';
-    }
-
-    [[maybe_unused]] json toJson(const WordInfo& info)
+	void printWordInfo(const WordInfo& info)
 	{
-		json j;
-		j["id"] = info.id;
-		j["lemma"] = info.lemma;
-		j["forms"] = json::array();
-		for (const auto& f : info.forms)
+		std::cout << "\nWord ID: " << info.id << "\n";
+		std::cout << "Lemma: " << (info.lemma.empty() ? "UNKNOWN" : info.lemma) << "\n";
+		std::cout << "Display Lemma: " << (info.displayLemma.empty() ? "UNKNOWN" : info.displayLemma) << "\n";
+
+		if (!info.senses.empty())
 		{
-			j["forms"].push_back({{"form", f.form}, {"tag", f.tag}});
+			for (std::size_t i = 0; i < info.senses.size(); ++i)
+			{
+				const auto& s = info.senses[i];
+				std::cout << "  [" << i + 1 << "] "
+						  << (s.pos.empty() ? "" : s.pos + " ")
+						  << "(id " << s.id << ")\n";
+
+				std::cout << "    Definition: "
+						  << (s.definition.empty() ? "UNKNOWN" : s.definition) << "\n";
+
+				if (!s.examples.empty())
+				{
+					std::cout << "    Examples:\n";
+					for (const auto& ex : s.examples)
+						std::cout << "      - " << ex << "\n";
+				}
+
+				if (!s.synonyms.empty())
+				{
+					std::cout << "    Synonyms: ";
+					for (std::size_t j = 0; j < s.synonyms.size(); ++j)
+					{
+						if (j) std::cout << ", ";
+						std::cout << s.synonyms[j];
+					}
+					std::cout << "\n";
+				}
+
+				if (!s.antonyms.empty())
+				{
+					std::cout << "    Antonyms: ";
+					for (std::size_t j = 0; j < s.antonyms.size(); ++j)
+					{
+						if (j) std::cout << ", ";
+						std::cout << s.antonyms[j];
+					}
+					std::cout << "\n";
+				}
+
+				std::cout << "\n";
+			}
 		}
-		j["senses"] = json::array();
-		for (const auto& s : info.senses)
+		else
 		{
-			j["senses"].push_back({
-				{"pos", s.pos},
-				{"definition", s.definition},
-				{"examples", s.examples},
-				{"synonyms", s.synonyms},
-				{"antonyms", s.antonyms}
-			});
+			std::cout << "\nNo senses available.\n";
 		}
-		j["etymology"] = info.etymology;
-		return j;
+
+		if (!info.forms.empty())
+		{
+			std::cout << "Forms:\n";
+			for (std::size_t i = 0; i < info.forms.size(); ++i)
+			{
+				const auto& f = info.forms[i];
+				std::cout << "  [" << i + 1 << "] " << f.form;
+				if (!f.tag.empty()) std::cout << " (" << f.tag << ")";
+				std::cout << "\n";
+			}
+		}	
 	}
 }
 
@@ -108,8 +88,9 @@ int main()
 {
     Dictionary dict;
     SpellChecker checker(dict);
-    std::cout << "TEST BUILD: lookup <word>, correct <word>, exit\n";
+    std::cout << "TEST BUILD: lookup <word>, correct <word>, suggest <word>, exit\n";
 
+	// currently testing funcitons needed to be implemented (printWordInfo, checker.correct, checker.suggest
 	std::string line;
 	while (std::cout << "> " && std::getline(std::cin, line))
 	{
@@ -126,7 +107,7 @@ int main()
 
 		if (arg.empty())
 		{
-			std::cout << "Usage: lookup <word> | correct <word> | exit\n";
+			std::cout << "Usage: lookup <word> | correct <word> | suggest <word> | exit\n";
 			continue;
 		}
 
@@ -139,21 +120,30 @@ int main()
 				continue;
 			}
 
-            printWord(info);
+			printWordInfo(info);
 			continue;
 		}
 
-		if (command == "correct")
+		if (command == "correct") 
 		{
-			const auto corrections = checker.correct(arg);
-			std::cout << json({
-				{"word", arg},
-				{"corrections", corrections}
-			}).dump(2) << '\n';
+			const std::string correction = checker.correct(arg);
+			if (correction.empty())
+			{
+				std::cout << "No suggestions found.\n";
+				continue;
+			}
+
+			std::cout << "Did you mean " << correction << "?\n";
 			continue;
 		}
 
-		std::cout << "Unknown command. Use: lookup <word> | correct <word> | exit\n";
+		if (command == "suggest")
+		{
+			checker.printSuggest(checker.suggest(arg));	
+			continue;
+		}
+
+		std::cout << "Unknown command. Use: lookup <word> | correct <word> | suggest <word> | exit\n";
 	}
 
     // basic HTTP TCP server build

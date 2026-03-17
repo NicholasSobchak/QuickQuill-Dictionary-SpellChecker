@@ -5,6 +5,7 @@
 
 struct Sense
 {
+	int id{};
 	std::string pos; // noun, verb, adj, etc.
 	std::string definition;
 	std::vector<std::string> examples;
@@ -12,7 +13,6 @@ struct Sense
     std::vector<std::string> antonyms;
 };
 
-// plurals or alternative spellings
 struct Form
 {
 	std::string form;
@@ -22,7 +22,8 @@ struct Form
 struct WordInfo
 {
 	int id{};   
-    std::string lemma; 
+    std::string lemma;
+	std::string displayLemma;	
 
 	std::vector<std::string> etymology;
 	std::vector<Form> forms; 

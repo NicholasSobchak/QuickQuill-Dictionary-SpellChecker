@@ -11,7 +11,6 @@
 
 namespace http
 {
-	// TODO: Register dictionary word/search routes on the app.
 	void registerWordRoutes(crow::SimpleApp& app);
 }
 

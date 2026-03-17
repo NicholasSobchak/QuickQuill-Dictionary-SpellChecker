@@ -27,7 +27,8 @@ void Database::createTables()
 	const char* stmts[] = {
         "CREATE TABLE IF NOT EXISTS words ("
         "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-        "lemma TEXT UNIQUE);",
+        "lemma TEXT UNIQUE,"
+        "display_lemma TEXT);",
 
         "CREATE TABLE IF NOT EXISTS etymologies ("
         "id INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -78,23 +79,43 @@ void Database::createTables()
             sqlite3_free(errMsg);
         }
     }
+	
+	const char* idx[] = {
+	    "CREATE INDEX IF NOT EXISTS idx_words_lemma ON words(lemma);",
+	    "CREATE INDEX IF NOT EXISTS idx_etymologies_word_id ON etymologies(word_id);",
+	    "CREATE INDEX IF NOT EXISTS idx_forms_word_id ON forms(word_id);",
+	    "CREATE INDEX IF NOT EXISTS idx_senses_word_id ON senses(word_id);",
+	    "CREATE INDEX IF NOT EXISTS idx_examples_sense_id ON examples(sense_id);",
+	    "CREATE INDEX IF NOT EXISTS idx_synonyms_sense_id ON synonyms(sense_id);",
+	    "CREATE INDEX IF NOT EXISTS idx_antonyms_sense_id ON antonyms(sense_id);",
+	};
+
+	for (auto s : idx)
+    {
+        if (sqlite3_exec(m_db, s, nullptr, nullptr, &errMsg) != SQLITE_OK)
+        {
+            std::cerr << "SQL error: " << errMsg << '\n';
+            sqlite3_free(errMsg);
+        }
+    }
 }
 
-int Database::insertWord(const std::string& lemma)
+int Database::insertWord(const std::string& lemma, const std::string& displayLemma)
 {
-    sqlite3_stmt* stmt;
-    const char* sql{ "INSERT OR IGNORE INTO words (lemma) VALUES (?);" };
+    sqlite3_stmt* stmt = nullptr;
+    const char* sql{ "INSERT OR IGNORE INTO words (lemma, display_lemma) VALUES (?, ?);" };
 
     if (sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr) != SQLITE_OK) return dct::g_defaultId;
 
     sqlite3_bind_text(stmt, 1, lemma.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 2, displayLemma.c_str(), -1, SQLITE_TRANSIENT);
 
     if (sqlite3_step(stmt) != SQLITE_DONE)
     {
         sqlite3_finalize(stmt);
         return dct::g_defaultId;
     }
-    sqlite3_finalize(stmt);
+    if (stmt) sqlite3_finalize(stmt);
 
     if (sqlite3_changes(m_db) > 0)
     {
@@ -111,13 +132,13 @@ int Database::insertWord(const std::string& lemma)
     {
         existingId = sqlite3_column_int(stmt, 0);
     }
-    sqlite3_finalize(stmt);
+    if (stmt) sqlite3_finalize(stmt);
     return existingId;
 }
 
 int Database::insertSense(int word_id, const std::string& pos, const std::string& definition) 
 {
-    sqlite3_stmt* stmt;
+    sqlite3_stmt* stmt = nullptr;
     const char* sql{ "INSERT INTO senses (word_id, pos, definition) VALUES (?, ?, ?);" };
     if (sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr) != SQLITE_OK) return -1;
 
@@ -131,13 +152,13 @@ int Database::insertSense(int word_id, const std::string& pos, const std::string
         sqlite3_finalize(stmt);
         return dct::g_defaultId;
 	}
-    sqlite3_finalize(stmt);
+    if (stmt) sqlite3_finalize(stmt);
 	return static_cast<int>(sqlite3_last_insert_rowid(m_db));
 }
 
 bool Database::insertEtymology(int word_id, const std::vector<std::string> &etymology)
 { 
-	sqlite3_stmt* stmt;
+	sqlite3_stmt* stmt = nullptr;
 	const char* sql{ "INSERT INTO etymologies (word_id, etymology) VALUES (?, ?);" };
 	if (sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr) != SQLITE_OK) return false;
 
@@ -150,20 +171,20 @@ bool Database::insertEtymology(int word_id, const std::vector<std::string> &etym
 	    
 	    if (sqlite3_step(stmt) != SQLITE_DONE)
 	    {
-	        sqlite3_finalize(stmt);	
+	        if (stmt) sqlite3_finalize(stmt);	
             return false;
 	    }
 	    // reuse stmt
 	    sqlite3_reset(stmt);
 	}
 	
-	sqlite3_finalize(stmt);	
+	if (stmt) sqlite3_finalize(stmt);	
 	return true;
 }	
 
 bool Database::insertForm(int word_id, const std::string &form, const std::string &tag)
 { 
-	sqlite3_stmt* stmt;
+	sqlite3_stmt* stmt = nullptr;
 	const char* sql{ "INSERT INTO forms (word_id, form, tag) VALUES (?, ?, ?);" };
 	if (sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr) != SQLITE_OK) return false;
 
@@ -174,16 +195,16 @@ bool Database::insertForm(int word_id, const std::string &form, const std::strin
 
 	if (sqlite3_step(stmt) != SQLITE_DONE)
 	{
-	    sqlite3_finalize(stmt);	
+	    if (stmt) sqlite3_finalize(stmt);	
         return false;
 	}
-	sqlite3_finalize(stmt);	
+	if (stmt) sqlite3_finalize(stmt);	
 	return true;
 }
 
 bool Database::insertExample(int sense_id, const std::string &example)
 {
-    sqlite3_stmt* stmt;
+    sqlite3_stmt* stmt = nullptr;
     const char* sql{ "INSERT INTO examples (sense_id, example) VALUES (?, ?);" };
     if (sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr) != SQLITE_OK) return false;
 
@@ -192,16 +213,16 @@ bool Database::insertExample(int sense_id, const std::string &example)
 
     if (sqlite3_step(stmt) != SQLITE_DONE)
     {
-        sqlite3_finalize(stmt);
+        if (stmt) sqlite3_finalize(stmt);
         return false;
     }
-    sqlite3_finalize(stmt);
+    if (stmt) sqlite3_finalize(stmt);
     return true;
 }
 
 bool Database::insertSynonym(int sense_id, const std::string &synonym)
 {
-    sqlite3_stmt* stmt;
+    sqlite3_stmt* stmt = nullptr;
     const char* sql{ "INSERT INTO synonyms (sense_id, synonym) VALUES (?, ?);" };
     if (sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr) != SQLITE_OK) return false;
 
@@ -210,16 +231,16 @@ bool Database::insertSynonym(int sense_id, const std::string &synonym)
 
     if (sqlite3_step(stmt) != SQLITE_DONE)
     {
-        sqlite3_finalize(stmt);
+        if (stmt) sqlite3_finalize(stmt);
         return false;
     }
-    sqlite3_finalize(stmt);
+    if (stmt) sqlite3_finalize(stmt);
     return true;
 }
 
 bool Database::insertAntonym(int sense_id, const std::string &antonym)
 {
-    sqlite3_stmt* stmt;
+    sqlite3_stmt* stmt = nullptr;
     const char* sql{ "INSERT INTO antonyms (sense_id, antonym) VALUES (?, ?);" };
     if (sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr) != SQLITE_OK) return false;
 
@@ -228,21 +249,21 @@ bool Database::insertAntonym(int sense_id, const std::string &antonym)
 
     if (sqlite3_step(stmt) != SQLITE_DONE)
     {
-        sqlite3_finalize(stmt);
+        if (stmt) sqlite3_finalize(stmt);
         return false;
     }
-    sqlite3_finalize(stmt);
+    if (stmt) sqlite3_finalize(stmt);
     return true;
 }
 
 bool Database::isEmpty() const
 { 
-	sqlite3_stmt* stmt;
+	sqlite3_stmt* stmt = nullptr;
 	const char* sql{ "SELECT 1 FROM words LIMIT 1;" };
 	if (sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr) != SQLITE_OK) return true; // error = empty
 	
 	int rc = sqlite3_step(stmt);
-	sqlite3_finalize(stmt);
+	if (stmt) sqlite3_finalize(stmt);
 
 	return (rc != SQLITE_ROW);
 }
@@ -251,19 +272,19 @@ bool Database::contains(std::string_view word) const
 {
     if (isEmpty()) return false;
 
-    sqlite3_stmt* stmt;
+    sqlite3_stmt* stmt = nullptr;
     const char* sql{ "SELECT 1 FROM words WHERE lemma = ? LIMIT 1;" };
     if (sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr) != SQLITE_OK) return false;
 
     if (sqlite3_bind_text(stmt, 1, word.data(), static_cast<int>(word.size()), SQLITE_TRANSIENT) != SQLITE_OK)
     {
-        sqlite3_finalize(stmt);
+        if (stmt) sqlite3_finalize(stmt);
         return false;
     }
 
     bool exists = (sqlite3_step(stmt) == SQLITE_ROW);
 
-    sqlite3_finalize(stmt);
+    if (stmt) sqlite3_finalize(stmt);
     return exists;
 }
 
@@ -303,11 +324,20 @@ WordInfo Database::getInfo(int word_id) const
     WordInfo info;
     info.id = word_id;
 
-    auto lemmaResult = fetchStrings("SELECT lemma FROM words WHERE id = ?;", word_id);
-    if (!lemmaResult.empty())
+    sqlite3_stmt* stmt = nullptr;
+    const char* wordSql = "SELECT lemma, display_lemma FROM words WHERE id = ?;";
+    if (sqlite3_prepare_v2(m_db, wordSql, -1, &stmt, nullptr) == SQLITE_OK)
     {
-        info.lemma = lemmaResult.front();
+        sqlite3_bind_int(stmt, 1, word_id);
+        if (sqlite3_step(stmt) == SQLITE_ROW)
+        {
+            const char* lemmaTxt = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+            const char* displayTxt = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+            info.lemma = lemmaTxt ? lemmaTxt : "";
+            info.displayLemma = displayTxt ? displayTxt : info.lemma;
+        }
     }
+    if (stmt) sqlite3_finalize(stmt);
 
     // Etymology
     info.etymology = fetchStrings("SELECT etymology FROM etymologies WHERE word_id = ?;", word_id);
@@ -317,16 +347,17 @@ WordInfo Database::getInfo(int word_id) const
 
     // Senses
     const char* senseSql = "SELECT id, pos, definition FROM senses WHERE word_id = ?;";
-    sqlite3_stmt* stmt = nullptr;
-    if (sqlite3_prepare_v2(m_db, senseSql, -1, &stmt, nullptr) == SQLITE_OK)
+    sqlite3_stmt* senseStmt = nullptr;
+    if (sqlite3_prepare_v2(m_db, senseSql, -1, &senseStmt, nullptr) == SQLITE_OK)
     {
-        sqlite3_bind_int(stmt, 1, word_id);
-        while (sqlite3_step(stmt) == SQLITE_ROW)
+        sqlite3_bind_int(senseStmt, 1, word_id);
+        while (sqlite3_step(senseStmt) == SQLITE_ROW)
         {
             Sense sense;
-            int sense_id = sqlite3_column_int(stmt, 0);
-            const char* pos = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
-            const char* def = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+            int sense_id = sqlite3_column_int(senseStmt, 0);
+            sense.id = sense_id; // preserve DB id for callers
+            const char* pos = reinterpret_cast<const char*>(sqlite3_column_text(senseStmt, 1));
+            const char* def = reinterpret_cast<const char*>(sqlite3_column_text(senseStmt, 2));
             sense.pos = pos ? pos : "";
             sense.definition = def ? def : "";
 
@@ -337,7 +368,7 @@ WordInfo Database::getInfo(int word_id) const
             info.senses.push_back(sense);
         }
     }
-    sqlite3_finalize(stmt);
+    if (senseStmt) sqlite3_finalize(senseStmt);
 
     return info;
 }
@@ -346,10 +377,48 @@ WordInfo Database::getInfo(int word_id) const
 // Helper functions go here
 **********************************/
 
+std::unordered_map<int, std::vector<std::string>> Database::fetchGroupedStrings( // currently unsused
+    std::string_view table,
+    std::string_view value_col,
+    std::string_view id_col,
+    const std::vector<int> &ids) const
+{
+    std::unordered_map<int, std::vector<std::string>> out;
+    if (ids.empty()) return out;
+
+    std::string sql{ "SELECT " };
+    sql += std::string(id_col) + ", " + std::string(value_col);
+    sql += " FROM " + std::string(table) + " WHERE ";
+    sql += std::string(id_col) + " IN (";
+    for (size_t i = 0; i < ids.size(); ++i)
+    {
+        if (i) sql += ",";
+        sql += "?";
+    }
+    sql += ");";
+
+    sqlite3_stmt* stmt{ nullptr };
+    if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK)
+        return out;
+
+    for (size_t i = 0; i < ids.size(); ++i)
+        sqlite3_bind_int(stmt, static_cast<int>(i + 1), ids[i]);
+
+    while (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        int id = sqlite3_column_int(stmt, 0);
+        const char* text = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+        if (text) out[id].push_back(text);
+    }
+
+    if (stmt) sqlite3_finalize(stmt);
+    return out;
+}
+
 std::vector<std::string> Database::fetchStrings(std::string_view sql, int id) const
 {
 	std::vector<std::string> result;
-    sqlite3_stmt* stmt;
+    sqlite3_stmt* stmt{ nullptr};
 
     if (sqlite3_prepare_v2(m_db, sql.data(), -1, &stmt, nullptr) == SQLITE_OK)
     {
@@ -360,7 +429,7 @@ std::vector<std::string> Database::fetchStrings(std::string_view sql, int id) co
             if (text) result.push_back(text);
         }
     }
-    sqlite3_finalize(stmt);
+    if (stmt) sqlite3_finalize(stmt);
 
     return result;
 }
@@ -368,7 +437,7 @@ std::vector<std::string> Database::fetchStrings(std::string_view sql, int id) co
 std::vector<Form> Database::fetchForms(int word_id) const
 {
 	std::vector<Form> forms;
-	sqlite3_stmt* stmt;
+	sqlite3_stmt* stmt{ nullptr };
 
     const char* sql{ "SELECT form, tag FROM forms WHERE word_id = ?;" };
     if (sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr) == SQLITE_OK)
@@ -384,7 +453,7 @@ std::vector<Form> Database::fetchForms(int word_id) const
             forms.push_back(f);
         }
     }
-    sqlite3_finalize(stmt);
+    if (stmt) sqlite3_finalize(stmt);
 
     return forms;
 }

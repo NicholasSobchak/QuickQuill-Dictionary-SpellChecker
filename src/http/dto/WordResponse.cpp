@@ -1,14 +1,16 @@
-#include "http/dto/WordResponse.h"
+#include "http/dto/WordResponse.h" // dto = Data Transfer Objects
 #include "nlohmann/json.hpp"
 
 namespace http
 {
-	std::string toWordJson(const WordInfo& info)
+	// converts WordInfo into JSON response format
+	std::string toWordJson(const WordInfo& info, const std::string& query)
 	{
-		// TODO: Convert WordInfo into stable JSON response format.
 		nlohmann::json j;
 		j["id"] = info.id;
 		j["lemma"] = info.lemma;
+		if (!info.displayLemma.empty()) j["display_lemma"] = info.displayLemma;
+		if (!query.empty()) j["query"] = query;
 
 		j["forms"] = nlohmann::json::array();
 		for (const auto& f : info.forms)

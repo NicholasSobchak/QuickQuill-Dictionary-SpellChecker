@@ -6,14 +6,13 @@
 class SpellChecker
 {
 public:
-	friend class Tester;
 	explicit SpellChecker(const Dictionary &dict);
 	~SpellChecker() = default;
 	
 	void printSuggest(const std::vector<std::string> &out) const; // placeholder to print suggestions
 	
 	std::vector<std::string> suggest(std::string_view prefix) const;
-	std::vector<std::string> correct(std::string_view word) const;
+	std::string correct(std::string_view word) const;
 	
 	std::string autofill(std::string_view word) const;
 private:
