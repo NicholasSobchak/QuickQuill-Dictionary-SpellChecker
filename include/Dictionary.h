@@ -10,10 +10,9 @@
 class Dictionary
 {
 public:
-    Dictionary();
+    explicit Dictionary(std::string dbPath = std::string(dct::g_dictDb));
     ~Dictionary() = default;
 
-	bool loadInfo(const std::string &filename); // populate database (file only)	
 	WordInfo getWordInfo(std::string_view word) const;
 	bool contains(std::string_view word) const;
 
@@ -22,17 +21,13 @@ public:
 
 private:	
 	// Cache storage
-	mutable std::unordered_map<int, WordInfo> m_cache; 
+	mutable std::unordered_map<int, WordInfo> m_cache; // mutable allows getWordInfo to be const
 	
 	Trie m_trie;
 	Database m_db;
 
-    /*********************************
-    // Helper declarations go here
-    **********************************/	
 	std::string cleanWord(std::string_view word) const;
 	void loadTrie(); // populate Trie using Database 
-    bool loadjson(const std::string &filename); // implementation purposes (use python import script) 
 
 };
 #endif

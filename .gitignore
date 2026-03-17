@@ -4,9 +4,12 @@ dictionary-db.zip
 dictionary-db.shm
 dictionary.db-wal
 dict
+dict_crow
+run_unit_tests
 *.o
 *.obj
 *.exe
 /build/
 /bin/
 .venv/
+dictionary.zip

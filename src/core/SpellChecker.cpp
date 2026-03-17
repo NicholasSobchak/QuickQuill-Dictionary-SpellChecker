@@ -13,7 +13,7 @@ std::vector<std::string> SpellChecker::suggest(std::string_view prefix) const
 	std::string clean = dct::sanitizeWord(prefix);
     if (clean.empty()) return results;
 
-	// "bridge function" (spellchecker can't see Trie)
+	// grabs words with the same prefix
     m_dict.suggestFromPrefix(clean, results, dct::g_maxSuggest);
 
     return results;
@@ -21,10 +21,19 @@ std::vector<std::string> SpellChecker::suggest(std::string_view prefix) const
 
 std::string SpellChecker::correct(std::string_view word) const
 {
+	std::string clean{ dct::sanitizeWord(word) };
+	if (clean.empty()) return {};
+	if (m_dict.contains(clean)) return {};
 	std::string result{ "" };
-	if (m_dict.contains(word)) return result;
 
 
+	// use a simple SQL LIKE prefix search to surface a close lemma
+	return result;
+}
+
+std::string SpellChecker::autofill(std::string_view word) const
+{
+	std::string result{ word }; 
 	return result;
 }
 

@@ -288,7 +288,6 @@ bool Database::contains(std::string_view word) const
     return exists;
 }
 
-
 void Database::clearDB()
 {
 	if (isEmpty()) return;
