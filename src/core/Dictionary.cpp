@@ -4,7 +4,7 @@
 Dictionary::Dictionary() : m_db{ dct::g_dictDb }
 {
     m_db.createTables();
-    loadTrie(m_db);
+    loadTrie();
 }
 
 bool Dictionary::loadInfo(const std::string &filename)
@@ -79,59 +79,9 @@ void Dictionary::suggestFromPrefix(std::string_view prefix, std::vector<std::str
 /*********************************
 // Dictionary Helper Functions
 **********************************/
-// temp
-void Dictionary::printInfo(const WordInfo &word) const
-{
-	std::cout << "Word: " << word.lemma << std::endl;
-    if (!word.etymology.empty())
-    {
-        std::cout << "Etymology:" << std::endl;
-        for (const auto &line : word.etymology)
-            std::cout << "  " << line << std::endl;
-    }
-
-    if (!word.forms.empty())
-    {
-        std::cout << "Forms:" << std::endl;
-        for (const auto &form : word.forms)
-            std::cout << "  " << form.form << " (" << form.tag << ")" << std::endl;
-    }
-
-    if (!word.senses.empty())
-    {
-        std::cout << "Senses:" << std::endl;
-        for (const auto &sense : word.senses)
-        {
-            std::cout << "  - POS: " << sense.pos << std::endl;
-            std::cout << "    Definition: " << sense.definition << std::endl;
-
-            if (!sense.examples.empty())
-            {
-                std::cout << "    Examples:" << std::endl;
-                for (const auto &ex : sense.examples)
-                    std::cout << "      - " << ex << std::endl;
-            }
-
-            if (!sense.synonyms.empty())
-            {
-                std::cout << "    Synonyms:" << std::endl;
-                for (const auto &syn : sense.synonyms)
-                    std::cout << "      - " << syn << std::endl;
-            }
-
-            if (!sense.antonyms.empty())
-            {
-                std::cout << "    Antonyms:" << std::endl;
-                for (const auto &ant : sense.antonyms)
-                    std::cout << "      - " << ant << std::endl;
-            }
-        }
-    }	
-}
-
 std::string Dictionary::cleanWord(std::string_view word) const { return dct::sanitizeWord(word); }
 
-void Dictionary::loadTrie(Database &db) 
+void Dictionary::loadTrie() 
 {
     sqlite3* sqlDB{ m_db.getDB() };
     sqlite3_stmt* stmt{ nullptr };
@@ -174,6 +124,7 @@ void Dictionary::loadTrie(Database &db)
     sqlite3_finalize(stmt);
 }
 
+// load the database using the python import script (this is just here for reference and learning purposes)
 bool Dictionary::loadjson(const std::string &filename)
 {	
 	std::ifstream file(filename);
@@ -287,6 +238,7 @@ bool Dictionary::loadjson(const std::string &filename)
                     word.senses.push_back(sense); // vector of senses for potentinal quick lookups
 
                     int sense_id{ m_db.insertSense(word.id, sense.pos, sense.definition) };
+                    word.senses.back().id = sense_id;
 
                     if (sense_id == dct::g_defaultId)
                     {

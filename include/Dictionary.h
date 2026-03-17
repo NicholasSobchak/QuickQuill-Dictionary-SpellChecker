@@ -20,8 +20,6 @@ public:
 	// bridge function from Trie to Spellchecker (placeholder)	
 	void suggestFromPrefix(std::string_view prefix, std::vector<std::string> &results, std::size_t limit) const;
 
-	void printInfo(const WordInfo &word) const;
-
 private:	
 	// Cache storage
 	mutable std::unordered_map<int, WordInfo> m_cache; 
@@ -33,8 +31,8 @@ private:
     // Helper declarations go here
     **********************************/	
 	std::string cleanWord(std::string_view word) const;
-	void loadTrie(Database &db); // populate Trie using Database 
-    bool loadjson(const std::string &filename); 
+	void loadTrie(); // populate Trie using Database 
+    bool loadjson(const std::string &filename); // implementation purposes (use python import script) 
 
 };
 #endif

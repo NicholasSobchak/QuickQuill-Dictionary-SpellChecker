@@ -22,6 +22,9 @@ std::vector<std::string> SpellChecker::suggest(std::string_view prefix) const
 std::string SpellChecker::correct(std::string_view word) const
 {
 	std::string result{ "" };
+	if (m_dict.contains(word)) return result;
+
+
 	return result;
 }
 

@@ -15,9 +15,72 @@ using json = nlohmann::json;
 
 namespace
 {
-	void printWordInfo() //const WordInfo& info)
+	void printWordInfo(const WordInfo& info)
 	{
-		
+		std::cout << "\nWord ID: " << info.id << "\n";
+		std::cout << "Lemma: " << (info.lemma.empty() ? "UNKNOWN" : info.lemma) << "\n";
+		std::cout << "Display Lemma: " << (info.displayLemma.empty() ? "UNKNOWN" : info.displayLemma) << "\n";
+
+		if (!info.senses.empty())
+		{
+			for (std::size_t i = 0; i < info.senses.size(); ++i)
+			{
+				const auto& s = info.senses[i];
+				std::cout << "  [" << i + 1 << "] "
+						  << (s.pos.empty() ? "" : s.pos + " ")
+						  << "(id " << s.id << ")\n";
+
+				std::cout << "    Definition: "
+						  << (s.definition.empty() ? "UNKNOWN" : s.definition) << "\n";
+
+				if (!s.examples.empty())
+				{
+					std::cout << "    Examples:\n";
+					for (const auto& ex : s.examples)
+						std::cout << "      - " << ex << "\n";
+				}
+
+				if (!s.synonyms.empty())
+				{
+					std::cout << "    Synonyms: ";
+					for (std::size_t j = 0; j < s.synonyms.size(); ++j)
+					{
+						if (j) std::cout << ", ";
+						std::cout << s.synonyms[j];
+					}
+					std::cout << "\n";
+				}
+
+				if (!s.antonyms.empty())
+				{
+					std::cout << "    Antonyms: ";
+					for (std::size_t j = 0; j < s.antonyms.size(); ++j)
+					{
+						if (j) std::cout << ", ";
+						std::cout << s.antonyms[j];
+					}
+					std::cout << "\n";
+				}
+
+				std::cout << "\n";
+			}
+		}
+		else
+		{
+			std::cout << "\nNo senses available.\n";
+		}
+
+		if (!info.forms.empty())
+		{
+			std::cout << "Forms:\n";
+			for (std::size_t i = 0; i < info.forms.size(); ++i)
+			{
+				const auto& f = info.forms[i];
+				std::cout << "  [" << i + 1 << "] " << f.form;
+				if (!f.tag.empty()) std::cout << " (" << f.tag << ")";
+				std::cout << "\n";
+			}
+		}	
 	}
 }
 
@@ -61,7 +124,7 @@ int main()
 			continue;
 		}
 
-		if (command == "correct")
+		if (command == "correct") 
 		{
 			const std::string correction = checker.correct(arg);
 			if (correction.empty())

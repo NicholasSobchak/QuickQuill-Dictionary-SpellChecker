@@ -355,6 +355,7 @@ WordInfo Database::getInfo(int word_id) const
         {
             Sense sense;
             int sense_id = sqlite3_column_int(senseStmt, 0);
+            sense.id = sense_id; // preserve DB id for callers
             const char* pos = reinterpret_cast<const char*>(sqlite3_column_text(senseStmt, 1));
             const char* def = reinterpret_cast<const char*>(sqlite3_column_text(senseStmt, 2));
             sense.pos = pos ? pos : "";
