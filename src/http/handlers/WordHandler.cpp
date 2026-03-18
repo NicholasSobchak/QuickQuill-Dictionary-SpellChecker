@@ -2,10 +2,6 @@
 #include "Dictionary.h"
 #include "http/dto/WordResponse.h"
 #include "nlohmann/json.hpp"
-#include "Utils.h"
-#include <cctype>
-#include <string>
-#include <cstdlib>
 
 namespace http
 {
@@ -13,7 +9,7 @@ namespace http
 	{
 		Dictionary& dict()
 		{
-			static Dictionary instance; 
+			static Dictionary instance(std::string(dct::g_dictDb)); 
 			return instance;
 		}
 

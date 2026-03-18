@@ -67,12 +67,12 @@ namespace http
 			return fileResponseFromFile("web/assets/quill.png", "image/png");
 		});
 
-		CROW_ROUTE(app, "/assets/nevermore-logo-no-bg.png") ([] {
-			return fileResponseFromFile("web/assets/nevermore-logo-no-bg.png", "image/png");
+		CROW_ROUTE(app, "/assets/school-logo-no-bg.png") ([] {
+			return fileResponseFromFile("web/assets/school-logo-no-bg.png", "image/png");
 		});
 
-		CROW_ROUTE(app, "/assets/nevermore_backdrop.jpg") ([] {
-			return fileResponseFromFile("web/assets/nevermore_backdrop.jpg", "image/jpeg");
+		CROW_ROUTE(app, "/assets/school_backdrop.jpg") ([] {
+			return fileResponseFromFile("web/assets/school_backdrop.jpg", "image/jpeg");
 		});
 
 
