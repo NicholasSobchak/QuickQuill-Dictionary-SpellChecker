@@ -45,7 +45,6 @@ target_include_directories(dict_crow PRIVATE
 target_link_libraries(dict_crow PRIVATE
     nlohmann_json::nlohmann_json
     Crow::Crow
-    asio::asio
     Threads::Threads
     unofficial::sqlite3::sqlite3
 )

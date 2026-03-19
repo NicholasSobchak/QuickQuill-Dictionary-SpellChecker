@@ -49,17 +49,41 @@ Then place `dictionary.db` in the project root.
 
 ### Build
 
+This project uses **CMake** + **vcpkg** (manifest mode via `vcpkg.json`) to fetch/build dependencies.
+
+#### 1) Install vcpkg (one-time)
+
 ```bash
-make dict
-make dict_crow
+git clone https://github.com/microsoft/vcpkg.git ~/vcpkg
+~/vcpkg/bootstrap-vcpkg.sh
+```
+
+#### 2) Configure
+
+From the project root:
+
+```bash
+cmake -S . -B build \
+  -DCMAKE_TOOLCHAIN_FILE=~/vcpkg/scripts/buildsystems/vcpkg.cmake
+```
+
+> If you see errors like `Could not find CrowConfig.cmake` or `nlohmann_jsonConfig.cmake`,
+> it usually means you forgot `-DCMAKE_TOOLCHAIN_FILE=...`.
+
+#### 3) Build
+
+```bash
+cmake --build build -j
 ```
 
 ### Run
 
+After building, the executables are located under `build/src/`.
+
 #### 1) Console test mode
 
 ```bash
-./dict
+./build/src/dict
 ```
 
 Commands:
@@ -71,7 +95,7 @@ Commands:
 #### 2) Web server
 
 ```bash
-./dict_crow
+./build/src/dict_crow
 ```
 
 Open:
