@@ -3,7 +3,7 @@
 #include "WordInfo.h"
 #include "Trie.h"
 #include "Database.h"
-#include "../nlohmann/json.hpp"
+#include <nlohmann/json.hpp>
 #include <unordered_map>
 #include <fstream>
 

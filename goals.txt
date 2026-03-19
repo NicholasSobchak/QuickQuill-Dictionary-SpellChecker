@@ -46,6 +46,7 @@ TODO
 		- add service layer between route and DB
 		- continue Unit tests
 		- add batching to improve performance
+		- add catch2 to cmake
 	}
 }
 
@@ -79,3 +80,51 @@ DONE
 		- keeep punctuation in the word that is returned (displayLemma)
 	{
 }
+
+
+ While the project is well-structured, here are some common areas where production repositories typically have more mature solutions:
+
+   1. Build System and Dependency Management:
+       * Current: You're using a Makefile and git submodules (Crow). While functional, this can be brittle. Makefiles are not always cross-platform friendly, and managing dependencies via
+         submodules can become complex.
+       * Production: A more robust build system generator like CMake is the standard for C++ projects. It provides better IDE integration (e.g., VS Code, CLion), cross-platform
+         compatibility, and more advanced control over the build process. For dependencies, a package manager like Conan or vcpkg is typically used to manage third-party libraries, handle
+         versioning, and simplify the process of setting up a development environment.
+
+   2. Configuration Management:
+       * Current: It appears that configurations like the server port or database path might be hardcoded. For instance, the README implies the database dictionary.db must be in the
+         project root.
+       * Production: Configuration should be externalized. Production applications typically load configuration from environment variables or dedicated config files (e.g., .env,
+         config.yaml, config.json). This allows you to run the same application binary in different environments (development, staging, production) with different settings without changing
+         the code.
+
+   3. Logging and Monitoring:
+       * Current: The application seems to lack a formal logging strategy. It might print to stdout/stderr, but that's not sufficient for a production service.
+       * Production: Robust, structured logging is essential. Using a logging library (like spdlog) allows you to:
+           * Log at different levels (e.g., DEBUG, INFO, WARN, ERROR).
+           * Write logs to files, which can be collected and analyzed.
+           * Include contextual information (timestamps, request IDs) for easier debugging.
+           * Additionally, production services expose metrics (e.g., request latency, error rates) for monitoring and alerting, often using a library like Prometheus.
+
+   4. Testing and CI/CD:
+       * Current: You have a tests directory, which is a great start. However, there are no visible tests for the HTTP layer or database interactions.
+       * Production: A comprehensive test suite is non-negotiable. This would include:
+           * Unit Tests: For individual components in isolation.
+           * Integration Tests: To verify that modules work together correctly (e.g., does the WordHandler correctly fetch data from the Database?).
+           * End-to-End (E2E) Tests: To simulate real user interaction by sending HTTP requests to a running instance of the server and asserting the responses.
+       * Furthermore, these tests would be automated in a CI/CD pipeline (e.g., using GitHub Actions) that automatically builds and tests the code on every commit.
+
+   5. Error Handling and Resiliency:
+       * Current: I would need to review the code more deeply, but a key question is how the application handles unexpected situations. What happens if the database is unavailable? Or if a
+         malformed request is received?
+       * Production: The service must be resilient. It should handle errors gracefully (e.g., return a 500 Internal Server Error instead of crashing), implement timeouts for external
+         calls, and have retry mechanisms where appropriate. Input validation is also critical to prevent crashes or security issues.
+
+  Summary
+
+  You've built a solid foundation that looks very much like a high-quality university project or a strong proof-of-concept. To elevate it to a "production-ready" state, the focus would
+  shift toward robustness, automation, and maintainability at scale.
+
+  My recommendation would be to start with these two improvements, as they will provide the most significant benefits:
+   1. Migrate to CMake: It will make your project more accessible to other developers and professionalize your build process.
+   2. Externalize Configuration: Using environment variables for the server port and database path is a simple but massive step toward production readiness.

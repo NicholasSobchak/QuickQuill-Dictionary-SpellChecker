@@ -1,7 +1,16 @@
 #include "Dictionary.h"
 #include "Utils.h"
+#include <cstdlib> // For getenv
 
-Dictionary::Dictionary(std::string dbPath) : m_db{ std::move(dbPath) }
+// Helper function to get DB path from environment variable or use default
+std::string getDatabasePath(const std::string& defaultPath) {
+    if (const char* envPath = std::getenv("QUICKQUILL_DB_PATH")) {
+        return std::string(envPath);
+    }
+    return defaultPath;
+}
+
+Dictionary::Dictionary(std::string dbPath) : m_db{ getDatabasePath(std::move(dbPath)) }
 {
     m_db.createTables();
     loadTrie();

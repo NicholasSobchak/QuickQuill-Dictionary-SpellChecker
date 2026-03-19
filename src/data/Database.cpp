@@ -1,5 +1,6 @@
 #include "Database.h"
 #include "Utils.h"
+#include <iostream> // for std::cerr
 
 Database::Database(std::string_view filename) 
 { 
