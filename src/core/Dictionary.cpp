@@ -64,43 +64,11 @@ std::string Dictionary::cleanWord(std::string_view word) const { return dct::san
 
 void Dictionary::loadTrie() 
 {
-    sqlite3* sqlDB{ m_db.getDB() };
-    sqlite3_stmt* stmt{ nullptr };
+	auto trieLoader = [this](int id, std::string_view text) 
+	{
+		m_trie.insert(cleanWord(text), id);
+	};
 
-    // insert all lemmas
-    const char* q1 = "SELECT id, lemma FROM words;";
-    if (sqlite3_prepare_v2(sqlDB, q1, -1, &stmt, nullptr) != SQLITE_OK)
-        return;
-
-    while (sqlite3_step(stmt) == SQLITE_ROW)
-    {
-        int id{ sqlite3_column_int(stmt, 0) };
-
-        const unsigned char* text{ sqlite3_column_text(stmt, 1) };
-        if (!text) continue;
-
-        std::string lemma{ reinterpret_cast<const char*>(text) };
-        m_trie.insert(cleanWord(lemma), id);
-    }
-
-    sqlite3_finalize(stmt); // finalize before next preparation
-
-
-    // insert all forms
-    const char* q2 = "SELECT word_id, form FROM forms;";
-    if (sqlite3_prepare_v2(sqlDB, q2, -1, &stmt, nullptr) != SQLITE_OK)
-        return;
-
-    while (sqlite3_step(stmt) == SQLITE_ROW)
-    {
-        int id{ sqlite3_column_int(stmt, 0) };
-
-        const unsigned char* text{ sqlite3_column_text(stmt, 1) };
-        if (!text) continue;
-
-        std::string form{ reinterpret_cast<const char*>(text) };
-        m_trie.insert(cleanWord(form), id);
-    }
-
-    sqlite3_finalize(stmt);
+	// pass to database to retrieve words
+	m_db.streamAllWordsAndForms(trieLoader);
 }

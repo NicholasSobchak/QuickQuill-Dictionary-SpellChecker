@@ -2,9 +2,11 @@
 #define DATABASE_H
 #include "WordInfo.h"
 #include <sqlite3.h>
+#include <memory>
 #include <unordered_map>
 #include <vector>
 #include <string_view>
+#include <functional>
 #include <string>
 #include <iostream>
 
@@ -12,10 +14,10 @@
 class Database
 {
 public:
-	Database(std::string_view filename);
-	~Database();
+	using WordRecordProcessor = std::function<void(int id, std::string_view text)>;
 
-	sqlite3 *getDB();
+	Database(std::string_view filename);
+	~Database() = default;
 
 	bool insertEtymology(int word_id, const std::vector<std::string> &etymology);
 	bool insertForm(int word_id, const std::string &form, const std::string &tag);
@@ -30,11 +32,23 @@ public:
 
 	void createTables();
 	void clearDB();
+	void streamAllWordsAndForms(const WordRecordProcessor& processor) const;
 
 	WordInfo getInfo(int word_id) const;
 
 private:
-	sqlite3 *m_db;
+	struct Sqlite3Deleter
+	{
+		void operator()(sqlite3* db) const
+		{
+			if (db)
+			{
+				sqlite3_close(db);
+			}
+		}
+	};
+
+	std::unique_ptr<sqlite3, Sqlite3Deleter> m_db;
 	
 	/*********************************
     // Helper declarations go here
