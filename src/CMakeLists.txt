@@ -1,5 +1,6 @@
 # Add all core and data source files that are common to both applications
 set(CORE_SOURCES
+    app/Config.cpp
     core/Dictionary.cpp
     core/SpellChecker.cpp
     core/Trie.cpp

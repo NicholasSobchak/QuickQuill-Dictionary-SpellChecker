@@ -5,10 +5,9 @@
 
 namespace dct
 {
-    inline constexpr std::string_view g_dictDb{ "dictionary.db" }; // inline to avoid linker errors
     inline constexpr int g_alpha{ 26 };
-    inline constexpr int g_maxSuggest{ 10 };
     inline constexpr int g_defaultId{ -1 };
+    inline constexpr int g_max_suggestions{ 10 };
 
     inline std::string sanitizeWord(std::string_view word)
     {

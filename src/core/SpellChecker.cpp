@@ -14,7 +14,7 @@ std::vector<std::string> SpellChecker::suggest(std::string_view prefix) const
 	if (clean.empty()) return results;
 
 	// grabs words with the same prefix
-    m_dict.suggestFromPrefix(clean, results, dct::g_maxSuggest);
+    m_dict.suggestFromPrefix(clean, results, dct::g_max_suggestions);
 
     return results;
 }

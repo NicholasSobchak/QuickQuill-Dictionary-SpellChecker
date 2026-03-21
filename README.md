@@ -47,6 +47,23 @@ Then place `dictionary.db` in the project root.
 - `web/index.html`: frontend
 - `scripts/import_kaikki.py`: database import script
 
+### Configuration
+
+QuickQuill can be configured via a `config.json` file in the project root.
+If this file is not present, the application will use default values.
+
+Example `config.json`:
+```json
+{
+  "database_path": "dictionary.db",
+  "server_port": 8080,
+}
+```
+
+- `database_path`: The path to the SQLite database file.
+- `server_port`: The port for the web server to listen on.
+- `max_suggestions`: The maximum number of suggestions to return for a prefix.
+
 ### Build
 
 This project uses **CMake** + **vcpkg** (manifest mode via `vcpkg.json`) to fetch/build dependencies.
@@ -140,9 +157,9 @@ Response shape:
 #
 ## Academia Use & Data Attribution
 
-This project is developed for academic and educational purposes. QuickQuill is an independent project and has no affiliation with any organizations. All marks remain the property of their respective owners. 
+*This project is developed for academic and educational purposes. QuickQuill is an independent project and has no affiliation with any organizations. All marks remain the property of their respective owners.
 
-The dictionary data used to build this system is derived from Wiktionary content processed through Wiktextract.
+The dictionary data used to build this system is derived from Wiktionary content processed through Wiktextract.*
 
 If this project or its data is referenced in academic work, please cite:
 ```

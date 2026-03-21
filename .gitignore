@@ -10,3 +10,4 @@ dictionary.db-wal
 /build/
 /bin/
 .venv/
+config.json

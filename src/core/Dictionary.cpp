@@ -1,20 +1,12 @@
 #include "Dictionary.h"
 #include "Utils.h"
-#include <cstdlib> // For getenv
+#include "Config.h"
 #include <vector>
 #include <string>
 #include <algorithm>
 #include <unordered_set>
 
-// Helper function to get DB path from environment variable or use default
-std::string getDatabasePath(const std::string& defaultPath) {
-    if (const char* envPath = std::getenv("QUICKQUILL_DB_PATH")) {
-        return std::string(envPath);
-    }
-    return defaultPath;
-}
-
-Dictionary::Dictionary(const std::string& dbPath) : m_db{ getDatabasePath(dbPath) }
+Dictionary::Dictionary() : m_db{ Config::getInstance().getDatabasePath() }
 {
     m_db.createTables();
     loadTrie();
@@ -66,7 +58,7 @@ std::vector<std::string> Dictionary::suggestSpelling(std::string_view word) cons
 {
     std::string clean_word = cleanWord(word);
     if (m_trie.contains(clean_word)) {
-        return {}; // Word is correct, no suggestions needed
+        return {}; // word is correct, no suggestions needed
     }
 
     std::unordered_set<std::string> suggestions_set;
@@ -113,7 +105,7 @@ std::vector<std::string> Dictionary::suggestSpelling(std::string_view word) cons
     }
 
     std::vector<std::string> suggestions(suggestions_set.begin(), suggestions_set.end());
-    std::sort(suggestions.begin(), suggestions.end()); // For consistent order
+    std::sort(suggestions.begin(), suggestions.end()); // sorts using lexicographical comparison 
     return suggestions;
 }
 
