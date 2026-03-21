@@ -1,4 +1,5 @@
 #include "http/handlers/WordHandler.h"
+#include "SpellChecker.h"
 #include "Dictionary.h"
 #include "http/dto/WordResponse.h"
 #include "nlohmann/json.hpp"
@@ -10,6 +11,12 @@ namespace http
 		Dictionary& dict()
 		{
 			static Dictionary instance;
+			return instance;
+		}
+
+		SpellChecker& checker()
+		{
+			static SpellChecker instance{ dict() };
 			return instance;
 		}
 
@@ -43,6 +50,12 @@ namespace http
 			return out;
 		}
 	}
+	
+	void warmupDictionary()
+	{
+		// forces static Dictionary to construct and touches DB
+		dict().getWordInfo("warmup"); // or any common word
+	}
 
 	// returns (JSON body, status)
 	SearchResult search(const std::string& word)
@@ -75,8 +88,11 @@ namespace http
 		WordInfo info = dict().getWordInfo(sanitized);
 		if (info.lemma.empty())
 		{
+			const std::string correctWord = checker().correct(sanitized);
 			nlohmann::json body = {
-				{"error", "Word not found"}
+				{"query", sanitized},
+				{"found", false},
+				{"suggestion", correctWord}
 			};
 			return { body.dump(), 404 };
 		}
@@ -84,9 +100,5 @@ namespace http
 		return { toWordJson(info, decoded), 200 };
 	}
 
-	void warmupDictionary()
-	{
-		// forces static Dictionary to construct and touches DB
-		dict().getWordInfo("warmup"); // or any common word
-	}
+	
 }

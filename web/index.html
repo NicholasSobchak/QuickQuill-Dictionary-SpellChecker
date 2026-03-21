@@ -232,6 +232,26 @@
       font-size: 13px;
     }
 
+    .status .suggestion-link {
+      color: inherit;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .status .suggestion-link:hover em {
+      text-decoration: underline;
+    }
+    .status em {
+      font-style: italic;
+      font-weight: normal;
+    }
+    .status em.corrected-word {
+      font-weight: bold;
+      text-decoration: underline;
+      color: #ff7777; /* Slightly lighter shade of red */
+    }
+
+
+
     .status {
       margin-top: 10px;
       color: var(--muted);
@@ -307,7 +327,7 @@
     }
 
     function setStatus(text, isError = false) {
-      statusText.textContent = text || "";
+      statusText.innerHTML = text || "";
       statusText.style.color = isError ? "#ff6666" : "var(--muted)";
     }
 
@@ -373,12 +393,24 @@
     function renderWord(data, requestedWord) {
       clearResult();
 
+      // New logic for handling word not found with suggestion
+      if (data.found === false) {
+        if (data.suggestion && data.suggestion.toLowerCase() !== data.query.toLowerCase()) {
+          const suggestionHTML = `Did you mean <a href="#" class="suggestion-link" onclick="event.preventDefault(); document.getElementById('word').value='${data.suggestion}'; lookup();"><em class="corrected-word">${data.suggestion}</em></a>?`;
+          setStatus(suggestionHTML, true);
+        } else {
+          setStatus(`Word <em>'${data.query}'</em> not found.`, true);
+        }
+        return;
+      }
+
+      // Existing error handling for actual API errors (e.g., 400 Bad Request)
       if (data.error) {
-        const requested = requestedWord || "";
         if (data.error === "Enter a word") {
           setStatus("400: Enter a word", true);
         } else {
-          setStatus("404: word not found", true);
+          // Fallback for other errors not explicitly handled
+          setStatus(`Error: ${data.error}`, true);
         }
         return;
       }

@@ -16,8 +16,9 @@ public:
 	WordInfo getWordInfo(std::string_view word) const;
 	bool contains(std::string_view word) const;
 
-	// bridge function from Trie to Spellchecker (placeholder)	
+	// spellchecking functions
 	void suggestFromPrefix(std::string_view prefix, std::vector<std::string> &results, std::size_t limit) const;
+	std::vector<std::string> suggestSpelling(std::string_view word) const;
 
 private:	
 	// Cache storage

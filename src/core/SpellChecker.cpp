@@ -7,11 +7,11 @@ SpellChecker::SpellChecker(const Dictionary &dict) : m_dict{ dict } {}
 
 std::vector<std::string> SpellChecker::suggest(std::string_view prefix) const
 {
-    std::vector<std::string> results;
-    if (prefix.empty()) return results;
+	std::vector<std::string> results;
+	if (prefix.empty()) return results;
 
 	std::string clean = dct::sanitizeWord(prefix);
-    if (clean.empty()) return results;
+	if (clean.empty()) return results;
 
 	// grabs words with the same prefix
     m_dict.suggestFromPrefix(clean, results, dct::g_maxSuggest);
@@ -23,18 +23,31 @@ std::string SpellChecker::correct(std::string_view word) const
 {
 	std::string clean{ dct::sanitizeWord(word) };
 	if (clean.empty()) return {};
-	if (m_dict.contains(clean)) return {};
-	std::string result{ "" };
 
+	if (m_dict.contains(clean)) {
+		return {};
+	}
 
-	// use a simple SQL LIKE prefix search to surface a close lemma
-	return result;
+	std::vector<std::string> suggestions = m_dict.suggestSpelling(clean);
+
+	if (!suggestions.empty()) {
+		return suggestions[0]; // Return the first suggestion
+	}
+
+	return clean; // Return the original word if no suggestions are found
 }
 
 std::string SpellChecker::autofill(std::string_view word) const
 {
-	std::string result{ word }; 
-	return result;
+	if (word.empty()) return {};
+
+	std::vector<std::string> suggestions = suggest(word);
+
+	if (!suggestions.empty()) {
+		return suggestions[0]; // Return the first suggestion as the autocompletion
+	}
+
+	return std::string{ word }; // Return the original word if no suggestions found
 }
 
 void SpellChecker::printSuggest(const std::vector<std::string> &out) const
