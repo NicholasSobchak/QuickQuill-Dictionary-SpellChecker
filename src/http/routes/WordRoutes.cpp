@@ -1,0 +1,96 @@
+#include "http/routes/WordRoutes.h"
+#include "http/handlers/WordHandler.h"
+
+#include <fstream>
+#include <sstream>
+#include <string>
+
+namespace http
+{
+	namespace // actual API endpoints
+	{
+		struct ContentType
+		{
+			std::string value;
+			explicit ContentType(std::string v) : value(std::move(v)) {}
+		};
+
+		crow::response jsonResponse(const std::string& body, int status = 200)
+		{
+			crow::response response(status, body);
+			response.set_header("Content-Type", "application/json");
+			return response;
+		}
+
+		crow::response htmlResponseFromFile(const std::string& path)
+		{
+			std::ifstream file(path);
+			if (!file)
+			{
+				return crow::response(500, "Failed to load frontend HTML.");
+			}
+
+			std::ostringstream ss;
+			ss << file.rdbuf();
+			crow::response response(200, ss.str());
+			response.set_header("Content-Type", "text/html; charset=utf-8");
+			return response;
+		}
+
+		crow::response fileResponseFromFile(const std::string& path, const ContentType& contentType)
+		{
+			std::ifstream file(path, std::ios::binary);
+			if (!file)
+			{
+				return crow::response(404, "File not found.");
+			}
+
+			std::ostringstream ss;
+			ss << file.rdbuf();
+			crow::response response(200, ss.str());
+			response.set_header("Content-Type", contentType.value);
+			return response;
+		}
+	}
+
+	// Requests
+	void registerWordRoutes(crow::SimpleApp& app)
+	{
+		// WEB setup
+		CROW_ROUTE(app, "/") ([] {
+			return htmlResponseFromFile("web/index.html");
+		});
+
+		CROW_ROUTE(app, "/assets/Quotex.otf") ([] {
+			return fileResponseFromFile("web/assets/Quotex.otf", ContentType("font/otf"));
+		});
+
+		CROW_ROUTE(app, "/assets/fonts.css") ([] {
+			return fileResponseFromFile("web/assets/fonts.css", ContentType("text/css; charset=utf-8"));
+		});
+
+		CROW_ROUTE(app, "/assets/quill.png") ([] {
+			return fileResponseFromFile("web/assets/quill.png", ContentType("image/png"));
+		});
+
+		CROW_ROUTE(app, "/assets/school-logo-no-bg.png") ([] {
+			return fileResponseFromFile("web/assets/school-logo-no-bg.png", ContentType("image/png"));
+		});
+
+		CROW_ROUTE(app, "/assets/school_backdrop.jpg") ([] {
+			return fileResponseFromFile("web/assets/school_backdrop.jpg", ContentType("image/jpeg"));
+		});
+
+
+		// GET requests
+		CROW_ROUTE(app, "/api/health") ([] {
+			return jsonResponse("{\"ok\":true}");
+		});
+
+		CROW_ROUTE(app, "/api/word/<string>")
+		([](const std::string& word) {
+			auto result = search(word);
+			return jsonResponse(result.body, result.status);
+		});
+	}
+}
