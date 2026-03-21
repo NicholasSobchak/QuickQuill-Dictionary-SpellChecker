@@ -116,7 +116,7 @@ int main()
 			WordInfo info = dict.getWordInfo(arg);
 			if (info.lemma.empty())
 			{
-				std::cout << "word not found\n";
+				std::cout << "Word not found\n";
 				continue;
 			}
 

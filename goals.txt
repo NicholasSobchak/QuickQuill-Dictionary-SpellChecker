@@ -33,19 +33,19 @@ TODO
 		- implement JS to work with html
 		- isolate relevant word information to be returned first
 		- add ghost autofill
-		- add "did you mean?" (correct)
 		- add "similar words" field (comes from suggest)
 	}
 
 	backend
 	{
-		- implement "did you mean ...?" (spellchecker::correct)
+		- continue Unit tests
+
 		- fix word suggestions (relavance)
 		- implement spellchecking logic
 		- implement autofill logic
 		- add service layer between route and DB
-		- continue Unit tests
 		- add batching to improve performance
+		- add catch2 to cmake
 	}
 }
 
@@ -65,6 +65,7 @@ DONE
 		- incorporate status on errors
 		- fix the reutrn word in big letters to acommodate multiple word entries or punctuation e.g. "you're" comes up as "youre"
 		- add "see more" option to fields with large amounts of information
+		- implement "did you mean ...?" (spellchecker::correct)
 	}
 
 	backend
@@ -77,5 +78,201 @@ DONE
 		- made outline for spellchecking class
 		- Dictionary talks to all classes and handles caching
 		- keeep punctuation in the word that is returned (displayLemma)
+		- add "did you mean?" (correct)
 	{
 }
+
+SUGGESTIONS:
+
+   1. Build System and Dependency Management:
+       * Current: You're using a Makefile and git submodules (Crow). While functional, this can be brittle. Makefiles are not always cross-platform friendly, and managing dependencies via
+         submodules can become complex.
+       * Production: A more robust build system generator like CMake is the standard for C++ projects. It provides better IDE integration (e.g., VS Code, CLion), cross-platform
+         compatibility, and more advanced control over the build process. For dependencies, a package manager like Conan or vcpkg is typically used to manage third-party libraries, handle
+         versioning, and simplify the process of setting up a development environment.
+
+   2. Configuration Management:
+       * Current: It appears that configurations like the server port or database path might be hardcoded. For instance, the README implies the database dictionary.db must be in the
+         project root.
+       * Production: Configuration should be externalized. Production applications typically load configuration from environment variables or dedicated config files (e.g., .env,
+         config.yaml, config.json). This allows you to run the same application binary in different environments (development, staging, production) with different settings without changing
+         the code.
+
+   3. Logging and Monitoring:
+       * Current: The application seems to lack a formal logging strategy. It might print to stdout/stderr, but that's not sufficient for a production service.
+       * Production: Robust, structured logging is essential. Using a logging library (like spdlog) allows you to:
+           * Log at different levels (e.g., DEBUG, INFO, WARN, ERROR).
+           * Write logs to files, which can be collected and analyzed.
+           * Include contextual information (timestamps, request IDs) for easier debugging.
+           * Additionally, production services expose metrics (e.g., request latency, error rates) for monitoring and alerting, often using a library like Prometheus.
+
+   4. Testing and CI/CD:
+       * Current: You have a tests directory, which is a great start. However, there are no visible tests for the HTTP layer or database interactions.
+       * Production: A comprehensive test suite is non-negotiable. This would include:
+           * Unit Tests: For individual components in isolation.
+           * Integration Tests: To verify that modules work together correctly (e.g., does the WordHandler correctly fetch data from the Database?).
+           * End-to-End (E2E) Tests: To simulate real user interaction by sending HTTP requests to a running instance of the server and asserting the responses.
+       * Furthermore, these tests would be automated in a CI/CD pipeline (e.g., using GitHub Actions) that automatically builds and tests the code on every commit.
+
+   5. Error Handling and Resiliency:
+       * Current: I would need to review the code more deeply, but a key question is how the application handles unexpected situations. What happens if the database is unavailable? Or if a
+         malformed request is received?
+       * Production: The service must be resilient. It should handle errors gracefully (e.g., return a 500 Internal Server Error instead of crashing), implement timeouts for external
+         calls, and have retry mechanisms where appropriate. Input validation is also critical to prevent crashes or security issues.
+
+  Summary
+
+  You've built a solid foundation that looks very much like a high-quality university project or a strong proof-of-concept. To elevate it to a "production-ready" state, the focus would
+  shift toward robustness, automation, and maintainability at scale.
+
+  My recommendation would be to start with these two improvements, as they will provide the most significant benefits:
+   1. Migrate to CMake: It will make your project more accessible to other developers and professionalize your build process.
+   2. Externalize Configuration: Using environment variables for the server port and database path is a simple but massive step toward production readiness.
+
+
+
+
+TO DEPLOY THE SERVER:
+
+  How to Deploy Your C++ Web Application
+
+  This guide will walk you through deploying your "QuickQuill" application on a Linux server to run 24/7.
+
+  Key Information:
+   * Application Executable: dict_crow
+   * Default Port: 8080
+   * Required Files for Deployment:
+       1. dict_crow (the compiled executable)
+       2. dictionary.db (your SQLite database)
+       3. config.json (optional, to override default settings like the port)
+
+  ---
+
+  Step 1: Build a Production Executable
+
+  First, you need to compile your application in "Release" mode. This enables optimizations to make it run much faster.
+
+   1. Navigate to your project directory and create a build folder:
+
+   1     cd /path/to/your/project
+   2     cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+   2. Compile the project:
+   1     cmake --build build --target dict_crow
+
+   3. Locate your files: After the build completes, you will have the following essential files:
+       * The executable: build/src/dict_crow
+       * The database: dictionary.db
+       * You may want to create a config.json file in your project's root directory if you want to change the port or database path on the server.
+
+  Step 2: Prepare Your Server
+
+  You'll need a Linux server. A popular and user-friendly choice is a Ubuntu 22.04 VPS from any major cloud provider (DigitalOcean, AWS, Google Cloud, etc.).
+
+  Once you have your server and can connect to it via SSH:
+
+   1. Update your server:
+   1     sudo apt-get update && sudo apt-get upgrade -y
+
+   2. Install Nginx: This will be our reverse proxy.
+
+   1     sudo apt-get install nginx -y
+
+  Step 3: Deploy Your Files
+
+  Now, copy your application files from your local machine to the server. A good practice is to create a dedicated directory for your app.
+
+   1. On your server, create a directory:
+
+   1     sudo mkdir -p /var/www/quickquill
+
+   2. From your local machine, use scp to copy the files.
+      Replace your_server_ip with your server's actual IP address.
+
+   1     # Copy the executable
+   2     scp build/src/dict_crow your_user@your_server_ip:/var/www/quickquill/
+   3
+   4     # Copy the database
+   5     scp dictionary.db your_user@your_server_ip:/var/www/quickquill/
+   6
+   7     # If you have it, copy the config file
+   8     # scp config.json your_user@your_server_ip:/var/www/quickquill/
+
+  Step 4: Run as a systemd Service
+
+  To ensure your app runs 24/7 and restarts automatically, we'll create a systemd service.
+
+   1. Create a service file on your server:
+   1     sudo nano /etc/systemd/system/quickquill.service
+
+   2. Add the following content. This configuration tells systemd how to run and manage your application.
+
+    1     [Unit]
+    2     Description=QuickQuill Spell Checker Service
+    3     After=network.target
+    4
+    5     [Service]
+    6     Type=simple
+    7     # User and Group can be your own user, or a dedicated one like www-data
+    8     User=www-data
+    9     Group=www-data
+   10     # The directory where you deployed your files
+   11     WorkingDirectory=/var/www/quickquill
+   12     # The command to start your app
+   13     ExecStart=/var/www/quickquill/dict_crow
+   14     Restart=on-failure
+   15
+   16     [Install]
+   17     WantedBy=multi-user.target
+
+   3. Enable and start the service:
+   1     sudo systemctl daemon-reload
+   2     sudo systemctl enable quickquill.service
+   3     sudo systemctl start quickquill.service
+
+   4. Check its status:
+   1     sudo systemctl status quickquill.service
+      You should see that it is active (running).
+
+  Step 5: Configure Nginx as a Reverse Proxy
+
+  Nginx will listen for public web traffic (on port 80) and forward it to your application, which is running internally on port 8080.
+
+   1. Create an Nginx configuration file for your site:
+   1     sudo nano /etc/nginx/sites-available/quickquill
+
+   2. Add the following server block.
+      Replace your_domain.com with your domain name or your server's IP address.
+
+    1     server {
+    2         listen 80;
+    3         listen [::]:80;
+    4
+    5         server_name your_domain.com;
+    6
+    7         location / {
+    8             # Forward requests to your C++ app
+    9             proxy_pass http://localhost:8080;
+   10             proxy_set_header Host $host;
+   11             proxy_set_header X-Real-IP $remote_addr;
+   12             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+   13             proxy_set_header X-Forwarded-Proto $scheme;
+   14         }
+   15     }
+
+   3. Enable the site by creating a symbolic link:
+
+   1     sudo ln -s /etc/nginx/sites-available/quickquill /etc/nginx/sites-enabled/
+
+   4. Test your Nginx configuration and restart it:
+   1     sudo nginx -t
+   2     sudo systemctl restart nginx
+
+  Step 6: Final Steps
+
+   1. DNS: Go to your domain registrar and create an "A" record that points your domain (e.g., your_domain.com) to your server's IP address.
+
+   2. Firewall: If you have a firewall like ufw enabled, make sure to allow Nginx traffic.
+   1     sudo ufw allow 'Nginx Full'
+
+  Your website should now be live! You can navigate to your domain or IP address in a web browser to see your application running. For HTTPS/SSL (which is highly recommended), you can use Let's Encrypt to get a free certificate.

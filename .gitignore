@@ -1,12 +1,13 @@
 nlohmann/kaikki.org-dictionary-English.jsonl
 dictionary.db
+dictionary.zip
 dictionary-db.zip
 dictionary-db.shm
 dictionary.db-wal
-dict
 *.o
 *.obj
 *.exe
 /build/
 /bin/
 .venv/
+config.json

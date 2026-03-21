@@ -47,19 +47,60 @@ Then place `dictionary.db` in the project root.
 - `web/index.html`: frontend
 - `scripts/import_kaikki.py`: database import script
 
+### Configuration
+
+QuickQuill can be configured via a `config.json` file in the project root.
+If this file is not present, the application will use default values.
+
+Example `config.json`:
+```json
+{
+  "database_path": "dictionary.db",
+  "server_port": 8080,
+}
+```
+
+- `database_path`: The path to the SQLite database file.
+- `server_port`: The port for the web server to listen on.
+- `max_suggestions`: The maximum number of suggestions to return for a prefix.
+
 ### Build
 
+This project uses **CMake** + **vcpkg** (manifest mode via `vcpkg.json`) to fetch/build dependencies.
+
+#### 1) Install vcpkg (one-time)
+
 ```bash
-make dict
-make dict_crow
+git clone https://github.com/microsoft/vcpkg.git ~/vcpkg
+~/vcpkg/bootstrap-vcpkg.sh
+```
+
+#### 2) Configure
+
+From the project root:
+
+```bash
+cmake -S . -B build \
+  -DCMAKE_TOOLCHAIN_FILE=~/vcpkg/scripts/buildsystems/vcpkg.cmake
+```
+
+> If you see errors like `Could not find CrowConfig.cmake` or `nlohmann_jsonConfig.cmake`,
+> it usually means you forgot `-DCMAKE_TOOLCHAIN_FILE=...`.
+
+#### 3) Build
+
+```bash
+cmake --build build -j
 ```
 
 ### Run
 
+After building, the executables are located under `build/src/`.
+
 #### 1) Console test mode
 
 ```bash
-./dict
+./build/src/dict
 ```
 
 Commands:
@@ -71,7 +112,7 @@ Commands:
 #### 2) Web server
 
 ```bash
-./dict_crow
+./build/src/dict_crow
 ```
 
 Open:
@@ -116,11 +157,11 @@ Response shape:
 #
 ## Academia Use & Data Attribution
 
-This project is developed for academic and educational purposes. QuickQuill is an independent project and has no affiliation with any organizations. All marks remain the property of their respective owners. 
+_This project is developed for academic and educational purposes. QuickQuill is an independent project and has no affiliation with any organizations._ _All marks remain the property of their respective owners._
 
-The dictionary data used to build this system is derived from Wiktionary content processed through Wiktextract.
+_The dictionary data used to build this system is derived from Wiktionary content processed through Wiktextract._
 
-If this project or its data is referenced in academic work, please cite:
+_If this project or its data is referenced in academic work, please cite:_
 ```
 Tatu Ylonen. Wiktextract: Wiktionary as Machine-Readable Structured Data.
 Proceedings of the 13th Conference on Language Resources and Evaluation (LREC),
@@ -128,7 +169,7 @@ pp. 1317–1325, Marseille, 20–25 June 2022.
 Linking to the Wiktextract project website is also appreciated:
 ```
 
-Linking to the Wiktextract project website is also appreciated:
+_Linking to the Wiktextract project website is also appreciated:_
 ```
 https://kaikki.org/
 ```

@@ -17,10 +17,5 @@ public:
 	std::string autofill(std::string_view word) const;
 private:
 	const Dictionary &m_dict;
-
-    /*********************************
-    // Helper declarations go here
-    **********************************/
-
 };
 #endif

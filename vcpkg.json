@@ -1,0 +1,9 @@
+{
+  "name": "quickquill",
+  "version-string": "0.1.0",
+  "dependencies": [
+    "crow",
+    "sqlite3",
+    "nlohmann-json"
+  ]
+}
