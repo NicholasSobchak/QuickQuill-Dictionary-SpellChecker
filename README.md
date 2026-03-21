@@ -157,11 +157,11 @@ Response shape:
 #
 ## Academia Use & Data Attribution
 
-*This project is developed for academic and educational purposes. QuickQuill is an independent project and has no affiliation with any organizations. All marks remain the property of their respective owners.
+_This project is developed for academic and educational purposes. QuickQuill is an independent project and has no affiliation with any organizations._ _All marks remain the property of their respective owners._
 
-The dictionary data used to build this system is derived from Wiktionary content processed through Wiktextract.*
+_The dictionary data used to build this system is derived from Wiktionary content processed through Wiktextract._
 
-If this project or its data is referenced in academic work, please cite:
+_If this project or its data is referenced in academic work, please cite:_
 ```
 Tatu Ylonen. Wiktextract: Wiktionary as Machine-Readable Structured Data.
 Proceedings of the 13th Conference on Language Resources and Evaluation (LREC),
@@ -169,7 +169,7 @@ pp. 1317–1325, Marseille, 20–25 June 2022.
 Linking to the Wiktextract project website is also appreciated:
 ```
 
-Linking to the Wiktextract project website is also appreciated:
+_Linking to the Wiktextract project website is also appreciated:_
 ```
 https://kaikki.org/
 ```
