@@ -3,7 +3,7 @@
 
 int Trie::indexForChar(char c)
 {
-    unsigned char lowercase = static_cast<unsigned char>(std::tolower(static_cast<unsigned char>(c)));
+    auto lowercase = static_cast<unsigned char>(std::tolower(static_cast<unsigned char>(c))); // auto as opposed to unsigned char just makes it safer
     if (lowercase < 'a' || lowercase > 'z') return -1; // all non-alpha will return -1
     return lowercase - 'a';
 }

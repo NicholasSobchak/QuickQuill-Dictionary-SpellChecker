@@ -417,7 +417,7 @@ void Database::streamAllWordsAndForms(
 
 std::unordered_map<int, std::vector<std::string>>
 Database::fetchGroupedStrings( // currently unsused
-    std::string_view table, std::string_view value_col,
+    std::string_view table, std::string_view value_col, // NOLINT(bugprone-easily-swappable-parameters)
     std::string_view id_col, const std::vector<int> &ids) const {
     std::unordered_map<int, std::vector<std::string>> out;
     if (ids.empty())

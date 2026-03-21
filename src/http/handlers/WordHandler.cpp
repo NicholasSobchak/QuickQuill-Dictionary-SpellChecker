@@ -9,7 +9,7 @@ namespace http
 	{
 		Dictionary& dict()
 		{
-			static Dictionary instance(std::string(dct::g_dictDb)); 
+			static Dictionary instance;
 			return instance;
 		}
 

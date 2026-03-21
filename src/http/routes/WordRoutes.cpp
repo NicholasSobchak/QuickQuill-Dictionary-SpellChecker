@@ -9,6 +9,12 @@ namespace http
 {
 	namespace // actual API endpoints
 	{
+		struct ContentType
+		{
+			std::string value;
+			explicit ContentType(std::string v) : value(std::move(v)) {}
+		};
+
 		crow::response jsonResponse(const std::string& body, int status = 200)
 		{
 			crow::response response(status, body);
@@ -31,7 +37,7 @@ namespace http
 			return response;
 		}
 
-		crow::response fileResponseFromFile(const std::string& path, const std::string& contentType)
+		crow::response fileResponseFromFile(const std::string& path, const ContentType& contentType)
 		{
 			std::ifstream file(path, std::ios::binary);
 			if (!file)
@@ -42,7 +48,7 @@ namespace http
 			std::ostringstream ss;
 			ss << file.rdbuf();
 			crow::response response(200, ss.str());
-			response.set_header("Content-Type", contentType);
+			response.set_header("Content-Type", contentType.value);
 			return response;
 		}
 	}
@@ -56,23 +62,23 @@ namespace http
 		});
 
 		CROW_ROUTE(app, "/assets/Quotex.otf") ([] {
-			return fileResponseFromFile("web/assets/Quotex.otf", "font/otf");
+			return fileResponseFromFile("web/assets/Quotex.otf", ContentType("font/otf"));
 		});
 
 		CROW_ROUTE(app, "/assets/fonts.css") ([] {
-			return fileResponseFromFile("web/assets/fonts.css", "text/css; charset=utf-8");
+			return fileResponseFromFile("web/assets/fonts.css", ContentType("text/css; charset=utf-8"));
 		});
 
 		CROW_ROUTE(app, "/assets/quill.png") ([] {
-			return fileResponseFromFile("web/assets/quill.png", "image/png");
+			return fileResponseFromFile("web/assets/quill.png", ContentType("image/png"));
 		});
 
 		CROW_ROUTE(app, "/assets/school-logo-no-bg.png") ([] {
-			return fileResponseFromFile("web/assets/school-logo-no-bg.png", "image/png");
+			return fileResponseFromFile("web/assets/school-logo-no-bg.png", ContentType("image/png"));
 		});
 
 		CROW_ROUTE(app, "/assets/school_backdrop.jpg") ([] {
-			return fileResponseFromFile("web/assets/school_backdrop.jpg", "image/jpeg");
+			return fileResponseFromFile("web/assets/school_backdrop.jpg", ContentType("image/jpeg"));
 		});
 
 

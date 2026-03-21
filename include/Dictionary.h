@@ -10,7 +10,7 @@
 class Dictionary
 {
 public:
-    explicit Dictionary(std::string dbPath = std::string(dct::g_dictDb));
+    explicit Dictionary(const std::string& dbPath = std::string(dct::g_dictDb));
     ~Dictionary() = default;
 
 	WordInfo getWordInfo(std::string_view word) const;

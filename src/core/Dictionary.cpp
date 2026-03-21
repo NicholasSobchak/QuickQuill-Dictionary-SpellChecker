@@ -10,7 +10,7 @@ std::string getDatabasePath(const std::string& defaultPath) {
     return defaultPath;
 }
 
-Dictionary::Dictionary(std::string dbPath) : m_db{ getDatabasePath(std::move(dbPath)) }
+Dictionary::Dictionary(const std::string& dbPath) : m_db{ getDatabasePath(dbPath) }
 {
     m_db.createTables();
     loadTrie();
