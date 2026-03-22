@@ -34,6 +34,7 @@ TODO
 		- isolate relevant word information to be returned first
 		- add ghost autofill
 		- add "similar words" field (comes from suggest)
+		- add a "previously searched" field (use really cool gothic looking boxes for these fields)
 	}
 
 	backend
@@ -46,6 +47,8 @@ TODO
 		- add service layer between route and DB
 		- add batching to improve performance
 		- add catch2 to cmake
+		- accept input with '.' (filter it out)
+		- checkout failed word corrections in the backend search function (return "word not found" as good practice)
 	}
 }
 

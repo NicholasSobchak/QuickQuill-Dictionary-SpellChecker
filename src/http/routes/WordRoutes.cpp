@@ -81,6 +81,11 @@ namespace http
 			return fileResponseFromFile("web/assets/school_backdrop.jpg", ContentType("image/jpeg"));
 		});
 
+		CROW_ROUTE(app, "/assets/box-corner.png") ([] {
+			return fileResponseFromFile("web/assets/box-corner.png", ContentType("image/png"));
+		});
+
+
 
 		// GET requests
 		CROW_ROUTE(app, "/api/health") ([] {

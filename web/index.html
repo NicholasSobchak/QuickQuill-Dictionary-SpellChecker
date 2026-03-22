@@ -20,7 +20,9 @@
 
     body {
       margin: 0;
-      font-family: "Courier New", "Liberation Mono", "Menlo", "Consolas", monospace;
+      font-family: "Times New Roman", Times, serif;
+      font-size: 17px;
+      letter-spacing: 0.5px;
       color: var(--ink);
       background-color: #000000;
       background-image:
@@ -117,6 +119,7 @@
       overflow: visible;
     }
 
+
     .card::before {
       display: none;
     }
@@ -140,7 +143,7 @@
       padding: 10px 12px;
       border-radius: 0;
       border: none;
-      font-size: 15px;
+      font-size: 17px;
 	  font-family: inherit;
       background: transparent;
       color: var(--ink);
@@ -161,10 +164,10 @@
       color: var(--muted);
       border: none;
       cursor: pointer;
-      font-size: 13px;
-      font-family: "Courier New", "Liberation Mono", "Menlo", "Consolas", monospace;
+      font-size: 15px;
+      font-family: "Times New Roman", Times, serif;
       text-transform: none;
-      letter-spacing: 0;
+      letter-spacing: 0.5px;
     }
 
     .toggle-btn .arrow {
@@ -176,14 +179,64 @@
       cursor: not-allowed;
     }
 
+    .result-box {
+      position: relative;
+      /* border: 1px solid var(--edge); */ /* Border removed */
+      padding: 20px;
+      margin-top: 30px;
+      margin-bottom: 30px;
+      min-height: 80px;
+    }
+
+    .corner-tl, .corner-tr, .corner-bl, .corner-br {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      background-image: url(/assets/box-corner.png);
+      background-size: contain;
+      background-color: transparent;
+      filter: invert(1);
+      visibility: hidden;
+    }
+
+    .result-box.has-results .corner-tl,
+    .result-box.has-results .corner-tr,
+    .result-box.has-results .corner-bl,
+    .result-box.has-results .corner-br {
+      visibility: visible;
+    }
+
+    .corner-tl {
+      top: -20px;
+      left: -20px;
+    }
+
+    .corner-tr {
+      top: -20px;
+      right: -20px;
+      transform: rotate(90deg);
+    }
+
+    .corner-bl {
+      bottom: -20px;
+      left: -20px;
+      transform: rotate(-90deg);
+    }
+
+    .corner-br {
+      bottom: -20px;
+      right: -20px;
+      transform: rotate(180deg);
+    }
+
     .result {
-      margin-top: 16px;
-      font-size: 15px;
+      margin-top: 0;
+      font-size: 17px;
       background: transparent;
       border: none;
       border-radius: 0;
       padding: 0;
-      min-height: 80px;
+      min-height: 0;
     }
 
     .section {
@@ -199,7 +252,7 @@
     }
 
     .lemma {
-      font-size: 22px;
+      font-size: 42px;
       margin: 0;
     }
 
@@ -211,6 +264,13 @@
       margin: 4px 6px 0 0;
       font-size: 12px;
       background: transparent;
+      cursor: pointer;
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .chip:hover {
+      text-decoration: underline;
     }
 
     .list {
@@ -273,10 +333,10 @@
       left: 0;
       right: 0;
       color: #7a7a7a;
-      font-size: 12px;
+      font-size: 14px;
       text-align: center;
-      font-family: "Courier New", "Liberation Mono", "Menlo", "Consolas", monospace;
-      letter-spacing: 0.4px;
+      font-family: "Times New Roman", Times, serif;
+      letter-spacing: 0.5px;
       padding: 12px 0 16px;
       margin: 0;
       background: rgba(0, 0, 0, 0.85);
@@ -307,7 +367,13 @@
         <span id="spinner" class="spinner"></span>
         <span id="statusText"></span>
       </div>
-      <div id="result" class="result"></div>
+      <div class="result-box">
+        <div class="corner-tl"></div>
+        <div class="corner-tr"></div>
+        <div class="corner-bl"></div>
+        <div class="corner-br"></div>
+        <div id="result" class="result"></div>
+      </div>
     </section>
 
   </div>
@@ -324,6 +390,10 @@
 
     function clearResult() {
       while (result.firstChild) result.removeChild(result.firstChild);
+      const resultBox = document.querySelector('.result-box');
+      if (resultBox) {
+        resultBox.classList.remove('has-results');
+      }
     }
 
     function setStatus(text, isError = false) {
@@ -396,10 +466,10 @@
       // New logic for handling word not found with suggestion
       if (data.found === false) {
         if (data.suggestion && data.suggestion.toLowerCase() !== data.query.toLowerCase()) {
-          const suggestionHTML = `Did you mean <a href="#" class="suggestion-link" onclick="event.preventDefault(); document.getElementById('word').value='${data.suggestion}'; lookup();"><em class="corrected-word">${data.suggestion}</em></a>?`;
+          const suggestionHTML = `Did you mean <a href="#" class="suggestion-link" onclick="event.preventDefault(); document.getElementById('word').value='${data.suggestion}'; lookup();"><em class="corrected-word">${data.display_lemma || data.suggestion}</em></a>?`;
           setStatus(suggestionHTML, true);
         } else {
-          setStatus(`Word <em>'${data.query}'</em> not found.`, true);
+          setStatus(`Word <em>'${input.value}'</em> not found.`, true);
         }
         return;
       }
@@ -415,6 +485,11 @@
         return;
       }
 
+      const resultBox = document.querySelector('.result-box');
+      if (resultBox) {
+        resultBox.classList.add('has-results');
+      }
+
       const lemma = document.createElement("h2");
       lemma.className = "lemma";
       const rawHeading = data.display_lemma || data.query || data.lemma || "";
@@ -425,19 +500,20 @@
         // keep rawHeading if decode fails
       }
       const heading = displayWord(decodedHeading);
-      const punctuated = heading && heading.toLowerCase() === "lexicon levissimum"
-        ? `${heading}!`
-        : heading;
+      const capitalizedHeading = heading.charAt(0).toUpperCase() + heading.slice(1);
+      const punctuated = capitalizedHeading && capitalizedHeading.toLowerCase() === "lexicon levissimum"
+        ? `${capitalizedHeading}!`
+        : capitalizedHeading;
       lemma.textContent = punctuated || "Unknown";
-      if (heading && heading.toLowerCase() === "nevermore") {
+      if (capitalizedHeading && capitalizedHeading.toLowerCase() === "nevermore") {
         const link = document.createElement("a");
         link.href = "https://www.nevermoreacademy.com/";
         link.target = "_blank";
         link.rel = "noreferrer noopener";
         link.textContent = " https://www.nevermoreacademy.com/";
         link.style.color = "var(--ink)";
-        link.style.fontFamily = '"Courier New", "Liberation Mono", "Menlo", "Consolas", monospace';
-        link.style.fontSize = "15px";
+        link.style.fontFamily = '"Times New Roman", Times, serif';
+        link.style.fontSize = "17px";
         link.style.fontWeight = "400";
         link.style.marginLeft = "8px";
         lemma.appendChild(link);
@@ -465,9 +541,15 @@
       if (syns.length) {
         const wrap = document.createElement("div");
         syns.forEach((w) => {
-          const chip = document.createElement("span");
+          const chip = document.createElement("a");
           chip.className = "chip";
           chip.textContent = w;
+          chip.href = "#";
+          chip.onclick = (e) => {
+            e.preventDefault();
+            input.value = w;
+            lookup();
+          };
           wrap.appendChild(chip);
         });
         synSection.appendChild(wrap);
@@ -485,9 +567,15 @@
       if (ants.length) {
         const wrap = document.createElement("div");
         ants.forEach((w) => {
-          const chip = document.createElement("span");
+          const chip = document.createElement("a");
           chip.className = "chip";
           chip.textContent = w;
+          chip.href = "#";
+          chip.onclick = (e) => {
+            e.preventDefault();
+            input.value = w;
+            lookup();
+          };
           wrap.appendChild(chip);
         });
         antSection.appendChild(wrap);
@@ -555,10 +643,9 @@
       }
 
       button.disabled = true;
-      // spinner only
       spinner.style.display = "inline-block";
       if (spinnerTimer) clearInterval(spinnerTimer);
-      const frames = ["|", "/", "-", "\\\\"];
+      const frames = ["|", "/", "-", ""];
       let idx = 0;
       spinner.textContent = frames[idx];
       spinnerTimer = setInterval(() => {
@@ -572,7 +659,7 @@
         const res = await fetch(`/api/word/${encodeURIComponent(word)}`);
         const data = await res.json();
         if (!res.ok) {
-          renderWord(data, word); // renderWord sets status for errors
+          renderWord(data, word);
         } else {
           renderWord(data, word);
           setStatus("");
