@@ -20,6 +20,13 @@ You can find the QuickQuill website here.
     - Examples
     - Forms/inflections and etymology
 
+### Technical Highlights
+  - Trie-based autocomplete supporting 1.4M+ words
+  - Sub-XXms prefix search queries
+  - Memory-efficient dictionary indexing
+  - REST API backend written in C++
+  - Unit tested with Catch2
+ 
 #
 ## Setting Up / Building this Project Locally
 
