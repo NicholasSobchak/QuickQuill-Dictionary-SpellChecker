@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include <chrono>
 #include <sstream>
 #include <iostream>
 #include <string>
@@ -113,7 +114,12 @@ int main()
 
 		if (command == "lookup")
 		{
+			// time query
+			auto start = std::chrono::high_resolution_clock::now();
 			WordInfo info = dict.getWordInfo(arg);
+			auto end = std::chrono::high_resolution_clock::now();
+			std::chrono::duration<double, std::milli> elapsed = end - start;
+
 			if (info.lemma.empty())
 			{
 				std::cout << "Word not found\n";
@@ -121,6 +127,7 @@ int main()
 			}
 
 			printWordInfo(info);
+			std::cout << "Database query executed in " << elapsed.count() << " milliseconds\n";
 			continue;
 		}
 
@@ -145,8 +152,8 @@ int main()
 
 		std::cout << "Unknown command. Use: lookup <word> | correct <word> | suggest <word> | exit\n";
 	}
-
-    // basic HTTP TCP server build
+	
+// basic HTTP TCP server build
 #if 0
 	int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 

@@ -1,5 +1,7 @@
 To organize my thoughts...
 
+Total number of words in Trie: 1,449,303 words
+
 ADD
 {
 	- add Neil Martini to the dictionary (manually)
@@ -35,6 +37,7 @@ TODO
 		- add ghost autofill
 		- add "similar words" field (comes from suggest)
 		- add a "previously searched" field (use really cool gothic looking boxes for these fields)
+		- cache popular searches using Redis or Memcached 
 	}
 
 	backend
