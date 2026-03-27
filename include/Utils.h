@@ -2,6 +2,7 @@
 #define UTILS_H
 #include <string_view>
 #include <string>
+#include <vector>
 
 namespace dct
 {
@@ -9,6 +10,9 @@ namespace dct
     inline constexpr int g_defaultId{ -1 };
     inline constexpr int g_max_suggestions{ 10 };
 
+	/*
+	 * The trie and database are stored with sanatized words
+	 */
     inline std::string sanitizeWord(std::string_view word)
     {
         std::string clean;
@@ -22,6 +26,50 @@ namespace dct
 
         return clean;
     }
+
+	/*
+	 * Vladimir Levenshtein's algorithm for edit distance
+	 * s1 and s2 are represented as rows in a matrix
+	 * Iterate through s1 and s2 and calculate the minimum cost to transform the
+	 * s1 current char to s2 current char
+	 * 
+	 * Important note: After each row is calculated col and prev_col are swapped
+	 * this helps avoid allocating a full 2D matrix which would be costly to memory 
+	 */
+	inline size_t calculateLevenshteinDistance(std::string_view s1, std::string_view s2)
+	{
+		if (s1.length() == 0) 
+		{
+			return s2.length();
+		}
+		if (s2.length() == 0)
+		{
+			return s1.length();
+		}
+		const auto s1Length{ s1.length() };
+		const auto s2Length{ s2.length() };
+
+		// represent a cell in matrix rows
+		std::vector<size_t> col(s2Length + 1);
+		std::vector<size_t> prev_col(s2Length + 1);
+
+		// set each element to itself
+		for (size_t i{ 0 }; i < prev_col.size(); ++i)
+		{
+			prev_col[i] = i;
+		}
+
+		for (size_t i{ 0 }; i < s1Length; ++i)
+		{
+			col[0] = i + 1;
+			for (unsigned int j{ 0 }; j < s2Length; j++)
+			{
+				col[j + 1] = std::min(prev_col[j + 1] + 1, std::min(col[j] + 1, prev_col[j] + (s1[i] == s2[j] ? 0 : 1)));
+			}
+			col.swap(prev_col);
+		}
+		return prev_col[s2Length];	
+	}
 }
 
 #endif
