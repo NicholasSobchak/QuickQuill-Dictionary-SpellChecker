@@ -4,9 +4,11 @@
 #include <string>
 #include <nlohmann/json.hpp>
 
-class Config {
+class Config 
+{
 public:
-    static Config& getInstance() {
+    static Config& getInstance() 
+	{
         static Config instance;
         return instance;
     }
@@ -21,5 +23,4 @@ private:
     Config();
     nlohmann::json data;
 };
-
 #endif // CONFIG_H

@@ -8,7 +8,8 @@
 #include <string_view>
 #include <vector>
 
-class Trie {
+class Trie 
+{
 public:
     Trie();
     ~Trie() = default;
