@@ -602,9 +602,15 @@
       if (Array.isArray(data.forms) && data.forms.length) {
         const wrap = document.createElement("div");
         data.forms.forEach((f) => {
-          const chip = document.createElement("span");
+          const chip = document.createElement("a");
           chip.className = "chip";
           chip.textContent = f.tag ? `${f.form} (${f.tag})` : f.form;
+          chip.href = "#";
+          chip.onclick = (e) => {
+            e.preventDefault();
+            input.value = f.form;
+            lookup();
+          };
           wrap.appendChild(chip);
         });
         formsSection.appendChild(wrap);
