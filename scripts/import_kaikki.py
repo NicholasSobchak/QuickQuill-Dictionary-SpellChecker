@@ -14,7 +14,7 @@ import sqlite3
 from pathlib import Path
 from typing import Dict, Iterable, List, Tuple
 
-DEFAULT_JSON_PATH = Path("nlohmann/kaikki.org-dictionary-English-words.jsonl")
+DEFAULT_JSON_PATH = Path("nlohmann/kaikki.org-dictionary-English.jsonl")
 DEFAULT_DB_PATH = Path("dictionary.db")
 
 
@@ -60,7 +60,8 @@ def ensure_tables(conn: sqlite3.Connection) -> None:
         """CREATE TABLE IF NOT EXISTS words (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 lemma TEXT UNIQUE,
-                display_lemma TEXT
+                display_lemma TEXT,
+                frequency INTEGER DEFAULT 0
             );""",
         """CREATE TABLE IF NOT EXISTS etymologies (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -137,10 +138,10 @@ def clear_db(conn: sqlite3.Connection) -> None:
         cur.close()
 
 
-def insert_word(cur: sqlite3.Cursor, lemma: str, display_lemma: str) -> Tuple[int | None, bool]:
+def insert_word(cur: sqlite3.Cursor, lemma: str, display_lemma: str, frequency: int) -> Tuple[int | None, bool]:
     cur.execute(
-        "INSERT OR IGNORE INTO words (lemma, display_lemma) VALUES (?, ?);",
-        (lemma, display_lemma),
+        "INSERT OR IGNORE INTO words (lemma, display_lemma, frequency) VALUES (?, ?, ?);",
+        (lemma, display_lemma, frequency),
     )
     inserted = cur.rowcount == 1
     cur.execute("SELECT id FROM words WHERE lemma = ?;", (lemma,))
@@ -303,10 +304,11 @@ def process_file(
                     continue
 
                 raw_word = entry.get("word") or ""
+                frequency = entry.get("freq") or 0
                 lemma = sanitize_word(raw_word)
                 if not lemma:
                     continue
-                word_id, inserted = insert_word(cur, lemma, raw_word)
+                word_id, inserted = insert_word(cur, lemma, raw_word, frequency)
                 if not word_id:
                     continue
 

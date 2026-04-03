@@ -2,10 +2,11 @@
 #define WORDINFO_H
 #include <string>
 #include <vector>
+#include "Utils.h"
 
 struct Sense
 {
-	int id{};
+	dct::WordId id;
 	std::string pos; // noun, verb, adj, etc.
 	std::string definition;
 	std::vector<std::string> examples;
@@ -21,9 +22,10 @@ struct Form
 
 struct WordInfo
 {
-	int id{};   
+	dct::WordId id;   
     std::string lemma;
 	std::string displayLemma;	
+	int frequency{0};
 
 	std::vector<std::string> etymology;
 	std::vector<Form> forms; 

@@ -1,6 +1,14 @@
 To organize my thoughts...
 
-Total number of words in Trie: 1,449,303 words
+Import complete:                                                                                                                                                         │
+│   Entries     : 1,441,164                                                                                                                                                │
+│   Words       : 1,249,942                                                                                                                                                │
+│   Senses      : 1,721,645                                                                                                                                                │
+│   Forms       : 951,202                                                                                                                                                  │
+│   Examples    : 718,930                                                                                                                                                  │
+│   Synonyms    : 550,274                                                                                                                                                  │
+│   Antonyms    : 27,485                                                                                                                                                   │
+│   Etymologies : 550,369
 
 ADD
 {
@@ -43,10 +51,13 @@ TODO
 	backend
 	{
 		- continue Unit tests
-
-		- fix word suggestions (relavance)
-		- implement spellchecking logic
-		- implement autofill logic
+		
+		- search cached words first
+		{
+			- fix word suggestions (relavance)
+			- implement spellchecking logic
+			- implement autofill logic
+		}
 		- add service layer between route and DB
 		- add batching to improve performance
 		- add catch2 to cmake

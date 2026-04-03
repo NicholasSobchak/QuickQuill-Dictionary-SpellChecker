@@ -476,9 +476,8 @@
 
       // Existing error handling for actual API errors (e.g., 400 Bad Request)
       if (data.error) {
-        if (data.error === "Enter a word") {
-          setStatus("400: Enter a word", true);
-        } else {
+        if (data.error === "Enter a valid word") {
+          setStatus("400: Enter a valid word", true);        } else {
           // Fallback for other errors not explicitly handled
           setStatus(`Error: ${data.error}`, true);
         }
@@ -635,9 +634,9 @@
         input.focus();
         return;
       }
-      if (!/^[A-Za-z' -]+$/.test(word)) {
+      if (!/^[A-Za-z'\- .]+$/.test(word)) {
         clearResult();
-        setStatus("400: Enter a word", true);
+        setStatus("400: Enter a valid word", true);
         input.focus();
         return;
       }

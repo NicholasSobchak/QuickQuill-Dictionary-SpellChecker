@@ -64,14 +64,14 @@ namespace http
 		if (decoded.empty()) // strictly prohibited characters
 		{
 			nlohmann::json body = {
-				{"error", "Enter a word"}
+				{"error", "Enter a valid word"}
 			};
 			return { body.dump(), 400 };
 		}
 
 		// determine if there are acceptable characters
 		const bool allowedChars = std::all_of(decoded.begin(), decoded.end(), [](unsigned char c) {
-			return std::isalpha(c) || c == '\'' || c == '-' || c == ' ';
+			return std::isalpha(c) || c == '\'' || c == '-' || c == ' ' || c == '.';
 		});
 
 		// invalid input
@@ -79,7 +79,7 @@ namespace http
 		if (decoded.empty() || !allowedChars || sanitized.empty())
 		{
 			nlohmann::json body = {
-				{"error", "Enter a word"}
+				{"error", "Enter a valid word"}
 			};
 			return { body.dump(), 400 };
 		}

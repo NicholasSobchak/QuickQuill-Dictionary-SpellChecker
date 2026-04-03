@@ -3,12 +3,63 @@
 #include <string_view>
 #include <string>
 #include <vector>
+#include <ostream>
+#include <nlohmann/json.hpp>
 
 namespace dct
 {
+    
     inline constexpr int g_alpha{ 26 };
     inline constexpr int g_defaultId{ -1 };
     inline constexpr int g_max_suggestions{ 10 };
+
+	/*
+	 * Strongly type WordId with explicit construction and comparison operator 
+	 */
+	struct WordId {
+        explicit WordId(int val = g_defaultId) : value{val} {}
+        int value;
+
+        bool operator==(const WordId& other) const 
+		{
+            return value == other.value;
+        }
+    };
+
+    inline void to_json(nlohmann::json& j, const WordId& id) 
+    {
+        j = id.value;
+    }
+	
+    inline std::ostream& operator<<(std::ostream& os, const WordId& id) 
+    {
+        os << id.value;
+        return os;
+    }
+	
+	/*
+	 * Strongly type Frequency with explicit consturciton and comparison operator 
+	 */
+    struct Frequency {
+        explicit Frequency(int val = 0) : value{val} {}
+        int value;
+
+        bool operator==(const Frequency& other) const 
+		{
+            return value == other.value;
+        }
+    };
+	
+    inline void to_json(nlohmann::json& j, const Frequency& freq) 
+	{
+        j = freq.value;
+    }
+
+    inline std::ostream& operator<<(std::ostream& os, const Frequency& freq) 
+	{
+        os << freq.value;
+        return os;
+    }
 
 	/*
 	 * The trie and database are stored with sanatized words
