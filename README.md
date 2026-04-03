@@ -35,7 +35,7 @@ Import Complete:
 
 ### Technical Highlights
   - Trie-based autocomplete supporting 1.2M+ words
-  - Sub-0.18ms search queries
+  - Sub-0.18ms cached search queries for words with extensive data
   - Memory-efficient dictionary indexing
   - REST API backend written in C++
   - Unit tested with Catch2
