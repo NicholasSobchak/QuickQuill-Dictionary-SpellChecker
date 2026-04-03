@@ -19,6 +19,16 @@ You can find the QuickQuill website here.
     - Synonyms and antonyms per sense (when present in source data)
     - Examples
     - Forms/inflections and etymology
+    - ''' Import complete:                                                                                                                                                         │
+            │   Entries     : 1,441,164                                                                                                                                                │
+            │   Words       : 1,249,942                                                                                                                                                │
+            │   Senses      : 1,721,645                                                                                                                                                │
+            │   Forms       : 951,202                                                                                                                                                  │
+            │   Examples    : 718,930                                                                                                                                                  │
+            │   Synonyms    : 550,274                                                                                                                                                  │
+            │   Antonyms    : 27,485                                                                                                                                                   │
+            │   Etymologies : 550,369 '''
+
 
 ### Technical Highlights
   - Trie-based autocomplete supporting 1.4M+ words
