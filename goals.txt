@@ -39,12 +39,10 @@ TODO
 		
 	frontend
 	{
-		- implement JS to work with html
-		- isolate relevant word information to be returned first
 		- add ghost autofill
 		- add "similar words" field (comes from suggest)
-		- add a "previously searched" field (use really cool gothic looking boxes for these fields)
-		- cache popular searches using Redis or Memcached 
+		- cache popular searches using Redis or Memcached
+		- fix tab layout when fullscreen is pressed 
 	}
 
 	backend
@@ -76,6 +74,9 @@ DONE
 	
 	frontend
 	{
+		- implement JS to work with html
+		- isolate relevant word information to be returned first
+		- add a "previously searched" field (use really cool gothic looking boxes for these fields)
 		- set up basic html frontend
 		- updated graphics
 		- incorporate status on errors

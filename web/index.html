@@ -287,7 +287,7 @@
     .history-item {
       padding: 6px 10px;
       border: none;
-      background: transparent;
+      background: #000;
       cursor: pointer;
       font-size: 14px;
       letter-spacing: 0.3px;
@@ -296,7 +296,7 @@
     }
 
     .history-item:hover {
-      background: transparent;
+      background: #111;
       transform: none;
       text-decoration: underline;
     }
@@ -670,8 +670,8 @@
       const viewport = { w: window.innerWidth };
       const sidePad = 16;
 
-      let available = viewport.w - sidePad * 2;
-      let width = Math.min(1200, Math.max(180, available));
+      let available = viewport.w - sidePad * 2 - 40;
+      let width = Math.min(1000, Math.max(180, available));
       let left = viewport.w - sidePad - width;
 
       if (left < sidePad) {
@@ -706,7 +706,7 @@
       const sidePad = 16;
 
       const left = sidePad;
-      const width = Math.min(1200, Math.max(180, viewport.w - sidePad * 2));
+      const width = Math.min(1000, Math.max(180, viewport.w - sidePad * 2 - 40));
 
       suggestDrawer.style.left = `${left}px`;
       suggestDrawer.style.right = "auto";
@@ -773,6 +773,9 @@
 
     function toggleHistory(open) {
       const shouldOpen = open ?? !historyDrawer.classList.contains("open");
+      if (shouldOpen) {
+        toggleSuggest(false);
+      }
       historyDrawer.classList.toggle("open", shouldOpen);
       historyDrawer.setAttribute("aria-hidden", shouldOpen ? "false" : "true");
       historyToggle.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
@@ -797,6 +800,9 @@
 
     function toggleSuggest(open) {
       const shouldOpen = open ?? !suggestDrawer.classList.contains("open");
+      if (shouldOpen) {
+        toggleHistory(false);
+      }
       suggestDrawer.classList.toggle("open", shouldOpen);
       suggestDrawer.setAttribute("aria-hidden", shouldOpen ? "false" : "true");
       suggestToggle.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
