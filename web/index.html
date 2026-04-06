@@ -133,12 +133,22 @@
       font-size: 14px;
       letter-spacing: 0.4px;
       cursor: pointer;
-      transition: transform 200ms ease, background 200ms ease;
+      transition: transform 240ms ease, background 200ms ease;
     }
+
 
     .history-toggle:hover {
       background: rgba(26, 26, 26, 0);
-      transform: translateY(1px);
+      text-decoration: underline;
+    }
+
+    .toggle-arrow {
+      margin-left: 6px;
+      font-size: 12px;
+      display: inline-block;
+      transform: translateY(-1px);
+      font-family: Arial, sans-serif;
+      font-weight: 400;
     }
 
     .history-toggle[aria-expanded="true"] {
@@ -146,23 +156,108 @@
       border-bottom-right-radius: 0;
     }
 
-    .history-drawer {
+    /* Suggested drawer (mirrors history, left side) */
+    .suggest-toggle {
+      position: fixed;
+      top: 8px;
+      left: 16px;
+      z-index: 30;
+      background: transparent;
+      color: var(--ink);
+      border: none;
+      padding: 8px 12px;
+      font-family: "Times New Roman", Times, serif;
+      font-size: 14px;
+      letter-spacing: 0.4px;
+      cursor: pointer;
+      transition: transform 240ms ease, background 200ms ease;
+      text-decoration: none;
+    }
+
+    .suggest-toggle:hover {
+      background: rgba(26, 26, 26, 0);
+      text-decoration: underline;
+    }
+
+    .suggest-drawer {
       position: fixed;
       top: 0;
-      left: 0;
-      right: 0;
+      left: 16px;
+      right: auto;
       z-index: 25;
-      background: rgba(6, 6, 6, 0.96);
-      border-bottom: 1px solid var(--edge);
+      width: auto;
+      max-width: 1200px;
+      max-height: 70vh;
+      overflow-y: auto;
+      background: transparent;
+      border: none;
       box-shadow: 0 14px 40px rgba(0, 0, 0, 0.6);
       transform: translateY(-100%);
       transition: transform 260ms ease;
       backdrop-filter: blur(3px);
+      overflow: visible;
+    }
+
+    .suggest-drawer.open {
+      transform: translateY(18px);
+    }
+
+    .suggest-drawer .corner {
+      position: absolute;
+      width: 28px;
+      height: 28px;
+      background-image: url(/assets/box-corner.png);
+      background-size: contain;
+      background-repeat: no-repeat;
+      filter: invert(1);
+      pointer-events: none;
+      visibility: visible;
+    }
+
+    .suggest-drawer .corner-tl { top: -8px; left: -14px; }
+    .suggest-drawer .corner-tr { top: -8px; right: -14px; transform: rotate(90deg); }
+    .suggest-drawer .corner-bl { bottom: -14px; left: -14px; transform: rotate(-90deg); }
+    .suggest-drawer .corner-br { bottom: -14px; right: -14px; transform: rotate(180deg); }
+
+    .history-drawer {
+      position: fixed;
+      top: 0;
+      right: 16px;
+      left: auto;
+      z-index: 25;
+      width: auto;
+      max-width: 1200px;
+      max-height: 70vh;
+      overflow-y: auto;
+      background: transparent;
+      border: none;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.6);
+      transform: translateY(-100%);
+      transition: transform 260ms ease;
+      backdrop-filter: blur(3px);
+      overflow: visible;
     }
 
     .history-drawer.open {
-      transform: translateY(0);
+      transform: translateY(18px);
     }
+
+    .history-drawer .corner {
+      position: absolute;
+      width: 28px;
+      height: 28px;
+      background-image: url(/assets/box-corner.png);
+      background-size: contain;
+      background-repeat: no-repeat;
+      filter: invert(1);
+      pointer-events: none;
+      visibility: visible;
+    }
+
+    .history-drawer .corner-tl { top: -8px; left: -14px; }
+    .history-drawer .corner-tr { top: -8px; right: -14px; transform: rotate(90deg); }
+    .history-drawer .corner-bl { bottom: -14px; left: -14px; transform: rotate(-90deg); }
+    .history-drawer .corner-br { bottom: -14px; right: -14px; transform: rotate(180deg); }
 
     .history-inner {
       max-width: 1200px;
@@ -191,17 +286,19 @@
 
     .history-item {
       padding: 6px 10px;
-      border: 1px solid var(--edge);
-      background: rgba(14, 14, 14, 0.92);
+      border: none;
+      background: transparent;
       cursor: pointer;
       font-size: 14px;
       letter-spacing: 0.3px;
       transition: background 150ms ease, transform 150ms ease;
+      text-decoration: none;
     }
 
     .history-item:hover {
-      background: rgba(32, 32, 32, 0.95);
-      transform: translateY(1px);
+      background: transparent;
+      transform: none;
+      text-decoration: underline;
     }
 
     .history-empty {
@@ -330,6 +427,7 @@
       min-height: 0;
     }
 
+
     .section {
       margin-top: 14px;
     }
@@ -437,8 +535,31 @@
 </head>
 <body>
   <div class="shell">
-    <button id="historyToggle" class="history-toggle" aria-expanded="false" aria-controls="historyDrawer">History ▾</button>
+    <button id="suggestToggle" class="suggest-toggle" aria-expanded="false" aria-controls="suggestDrawer">
+      <span class="history-text">Suggested Words</span>
+      <span class="toggle-arrow">v</span>
+    </button>
+    <div id="suggestDrawer" class="suggest-drawer" aria-hidden="true">
+      <span class="corner corner-tl"></span>
+      <span class="corner corner-tr"></span>
+      <span class="corner corner-bl"></span>
+      <span class="corner corner-br"></span>
+      <div class="history-inner">
+        <p class="history-title">Suggested Words</p>
+        <ul id="suggestList" class="history-list"></ul>
+        <div id="suggestEmpty" class="history-empty">No suggestions yet.</div>
+      </div>
+    </div>
+
+    <button id="historyToggle" class="history-toggle" aria-expanded="false" aria-controls="historyDrawer">
+      <span class="history-text">History</span>
+      <span class="toggle-arrow">v</span>
+    </button>
     <div id="historyDrawer" class="history-drawer" aria-hidden="true">
+      <span class="corner corner-tl"></span>
+      <span class="corner corner-tr"></span>
+      <span class="corner corner-bl"></span>
+      <span class="corner corner-br"></span>
       <div class="history-inner">
         <p class="history-title">Recent searches</p>
         <ul id="historyList" class="history-list"></ul>
@@ -490,6 +611,10 @@
     const historyDrawer = document.getElementById("historyDrawer");
     const historyList = document.getElementById("historyList");
     const historyEmpty = document.getElementById("historyEmpty");
+    const suggestToggle = document.getElementById("suggestToggle");
+    const suggestDrawer = document.getElementById("suggestDrawer");
+    const suggestList = document.getElementById("suggestList");
+    const suggestEmpty = document.getElementById("suggestEmpty");
     const HISTORY_KEY = "quickquill-history";
     const HISTORY_LIMIT = 30;
     let spinnerTimer = null;
@@ -518,11 +643,18 @@
         li.className = "history-item";
         li.textContent = w;
         li.addEventListener("click", () => {
+          li.style.textDecoration = "underline";
           input.value = w;
           lookup();
         });
         historyList.appendChild(li);
       });
+    }
+
+    function renderSuggest() {
+      suggestList.innerHTML = "";
+      suggestEmpty.style.display = "block";
+      suggestList.style.display = "none";
     }
 
     function addToHistory(word) {
@@ -534,20 +666,95 @@
       renderHistory();
     }
 
+    function updateHistoryLayout() {
+      const viewport = { w: window.innerWidth };
+      const sidePad = 16;
+
+      let available = viewport.w - sidePad * 2;
+      let width = Math.min(1200, Math.max(180, available));
+      let left = viewport.w - sidePad - width;
+
+      if (left < sidePad) {
+        left = sidePad;
+        available = viewport.w - sidePad * 2;
+        width = Math.min(1200, Math.max(180, available));
+      }
+
+      historyDrawer.style.left = `${left}px`;
+      historyDrawer.style.right = "auto";
+      historyDrawer.style.width = `${width}px`;
+
+      const btnRect = historyToggle.getBoundingClientRect();
+      const centeredLeft = left + Math.max((width - btnRect.width) / 2, 0);
+      const clampedLeft = Math.min(Math.max(centeredLeft, sidePad), viewport.w - sidePad - btnRect.width);
+      historyToggle.style.left = `${clampedLeft}px`;
+      historyToggle.style.right = "auto";
+      historyToggle.style.transform = "translate(0, 0)";
+
+      const arrow = historyToggle.querySelector(".toggle-arrow");
+      if (arrow) arrow.textContent = historyDrawer.classList.contains("open") ? "^" : "v";
+    }
+
+    function updateSuggestLayout() {
+      const viewport = { w: window.innerWidth };
+      const sidePad = 16;
+
+      const left = sidePad;
+      const width = Math.min(1200, Math.max(180, viewport.w - sidePad * 2));
+
+      suggestDrawer.style.left = `${left}px`;
+      suggestDrawer.style.right = "auto";
+      suggestDrawer.style.width = `${width}px`;
+
+      const btnRect = suggestToggle.getBoundingClientRect();
+      const centeredLeft = left + Math.max((width - btnRect.width) / 2, 0);
+      const clampedLeft = Math.min(Math.max(centeredLeft, sidePad), viewport.w - sidePad - btnRect.width);
+      suggestToggle.style.left = `${clampedLeft}px`;
+      suggestToggle.style.right = "auto";
+      suggestToggle.style.transform = "translate(0, 0)";
+
+      const arrow = suggestToggle.querySelector(".toggle-arrow");
+      if (arrow) arrow.textContent = suggestDrawer.classList.contains("open") ? "^" : "v";
+    }
+
     function toggleHistory(open) {
       const shouldOpen = open ?? !historyDrawer.classList.contains("open");
       historyDrawer.classList.toggle("open", shouldOpen);
       historyDrawer.setAttribute("aria-hidden", shouldOpen ? "false" : "true");
       historyToggle.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
-      historyToggle.textContent = shouldOpen ? "History ▴" : "History ▾";
+      requestAnimationFrame(() => {
+        updateHistoryLayout();
+      });
       if (shouldOpen) renderHistory();
     }
 
     historyToggle.addEventListener("click", () => toggleHistory());
+    window.addEventListener("resize", () => {
+      updateHistoryLayout();
+      updateSuggestLayout();
+    });
+    requestAnimationFrame(() => {
+      updateHistoryLayout();
+      updateSuggestLayout();
+    });
+
+    function toggleSuggest(open) {
+      const shouldOpen = open ?? !suggestDrawer.classList.contains("open");
+      suggestDrawer.classList.toggle("open", shouldOpen);
+      suggestDrawer.setAttribute("aria-hidden", shouldOpen ? "false" : "true");
+      suggestToggle.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
+      if (shouldOpen) renderSuggest();
+      requestAnimationFrame(updateSuggestLayout);
+    }
+
+    suggestToggle.addEventListener("click", () => toggleSuggest());
 
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && historyDrawer.classList.contains("open")) {
         toggleHistory(false);
+      }
+      if (e.key === "Escape" && suggestDrawer.classList.contains("open")) {
+        toggleSuggest(false);
       }
     });
 
