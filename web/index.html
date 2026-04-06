@@ -685,9 +685,15 @@
       historyDrawer.style.width = `${width}px`;
 
       const btnRect = historyToggle.getBoundingClientRect();
-      const centeredLeft = left + Math.max((width - btnRect.width) / 2, 0);
-      const clampedLeft = Math.min(Math.max(centeredLeft, sidePad), viewport.w - sidePad - btnRect.width);
-      historyToggle.style.left = `${clampedLeft}px`;
+      if (historyToggle.dataset.manual === "1") {
+        const currentLeft = parseFloat(historyToggle.style.left) || left;
+        const clampedLeft = Math.min(Math.max(currentLeft, sidePad), viewport.w - sidePad - btnRect.width);
+        historyToggle.style.left = `${clampedLeft}px`;
+      } else {
+        const centeredLeft = left + Math.max((width - btnRect.width) / 2, 0);
+        const clampedLeft = Math.min(Math.max(centeredLeft, sidePad), viewport.w - sidePad - btnRect.width);
+        historyToggle.style.left = `${clampedLeft}px`;
+      }
       historyToggle.style.right = "auto";
       historyToggle.style.transform = "translate(0, 0)";
 
@@ -707,14 +713,62 @@
       suggestDrawer.style.width = `${width}px`;
 
       const btnRect = suggestToggle.getBoundingClientRect();
-      const centeredLeft = left + Math.max((width - btnRect.width) / 2, 0);
-      const clampedLeft = Math.min(Math.max(centeredLeft, sidePad), viewport.w - sidePad - btnRect.width);
-      suggestToggle.style.left = `${clampedLeft}px`;
+      if (suggestToggle.dataset.manual === "1") {
+        const currentLeft = parseFloat(suggestToggle.style.left) || left;
+        const clampedLeft = Math.min(Math.max(currentLeft, sidePad), viewport.w - sidePad - btnRect.width);
+        suggestToggle.style.left = `${clampedLeft}px`;
+      } else {
+        const centeredLeft = left + Math.max((width - btnRect.width) / 2, 0);
+        const clampedLeft = Math.min(Math.max(centeredLeft, sidePad), viewport.w - sidePad - btnRect.width);
+        suggestToggle.style.left = `${clampedLeft}px`;
+      }
       suggestToggle.style.right = "auto";
       suggestToggle.style.transform = "translate(0, 0)";
 
       const arrow = suggestToggle.querySelector(".toggle-arrow");
       if (arrow) arrow.textContent = suggestDrawer.classList.contains("open") ? "^" : "v";
+    }
+
+    function resolveToggleOverlap() {
+      const pad = 16;
+      const gap = 8;
+      const vw = window.innerWidth;
+      const brand = document.querySelector(".brand");
+      const brandRect = brand ? brand.getBoundingClientRect() : { left: vw / 2, right: vw / 2 };
+      const brandCenter = (brandRect.left + brandRect.right) / 2;
+      const sugWidth = suggestToggle.offsetWidth || 0;
+      const histWidth = historyToggle.offsetWidth || 0;
+      let sugLeft = parseFloat(suggestToggle.style.left) || pad;
+      let histLeft = parseFloat(historyToggle.style.left) || (vw - pad - histWidth);
+
+      const totalNeeded = sugWidth + gap + histWidth;
+      const available = vw - pad * 2;
+
+      let overlap = false;
+
+      if (totalNeeded > available) {
+        const start = Math.max(pad, brandCenter - totalNeeded / 2);
+        sugLeft = start - 60;
+        histLeft = sugLeft + gap + sugWidth;
+        overlap = true;
+      } else if (sugLeft + sugWidth + gap > histLeft) {
+        const start = Math.max(pad, brandCenter - totalNeeded / 2);
+        sugLeft = start - 60;
+        histLeft = sugLeft + gap + sugWidth;
+        overlap = true;
+      }
+
+      // Clamp to viewport
+      histLeft = Math.min(histLeft, vw - pad - histWidth);
+      sugLeft = Math.min(sugLeft, vw - pad - sugWidth);
+
+      suggestToggle.style.left = `${sugLeft}px`;
+      historyToggle.style.left = `${histLeft}px`;
+      suggestToggle.style.right = "auto";
+      historyToggle.style.right = "auto";
+
+      suggestToggle.dataset.manual = overlap ? "1" : "0";
+      historyToggle.dataset.manual = overlap ? "1" : "0";
     }
 
     function toggleHistory(open) {
@@ -724,6 +778,7 @@
       historyToggle.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
       requestAnimationFrame(() => {
         updateHistoryLayout();
+        resolveToggleOverlap();
       });
       if (shouldOpen) renderHistory();
     }
@@ -732,10 +787,12 @@
     window.addEventListener("resize", () => {
       updateHistoryLayout();
       updateSuggestLayout();
+      resolveToggleOverlap();
     });
     requestAnimationFrame(() => {
       updateHistoryLayout();
       updateSuggestLayout();
+      resolveToggleOverlap();
     });
 
     function toggleSuggest(open) {
@@ -744,7 +801,10 @@
       suggestDrawer.setAttribute("aria-hidden", shouldOpen ? "false" : "true");
       suggestToggle.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
       if (shouldOpen) renderSuggest();
-      requestAnimationFrame(updateSuggestLayout);
+      requestAnimationFrame(() => {
+        updateSuggestLayout();
+        resolveToggleOverlap();
+      });
     }
 
     suggestToggle.addEventListener("click", () => toggleSuggest());
