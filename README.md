@@ -127,6 +127,7 @@ Commands:
 
 - `lookup <word>`
 - `correct <word>`
+- `suggest <word>`
 - `exit`
 
 #### 2) Web server
@@ -186,7 +187,6 @@ _If this project or its data is referenced in academic work, please cite:_
 Tatu Ylonen. Wiktextract: Wiktionary as Machine-Readable Structured Data.
 Proceedings of the 13th Conference on Language Resources and Evaluation (LREC),
 pp. 1317–1325, Marseille, 20–25 June 2022.
-Linking to the Wiktextract project website is also appreciated:
 ```
 
 _Linking to the Wiktextract project website is also appreciated:_
