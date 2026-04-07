@@ -1,13 +1,14 @@
 To organize my thoughts...
 
-Entries     : 1,441,164
-Words       : 1,249,942                                                                                                                                         
-Senses      : 1,721,645                                                                                                                                                
-Forms       : 951,202                                                                                                                                                  
-Examples    : 718,930                                                                                                                                                  
-Synonyms    : 550,274                                                                                                                                                  
-Antonyms    : 27,485                                                                                                                                                   
-Etymologies : 550,369
+Import Complete:
+  | Entries     : 1,441,164
+  | Words       : 1,249,942 
+  | Senses      : 1,721,645 
+  | Forms       : 951,202 
+  | Examples    : 718,930
+  | Synonyms    : 550,274 
+  | Antonyms    : 27,485     
+  | Etymologies : 550,369
 
 ADD
 {
@@ -22,12 +23,18 @@ ADD
 
 
 THE GENERAL FLOW:
-Open DB
-Create tables (if not exist)
-if (DB.isEmpty())
-    load JSON into DB
-Load Trie from DB (lemma and all forms)
-Start server
+- Start server
+  | Read Config singleton
+  | Warm-up the dictionary chache and start Crow HTTP server on server_port
+  | http::warmupDictionary() constructs static Dictionary + SpellChecker
+  | http::runServer (Server.cpp) builds crow::SimpleApp and registers routes from registerWordRoutes, then calls app.port(...).multithreaded().run()
+
+- Routing and Reponse
+  | In registerWordRoutes, / and SPA fallback /<path> serve web/dist/index.html
+  | /assests/<path> serve static hashed assets with MIME guessed by guessContentType
+  | /api/health
+  | /api/word/<string> calls search(word) 
+
 
 TODO
 {

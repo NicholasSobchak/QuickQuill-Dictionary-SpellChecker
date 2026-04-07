@@ -6,8 +6,12 @@
 
 namespace http
 {
-	namespace // declare internal linkage 
+	namespace 
 	{
+		/**
+		 * Singleton-style access for access safety (any reference to Dictionary and Spellchecker 
+		 * will return one instance) 
+		 */
 		Dictionary& dict()
 		{
 			static Dictionary instance;
@@ -20,8 +24,12 @@ namespace http
 			return instance;
 		}
 
-		// this clears up any weird rendering that might come from certain characters
-		// Decode percent-encoded user input from the path segment (handles %HH and + for space).
+		/**
+		 * This is a dirty function that just clears up any weird rendering that might come from 
+		 * certain characters
+		 * 
+		 * Decode percent-encoded user input from the path segment (handles %HH and + for space).
+		 */
 		std::string decodeInput(const std::string& in)
 		{
 			std::string out;
@@ -50,14 +58,19 @@ namespace http
 			return out;
 		}
 	}
-	
+
+	/**
+	 * Forces static Dictionary to construct and touches DB
+	 */	
 	void warmupDictionary()
 	{
-		// forces static Dictionary to construct and touches DB
 		dict().getWordInfo("warmup"); // or any common word
 	}
-
-	// returns (JSON body, status)
+	
+	/**
+	 * Search queries the database or pulls from cache memory using getWordInfo and 
+	 * returns (JSON body, status)
+	 */
 	SearchResult search(const std::string& word)
 	{
 		const std::string decoded = decodeInput(word); // correct input

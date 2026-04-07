@@ -11,3 +11,4 @@ dictionary.db-wal
 /bin/
 .venv/
 config.json
+.codex
