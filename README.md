@@ -137,8 +137,9 @@ Commands:
 ```
 
 Open:
+- Frontend (Vite dev server): `cd web && npm install && npm run dev` then open http://localhost:5173
+- Backend API (Crow): http://localhost:8080 (default) — keep this running so the frontend can load data
 
-- `http://localhost:8080/`
 
 #
 ## API
@@ -193,4 +194,3 @@ _Linking to the Wiktextract project website is also appreciated:_
 ```
 https://kaikki.org/
 ```
-
