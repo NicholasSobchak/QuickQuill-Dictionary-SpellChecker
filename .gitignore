@@ -12,3 +12,4 @@ dictionary.db-wal
 .venv/
 config.json
 .codex
+web/node_modules/
