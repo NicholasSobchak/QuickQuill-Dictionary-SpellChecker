@@ -20,6 +20,26 @@ You can find the QuickQuill website here.
     - Examples
     - Forms/inflections and etymology
 
+### Analytics
+```
+Import Complete:
+  | Entries     : 1,441,164
+  | Words       : 1,249,942
+  | Senses      : 1,721,645
+  | Forms       : 951,202
+  | Examples    : 718,930
+  | Synonyms    : 550,274
+  | Antonyms    : 27,485
+  | Etymologies : 550,369
+```
+
+### Technical Highlights
+  - Trie-based autocomplete supporting 1.2M+ words
+  - Sub-0.18ms cached search queries for words with extensive data
+  - Memory-efficient dictionary indexing
+  - REST API backend written in C++
+  - Unit tested with Catch2
+ 
 #
 ## Setting Up / Building this Project Locally
 
@@ -107,6 +127,7 @@ Commands:
 
 - `lookup <word>`
 - `correct <word>`
+- `suggest <word>`
 - `exit`
 
 #### 2) Web server
@@ -116,8 +137,9 @@ Commands:
 ```
 
 Open:
+- Frontend (Vite dev server): `cd web && npm install && npm run dev` then open http://localhost:5173
+- Backend API (Crow): http://localhost:8080 (default) — keep this running so the frontend can load data
 
-- `http://localhost:8080/`
 
 #
 ## API
@@ -166,11 +188,9 @@ _If this project or its data is referenced in academic work, please cite:_
 Tatu Ylonen. Wiktextract: Wiktionary as Machine-Readable Structured Data.
 Proceedings of the 13th Conference on Language Resources and Evaluation (LREC),
 pp. 1317–1325, Marseille, 20–25 June 2022.
-Linking to the Wiktextract project website is also appreciated:
 ```
 
 _Linking to the Wiktextract project website is also appreciated:_
 ```
 https://kaikki.org/
 ```
-

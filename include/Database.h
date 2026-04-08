@@ -14,27 +14,27 @@
 class Database
 {
 public:
-	using WordRecordProcessor = std::function<void(int id, std::string_view text)>;
+	using WordRecordProcessor = std::function<void(dct::WordId id, std::string_view text, dct::Frequency frequency)>;
 
 	Database(std::string_view filename);
 	~Database() = default;
 
-	bool insertEtymology(int word_id, const std::vector<std::string> &etymology);
-	bool insertForm(int word_id, const std::string &form, const std::string &tag);
-	bool insertExample(int sense_id, const std::string &example);
-	bool insertSynonym(int sense_id, const std::string &synonym);
-	bool insertAntonym(int sense_id, const std::string &antonym);
+	bool insertEtymology(dct::WordId word_id, const std::vector<std::string> &etymology);
+	bool insertForm(dct::WordId word_id, const std::string &form, const std::string &tag);
+	bool insertExample(dct::WordId sense_id, const std::string &example);
+	bool insertSynonym(dct::WordId sense_id, const std::string &synonym);
+	bool insertAntonym(dct::WordId sense_id, const std::string &antonym);
 	bool isEmpty() const;
 	bool contains(std::string_view word) const;
 		
-	int insertWord(const std::string &lemma, const std::string &displayLemma);
-	int insertSense(int word_id, const std::string &pos, const std::string &definition);
+	dct::WordId insertWord(const std::string &lemma, const std::string &displayLemma, dct::Frequency frequency);
+	dct::WordId insertSense(dct::WordId word_id, const std::string &pos, const std::string &definition);
 
 	void createTables();
 	void clearDB();
 	void streamAllWordsAndForms(const WordRecordProcessor& processor) const;
 
-	WordInfo getInfo(int word_id) const;
+	WordInfo getInfo(dct::WordId word_id) const;
 
 private:
 	struct Sqlite3Deleter
@@ -53,13 +53,13 @@ private:
 	/*********************************
     // Helper declarations go here
     **********************************/
-	std::vector<std::string> fetchStrings(std::string_view sql, int id) const; // currently unsused
-	std::vector<Form> fetchForms(int word_id) const;	
+	std::vector<std::string> fetchStrings(std::string_view sql, dct::WordId id) const; // currently unsused
+	std::vector<Form> fetchForms(dct::WordId word_id) const;	
 	std::unordered_map<int, std::vector<std::string>> fetchGroupedStrings( 
 	    std::string_view table, 
 	    std::string_view value_col, 
 	    std::string_view id_col, 
-	    const std::vector<int> &ids) const;
+	    const std::vector<dct::WordId> &ids) const;
 
 };
 #endif 

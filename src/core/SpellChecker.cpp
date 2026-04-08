@@ -7,14 +7,20 @@ SpellChecker::SpellChecker(const Dictionary &dict) : m_dict{ dict } {}
 
 std::vector<std::string> SpellChecker::suggest(std::string_view prefix) const
 {
-	std::vector<std::string> results;
-	if (prefix.empty()) return results;
+	std::vector<std::pair<std::string, dct::Frequency>> suggestions;
+	if (prefix.empty()) return {};
 
 	std::string clean = dct::sanitizeWord(prefix);
-	if (clean.empty()) return results;
+	if (clean.empty()) return {};
 
 	// grabs words with the same prefix
-    m_dict.suggestFromPrefix(clean, results, dct::g_max_suggestions);
+    m_dict.suggestFromPrefix(clean, suggestions, dct::g_max_suggestions);
+
+	std::vector<std::string> results;
+	results.reserve(suggestions.size());
+	for (const auto& p : suggestions) {
+		results.push_back(p.first);
+	}
 
     return results;
 }

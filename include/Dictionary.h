@@ -17,7 +17,7 @@ public:
 	bool contains(std::string_view word) const;
 
 	// spellchecking functions
-	void suggestFromPrefix(std::string_view prefix, std::vector<std::string> &results, std::size_t limit) const;
+	void suggestFromPrefix(std::string_view prefix, std::vector<std::pair<std::string, dct::Frequency>> &results, std::size_t limit) const;
 	std::vector<std::string> suggestSpelling(std::string_view word) const;
 
 private:	

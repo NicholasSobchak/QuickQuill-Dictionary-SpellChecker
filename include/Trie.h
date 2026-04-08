@@ -8,20 +8,21 @@
 #include <string_view>
 #include <vector>
 
-class Trie {
+class Trie 
+{
 public:
     Trie();
     ~Trie() = default;
 
-    bool insert(std::string_view word, int word_id);
+    bool insert(std::string_view word, dct::WordId word_id, dct::Frequency frequency);
     bool remove(const std::string &word);
     bool contains(std::string_view word) const;
     bool isEmpty() const;
 
-    int getWordId(std::string_view word) const;
+    dct::WordId getWordId(std::string_view word) const;
 
     void collectWithPrefix(std::string_view prefix,
-                           std::vector<std::string> &out, std::size_t limit) const;
+                           std::vector<std::pair<std::string, dct::Frequency>> &out, std::size_t limit) const;
     void dump() const;
     void dumpWord(std::string_view word) const;
     void clear();
@@ -32,7 +33,8 @@ private:
     struct TrieNode {
         std::array<std::unique_ptr<TrieNode>, dct::g_alpha> m_children;
         bool m_isEndOfWord{false};
-        int m_wordID{dct::g_defaultId};
+        dct::WordId m_wordID;
+        dct::Frequency frequency;
     };
 
     std::unique_ptr<TrieNode> m_root;
@@ -46,6 +48,6 @@ private:
     bool removeWord(TrieNode *node, std::string_view word);
     void dumpNode(const TrieNode *node, const std::string &prefix) const;
     void wordsFromNode(const TrieNode *node, std::string &currentWord,
-                       std::vector<std::string> &out, std::size_t limit) const;
+                       std::vector<std::pair<std::string, dct::Frequency>> &out, std::size_t limit) const;
 };
 #endif

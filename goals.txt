@@ -1,5 +1,15 @@
 To organize my thoughts...
 
+Import Complete:
+  | Entries     : 1,441,164
+  | Words       : 1,249,942 
+  | Senses      : 1,721,645 
+  | Forms       : 951,202 
+  | Examples    : 718,930
+  | Synonyms    : 550,274 
+  | Antonyms    : 27,485     
+  | Etymologies : 550,369
+
 ADD
 {
 	- add Neil Martini to the dictionary (manually)
@@ -13,12 +23,18 @@ ADD
 
 
 THE GENERAL FLOW:
-Open DB
-Create tables (if not exist)
-if (DB.isEmpty())
-    load JSON into DB
-Load Trie from DB (lemma and all forms)
-Start server
+- Start server
+  | Read Config singleton
+  | Warm-up the dictionary chache and start Crow HTTP server on server_port
+  | http::warmupDictionary() constructs static Dictionary + SpellChecker
+  | http::runServer (Server.cpp) builds crow::SimpleApp and registers routes from registerWordRoutes, then calls app.port(...).multithreaded().run()
+
+- Routing and Reponse
+  | In registerWordRoutes, / and SPA fallback /<path> serve web/dist/index.html
+  | /assests/<path> serve static hashed assets with MIME guessed by guessContentType
+  | /api/health
+  | /api/word/<string> calls search(word) 
+
 
 TODO
 {
@@ -30,19 +46,21 @@ TODO
 		
 	frontend
 	{
-		- implement JS to work with html
-		- isolate relevant word information to be returned first
 		- add ghost autofill
 		- add "similar words" field (comes from suggest)
+		- cache popular searches using Redis or Memcached
 	}
 
 	backend
 	{
 		- continue Unit tests
-
-		- fix word suggestions (relavance)
-		- implement spellchecking logic
-		- implement autofill logic
+		
+		- search cached words first
+		{
+			- fix word suggestions (relavance)
+			- implement spellchecking logic
+			- implement autofill logic
+		}
 		- add service layer between route and DB
 		- add batching to improve performance
 		- add catch2 to cmake
@@ -60,6 +78,10 @@ DONE
 	
 	frontend
 	{
+		- implement JS to work with html
+		- fix tab layout when fullscreen is pressed 
+		- isolate relevant word information to be returned first
+		- add a "previously searched" field (use really cool gothic looking boxes for these fields)
 		- set up basic html frontend
 		- updated graphics
 		- incorporate status on errors
@@ -70,6 +92,7 @@ DONE
 
 	backend
 	{
+		- accept input with '.' (filter it out)
 		- cut down on query times / warm-up query
 		- implemented crow to work with a 8080 localhost
 		- create DB with kaikki dictionary
@@ -79,6 +102,7 @@ DONE
 		- Dictionary talks to all classes and handles caching
 		- keeep punctuation in the word that is returned (displayLemma)
 		- add "did you mean?" (correct)
+		- checkout failed word corrections in the backend search function (return "word not found" as good practice)
 	{
 }
 
