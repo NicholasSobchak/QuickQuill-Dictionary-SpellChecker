@@ -49,7 +49,6 @@ TODO
 		- add ghost autofill
 		- add "similar words" field (comes from suggest)
 		- cache popular searches using Redis or Memcached
-		- fix tab layout when fullscreen is pressed 
 	}
 
 	backend
@@ -65,8 +64,6 @@ TODO
 		- add service layer between route and DB
 		- add batching to improve performance
 		- add catch2 to cmake
-		- accept input with '.' (filter it out)
-		- checkout failed word corrections in the backend search function (return "word not found" as good practice)
 	}
 }
 
@@ -82,6 +79,7 @@ DONE
 	frontend
 	{
 		- implement JS to work with html
+		- fix tab layout when fullscreen is pressed 
 		- isolate relevant word information to be returned first
 		- add a "previously searched" field (use really cool gothic looking boxes for these fields)
 		- set up basic html frontend
@@ -94,6 +92,7 @@ DONE
 
 	backend
 	{
+		- accept input with '.' (filter it out)
 		- cut down on query times / warm-up query
 		- implemented crow to work with a 8080 localhost
 		- create DB with kaikki dictionary
@@ -103,6 +102,7 @@ DONE
 		- Dictionary talks to all classes and handles caching
 		- keeep punctuation in the word that is returned (displayLemma)
 		- add "did you mean?" (correct)
+		- checkout failed word corrections in the backend search function (return "word not found" as good practice)
 	{
 }
 
