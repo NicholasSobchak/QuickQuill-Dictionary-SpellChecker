@@ -1,5 +1,13 @@
 <p align="center"><img src="QuickQuill-logo.png" alt="QuickQuill Logo" width=600 style="background: transparent;" /></p>
+
 <h4 align="center">A Quick Lookup Dictionary at your service.</h4>
+<p align="center">
+<a href="https://github.com/NicholasSobchak/QuickQuill-Dictionary-SpellChecker/actions"><img src="https://github.com/NicholasSobchak/QuickQuill-Dictionary-SpellChecker/actions/workflows/ci.yml/badge.svg" alt="Build and test"></a>
+<!-- Placeholder -->
+<a href="https://github.com/NicholasSobchak/QuickQuill-Dictionary-SpellChecker/releases"><img src="https://img.shields.io/badge/version-0.0.0-black" alt="Version"></a>
+<a href="."><img src="https://img.shields.io/badge/C%2B%2B-55.3%25-00599C?logo=cplusplus" alt="C++"></a>
+<a href="."><img src="https://img.shields.io/badge/JavaScript-14.6%25-F7DF1E?logo=javascript" alt="JavaScript"></a>
+</p>
 
 #
 ### Description
