@@ -1,4 +1,4 @@
-name: C++ with Node.js CI
+name: build_and_test 
 
 on:
   push:
