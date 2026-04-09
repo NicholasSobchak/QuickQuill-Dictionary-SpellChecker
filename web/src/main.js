@@ -13,8 +13,13 @@ const suggestToggle = document.getElementById('suggestToggle');
 const suggestDrawer = document.getElementById('suggestDrawer');
 const suggestList = document.getElementById('suggestList');
 const suggestEmpty = document.getElementById('suggestEmpty');
+const suggestedBox = document.getElementById('suggestedBox');
+const suggestedList = document.getElementById('suggestedList');
+const mainResultBox = document.getElementById('resultBox');
+const SUGGESTED_LIMIT = 100;
+let suggestedWords = [];
 const HISTORY_KEY = 'quickquill-history';
-const HISTORY_LIMIT = 30;
+const HISTORY_LIMIT = 100;
 const TOGGLE_GAP = 12;
 let spinnerTimer = null;
 
@@ -51,9 +56,27 @@ function renderHistory() {
 }
 
 function renderSuggest() {
+  if (!suggestList) return;
+  suggestedWords = suggestedWords.slice(0, SUGGESTED_LIMIT);
   suggestList.innerHTML = '';
-  suggestEmpty.style.display = 'block';
-  suggestList.style.display = 'none';
+  if (!suggestedWords.length) {
+    if (suggestEmpty) suggestEmpty.style.display = 'block';
+    suggestList.style.display = 'none';
+    return;
+  }
+  if (suggestEmpty) suggestEmpty.style.display = 'none';
+  suggestList.style.display = 'flex';
+  suggestedWords.forEach((w) => {
+    const li = document.createElement('li');
+    li.className = 'history-item';
+    li.textContent = w;
+    li.addEventListener('click', () => {
+      input.value = w;
+      hideSuggestedBox();
+      lookup();
+    });
+    suggestList.appendChild(li);
+  });
 }
 
 function addToHistory(word) {
@@ -61,7 +84,7 @@ function addToHistory(word) {
   const items = loadHistory();
   const filtered = items.filter((w) => w.toLowerCase() !== word.toLowerCase());
   filtered.unshift(word);
-  saveHistory(filtered);
+  saveHistory(filtered.slice(0, HISTORY_LIMIT));
   renderHistory();
 }
 
@@ -152,6 +175,59 @@ function toggleSuggest(open) {
 
 suggestToggle.addEventListener('click', () => toggleSuggest());
 
+function hideSuggestedBox() {
+  if (suggestedBox) {
+    suggestedBox.classList.add('hidden');
+  }
+}
+
+function showSuggestedBox() {
+  if (!suggestedBox) return;
+  suggestedBox.classList.remove('hidden');
+  renderSuggestedSearches();
+}
+
+function renderSuggestedSearches() {
+  if (!suggestedList || !suggestedBox) return;
+  suggestedWords = suggestedWords.slice(0, SUGGESTED_LIMIT);
+  const words = suggestedWords.slice(0, Math.min(10, SUGGESTED_LIMIT));
+  suggestedList.innerHTML = '';
+  if (!words.length) {
+    suggestedBox.classList.remove('hidden');
+    const empty = document.createElement('div');
+    empty.className = 'history-empty';
+    empty.textContent = 'No suggestions yet.';
+    suggestedList.appendChild(empty);
+    return;
+  }
+
+  suggestedBox.classList.remove('hidden');
+  words.forEach((word) => {
+    const row = document.createElement('div');
+    row.className = 'suggested-row';
+
+    const bullet = document.createElement('span');
+    bullet.className = 'suggested-bullet';
+    bullet.textContent = '>';
+
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'chip suggested-chip';
+    chip.textContent = word;
+    chip.addEventListener('click', () => {
+      input.value = word;
+      hideSuggestedBox();
+      lookup();
+    });
+
+    row.appendChild(bullet);
+    row.appendChild(chip);
+    suggestedList.appendChild(row);
+  });
+}
+
+renderSuggestedSearches();
+
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && historyDrawer.classList.contains('open')) {
     toggleHistory(false);
@@ -163,9 +239,8 @@ document.addEventListener('keydown', (e) => {
 
 function clearResult() {
   while (result.firstChild) result.removeChild(result.firstChild);
-  const resultBox = document.querySelector('.result-box');
-  if (resultBox) {
-    resultBox.classList.remove('has-results');
+  if (mainResultBox) {
+    mainResultBox.classList.remove('has-results');
   }
 }
 
@@ -254,9 +329,8 @@ function renderWord(data) {
     return;
   }
 
-  const resultBox = document.querySelector('.result-box');
-  if (resultBox) {
-    resultBox.classList.add('has-results');
+  if (mainResultBox) {
+    mainResultBox.classList.add('has-results');
   }
 
   const lemma = document.createElement('h2');
@@ -407,6 +481,7 @@ async function lookup() {
   const word = input.value.trim();
   if (!word) {
     clearResult();
+    showSuggestedBox();
     renderWord({ error: 'Enter a word' }, '');
     input.focus();
     return;
@@ -418,6 +493,7 @@ async function lookup() {
     return;
   }
 
+  hideSuggestedBox();
   button.disabled = true;
   spinner.style.display = 'inline-block';
   if (spinnerTimer) clearInterval(spinnerTimer);

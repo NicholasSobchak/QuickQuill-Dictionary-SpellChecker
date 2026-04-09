@@ -89,6 +89,7 @@ int main()
 {
     Dictionary dict;
     SpellChecker checker(dict);
+#if 0 
     std::cout << "TEST BUILD: lookup <word>, correct <word>, suggest <word>, exit\n";
 
 	// currently testing funcitons needed to be implemented (printWordInfo, checker.correct, checker.suggest
@@ -152,7 +153,7 @@ int main()
 
 		std::cout << "Unknown command. Use: lookup <word> | correct <word> | suggest <word> | exit\n";
 	}
-	
+#endif	
 // basic HTTP TCP server build
 #if 0
 	int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
