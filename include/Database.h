@@ -17,6 +17,10 @@ public:
 	using WordRecordProcessor = std::function<void(dct::WordId id, std::string_view text, dct::Frequency frequency)>;
 
 	Database(std::string_view filename);
+	Database(const Database&) = delete;
+	Database& operator=(const Database&) = delete;
+	Database(Database&&) noexcept = default;
+	Database& operator=(Database&&) noexcept = default;
 	~Database() = default;
 
 	bool insertEtymology(dct::WordId word_id, const std::vector<std::string> &etymology);

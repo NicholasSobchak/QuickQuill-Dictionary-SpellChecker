@@ -340,7 +340,7 @@ WordInfo Database::getInfo(dct::WordId word_id) const {
                 reinterpret_cast<const char *>(sqlite3_column_text(stmt, 1));
             info.lemma = lemmaTxt ? lemmaTxt : "";
             info.displayLemma = displayTxt ? displayTxt : info.lemma;
-            info.frequency = sqlite3_column_int(stmt, 2);
+            info.frequency = dct::Frequency{sqlite3_column_int(stmt, 2)};
         }
     }
     if (stmt)

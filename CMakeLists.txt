@@ -19,3 +19,7 @@ find_package(unofficial-sqlite3 CONFIG REQUIRED)
 find_package(Threads REQUIRED)
 
 add_subdirectory(src)
+
+# Tests
+enable_testing()
+add_subdirectory(tests)

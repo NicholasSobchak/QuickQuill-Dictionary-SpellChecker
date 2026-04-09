@@ -89,7 +89,7 @@ int main()
 {
     Dictionary dict;
     SpellChecker checker(dict);
-#if 0 
+#if 1 
     std::cout << "TEST BUILD: lookup <word>, correct <word>, suggest <word>, exit\n";
 
 	// currently testing funcitons needed to be implemented (printWordInfo, checker.correct, checker.suggest

@@ -22,10 +22,10 @@ struct Form
 
 struct WordInfo
 {
-	dct::WordId id;   
+	dct::WordId id{};
     std::string lemma;
 	std::string displayLemma;	
-	int frequency{0};
+	dct::Frequency frequency{}; 
 
 	std::vector<std::string> etymology;
 	std::vector<Form> forms; 
