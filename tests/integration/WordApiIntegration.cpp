@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <nlohmann/json.hpp>
 #include "http/handlers/WordHandler.h"
-#include "TestDbFixture.h"
+#include "MockDB.h"
 
 TEST_CASE("search returns 200 with found word", "[integration][api]")
 {

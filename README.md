@@ -76,7 +76,7 @@ Example `config.json`:
 ```json
 {
   "database_path": "dictionary.db",
-  "server_port": 8080,
+  "server_port": 8080
 }
 ```
 
