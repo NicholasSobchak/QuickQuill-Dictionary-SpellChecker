@@ -1,0 +1,57 @@
+name: C++ with Node.js CI
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: 'recursive' # Important if you have git submodules
+
+    # Frontend (Web) Build and Dependencies
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20' # You can specify a different Node.js version if needed
+
+    - name: Install Frontend Dependencies
+      run: npm install
+      working-directory: web/
+
+    - name: Build Frontend
+      run: npm run build
+      working-directory: web/
+
+    # C++ Backend Build and Dependencies
+    - name: Install C++ Build Tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake ninja-build build-essential
+
+    - name: Bootstrap Vcpkg
+      run: |
+        git clone https://github.com/microsoft/vcpkg.git
+        ./vcpkg/bootstrap-vcpkg.sh
+
+    - name: Install C++ Dependencies with Vcpkg
+      run: |
+        ./vcpkg/vcpkg install --triplet x64-linux # Adjust triplet if targeting different platforms
+      # Vcpkg will automatically use vcpkg.json from the project root
+
+    - name: Configure CMake
+      run: cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake
+
+    - name: Build C++ Project
+      run: cmake --build build
+
+    - name: Run C++ Tests
+      # This assumes your C++ tests are set up with CTest and can be run via 'ctest'
+      run: cd build && ctest --output-on-failure
