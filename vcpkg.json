@@ -4,6 +4,7 @@
   "dependencies": [
     "crow",
     "sqlite3",
-    "nlohmann-json"
+    "nlohmann-json",
+    "catch2"
   ]
 }
