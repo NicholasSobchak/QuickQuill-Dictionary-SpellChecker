@@ -113,7 +113,7 @@ cmake -S . -B build \
 ```
 
 > If you see errors like `Could not find CrowConfig.cmake` or `nlohmann_jsonConfig.cmake`,
-> it usually means you forgot `-DCMAKE_TOOLCHAIN_FILE=...`.
+> it usually means you forgot `-DCMAKE_TOOLCHAIN_FILE=...` (this is a problem I was having too).
 
 #### 3) Build
 

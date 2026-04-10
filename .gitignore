@@ -13,3 +13,4 @@ dictionary.db-wal
 config.json
 .codex
 web/node_modules/
+vcpkg/
