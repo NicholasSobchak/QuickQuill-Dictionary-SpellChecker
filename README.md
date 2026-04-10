@@ -60,10 +60,13 @@ Then place `dictionary.db` in the project root.
 
 ### This Project Uses
   - C++17
-  - SQLite3 (https://sqlite.org/cintro.html)
+  - SQLite3 (https://sqlite.org/cintro.html) 
   - Crow (HTTP) (https://crowcpp.org/master/)
   - Catch2 (https://github.com/catchorg/Catch2)
   - nlohmann/json
+  - Node.js
+  - Vite
+> Check out dependencies in vcpkg.json
 
 ### Project Layout
 
@@ -72,7 +75,9 @@ Then place `dictionary.db` in the project root.
 - `src/http/*`: routes, handlers, DTOs
 - `src/core/*`: dictionary, trie, spell checker
 - `src/data/*`: SQLite persistence layer
-- `web/index.html`: frontend
+- `tests/*`: contains all C++ unit and integration tests.
+- `web/*`: directory for frontend development.
+- `web/index.html`: main entry point for the frontend web application
 - `scripts/import_kaikki.py`: database import script
 
 ### Configuration
@@ -90,7 +95,6 @@ Example `config.json`:
 
 - `database_path`: The path to the SQLite database file.
 - `server_port`: The port for the web server to listen on.
-- `max_suggestions`: The maximum number of suggestions to return for a prefix.
 
 ### Build
 
