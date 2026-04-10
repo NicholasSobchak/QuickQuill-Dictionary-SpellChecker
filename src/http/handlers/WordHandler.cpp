@@ -74,7 +74,9 @@ namespace http
 	SearchResult search(const std::string& word)
 	{
 		const std::string decoded = decodeInput(word); // correct input
-		if (decoded.empty()) // strictly prohibited characters
+		
+		// strictly prohibited characters
+		if (decoded.empty()) 
 		{
 			nlohmann::json body = {
 				{"error", "Enter a valid word"}
@@ -97,7 +99,7 @@ namespace http
 			return { body.dump(), 400 };
 		}
 
-		// search for input in the dictionary database
+		// search for completely sanitized input in the dictionary database
 		WordInfo info = dict().getWordInfo(sanitized);
 		if (info.lemma.empty())
 		{

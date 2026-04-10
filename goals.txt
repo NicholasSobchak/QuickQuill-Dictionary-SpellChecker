@@ -46,8 +46,9 @@ TODO
 		
 	frontend
 	{
-		- add ghost autofill
-		- add "similar words" field (comes from suggest)
+		- add ghost autofill (use cached words)
+		- add Suggested Words (use suggest function)
+		- add suggested searches field (take any random 10 words from Suggested Words)
 		- cache popular searches using Redis or Memcached
 	}
 

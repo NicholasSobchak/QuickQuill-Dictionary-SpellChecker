@@ -431,6 +431,16 @@ input {
   min-height: 80px;
 }
 
+.suggested-box {
+  margin-top: 20px;
+  margin-bottom: 6px;
+  padding: 18px;
+}
+
+.hidden {
+  display: none !important;
+}
+
 .corner-tl,
 .corner-tr,
 .corner-bl,
@@ -448,7 +458,11 @@ input {
 .result-box.has-results .corner-tl,
 .result-box.has-results .corner-tr,
 .result-box.has-results .corner-bl,
-.result-box.has-results .corner-br {
+.result-box.has-results .corner-br,
+.suggested-box.has-results .corner-tl,
+.suggested-box.has-results .corner-tr,
+.suggested-box.has-results .corner-bl,
+.suggested-box.has-results .corner-br {
   visibility: visible;
 }
 
@@ -485,6 +499,46 @@ input {
   min-height: 0;
 }
 
+.suggested-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.suggested-title {
+  margin: 0;
+  font-size: 15px;
+  letter-spacing: 0.9px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.suggested-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.suggested-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.suggested-bullet {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 14px;
+  color: var(--muted);
+  min-width: 10px;
+  transform: translateY(2px);
+}
+
+.suggested-chip {
+  padding-left: 0;
+}
+
 .section {
   margin-top: 14px;
 }
@@ -509,6 +563,7 @@ input {
   border: none;
   margin: 4px 6px 0 0;
   font-size: 12px;
+   font-family: 'Times New Roman', Times, serif;
   background: transparent;
   cursor: pointer;
   color: inherit;
