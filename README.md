@@ -60,9 +60,9 @@ Then place `dictionary.db` in the project root.
 
 ### This Project Uses
   - C++17
-  - SQLite3 (https://sqlite.org/cintro.html) 
-  - Crow (HTTP) (https://crowcpp.org/master/)
-  - Catch2 (https://github.com/catchorg/Catch2)
+  - [SQLite3](https://sqlite.org/cintro.html) 
+  - [Crow (HTTP)](https://crowcpp.org/master/)
+  - [Catch2](https://github.com/catchorg/Catch2)
   - nlohmann/json
   - Node.js
   - Vite
