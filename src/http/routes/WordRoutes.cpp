@@ -4,11 +4,17 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <vector>
 
 namespace http
 {
-	namespace // actual API endpoints
+	namespace 
 	{
+		const std::string kDistRoot = "web/dist";
+
+		/**
+		 * Type safety: wrapper carrying a MIME type string
+		 */
 		struct ContentType
 		{
 			std::string value;
@@ -37,6 +43,35 @@ namespace http
 			return response;
 		}
 
+		std::string guessContentType(const std::string& path)
+		{
+			static const std::vector<std::pair<std::string, std::string>> mapping = {
+				{".html", "text/html; charset=utf-8"},
+				{".js", "application/javascript"},
+				{".css", "text/css; charset=utf-8"},
+				{".png", "image/png"},
+				{".jpg", "image/jpeg"},
+				{".jpeg", "image/jpeg"},
+				{".svg", "image/svg+xml"},
+				{".gif", "image/gif"},
+				{".webp", "image/webp"},
+				{".woff2", "font/woff2"},
+				{".woff", "font/woff"},
+				{".ttf", "font/ttf"},
+				{".otf", "font/otf"},
+			};
+
+			for (const auto& [ext, mime] : mapping)
+			{
+				if (path.size() >= ext.size() &&
+				    path.compare(path.size() - ext.size(), ext.size(), ext) == 0)
+				{
+					return mime;
+				}
+			}
+			return "application/octet-stream";
+		}
+
 		crow::response fileResponseFromFile(const std::string& path, const ContentType& contentType)
 		{
 			std::ifstream file(path, std::ios::binary);
@@ -53,36 +88,31 @@ namespace http
 		}
 	}
 
-	// Requests
+	/**
+	 * Requests
+	 */
 	void registerWordRoutes(crow::SimpleApp& app)
 	{
-		// WEB setup
+		/**
+		 * Static frontend from Vite build (web/dist)
+		 */
 		CROW_ROUTE(app, "/") ([] {
-			return htmlResponseFromFile("web/index.html");
+			return htmlResponseFromFile(kDistRoot + "/index.html");
 		});
 
-		CROW_ROUTE(app, "/assets/Quotex.otf") ([] {
-			return fileResponseFromFile("web/assets/Quotex.otf", ContentType("font/otf"));
+		/**
+		 * Serve hashed assets (and public assets) with a catch-all in /assets/
+		 */
+		CROW_ROUTE(app, "/assets/<path>")
+		([](const std::string& path) {
+			const std::string full = kDistRoot + "/assets/" + path;
+			const auto mime = guessContentType(full);
+			return fileResponseFromFile(full, ContentType(mime));
 		});
 
-		CROW_ROUTE(app, "/assets/fonts.css") ([] {
-			return fileResponseFromFile("web/assets/fonts.css", ContentType("text/css; charset=utf-8"));
-		});
-
-		CROW_ROUTE(app, "/assets/quill.png") ([] {
-			return fileResponseFromFile("web/assets/quill.png", ContentType("image/png"));
-		});
-
-		CROW_ROUTE(app, "/assets/school-logo-no-bg.png") ([] {
-			return fileResponseFromFile("web/assets/school-logo-no-bg.png", ContentType("image/png"));
-		});
-
-		CROW_ROUTE(app, "/assets/school_backdrop.jpg") ([] {
-			return fileResponseFromFile("web/assets/school_backdrop.jpg", ContentType("image/jpeg"));
-		});
-
-
-		// GET requests
+		/**
+		* GET requests
+		*/
 		CROW_ROUTE(app, "/api/health") ([] {
 			return jsonResponse("{\"ok\":true}");
 		});

@@ -2,7 +2,7 @@ nlohmann/kaikki.org-dictionary-English.jsonl
 dictionary.db
 dictionary.zip
 dictionary-db.zip
-dictionary-db.shm
+dictionary.db-shm
 dictionary.db-wal
 *.o
 *.obj
@@ -11,3 +11,6 @@ dictionary.db-wal
 /bin/
 .venv/
 config.json
+.codex
+web/node_modules/
+vcpkg/

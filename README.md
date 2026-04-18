@@ -1,5 +1,13 @@
 <p align="center"><img src="QuickQuill-logo.png" alt="QuickQuill Logo" width=600 style="background: transparent;" /></p>
+
 <h4 align="center">A Quick Lookup Dictionary at your service.</h4>
+<p align="center">
+<a href="https://github.com/NicholasSobchak/QuickQuill-Dictionary-SpellChecker/actions"><img src="https://github.com/NicholasSobchak/QuickQuill-Dictionary-SpellChecker/actions/workflows/ci.yml/badge.svg" alt="Build and test"></a>
+<!-- Placeholder -->
+<a href="https://github.com/NicholasSobchak/QuickQuill-Dictionary-SpellChecker/releases"><img src="https://img.shields.io/badge/version-0.0.0-black" alt="Version"></a>
+<a href="."><img src="https://img.shields.io/badge/C%2B%2B-55.3%25-00599C?logo=cplusplus" alt="C++"></a>
+<a href="."><img src="https://img.shields.io/badge/JavaScript-14.6%25-F7DF1E?logo=javascript" alt="JavaScript"></a>
+</p>
 
 #
 ### Description
@@ -20,6 +28,26 @@ You can find the QuickQuill website here.
     - Examples
     - Forms/inflections and etymology
 
+### Analytics
+```
+Import Complete:
+  | Entries     : 1,441,164
+  | Words       : 1,249,942
+  | Senses      : 1,721,645
+  | Forms       : 951,202
+  | Examples    : 718,930
+  | Synonyms    : 550,274
+  | Antonyms    : 27,485
+  | Etymologies : 550,369
+```
+
+### Technical Highlights
+  - Trie-based autocomplete supporting 1.2M+ words
+  - Sub-0.18ms cached search queries for words with extensive data
+  - Memory-efficient dictionary indexing
+  - REST API backend written in C++
+  - Unit tested with Catch2
+ 
 #
 ## Setting Up / Building this Project Locally
 
@@ -32,10 +60,13 @@ Then place `dictionary.db` in the project root.
 
 ### This Project Uses
   - C++17
-  - SQLite3 (https://sqlite.org/cintro.html)
-  - Crow (HTTP) (https://crowcpp.org/master/)
-  - Catch2 (https://github.com/catchorg/Catch2)
+  - [SQLite3](https://sqlite.org/cintro.html) 
+  - [Crow (HTTP)](https://crowcpp.org/master/)
+  - [Catch2](https://github.com/catchorg/Catch2)
   - nlohmann/json
+  - Node.js
+  - Vite
+> Check out dependencies in vcpkg.json
 
 ### Project Layout
 
@@ -44,7 +75,9 @@ Then place `dictionary.db` in the project root.
 - `src/http/*`: routes, handlers, DTOs
 - `src/core/*`: dictionary, trie, spell checker
 - `src/data/*`: SQLite persistence layer
-- `web/index.html`: frontend
+- `tests/*`: contains all C++ unit and integration tests.
+- `web/*`: directory for frontend development.
+- `web/index.html`: main entry point for the frontend web application
 - `scripts/import_kaikki.py`: database import script
 
 ### Configuration
@@ -56,13 +89,12 @@ Example `config.json`:
 ```json
 {
   "database_path": "dictionary.db",
-  "server_port": 8080,
+  "server_port": 8080
 }
 ```
 
 - `database_path`: The path to the SQLite database file.
 - `server_port`: The port for the web server to listen on.
-- `max_suggestions`: The maximum number of suggestions to return for a prefix.
 
 ### Build
 
@@ -85,7 +117,7 @@ cmake -S . -B build \
 ```
 
 > If you see errors like `Could not find CrowConfig.cmake` or `nlohmann_jsonConfig.cmake`,
-> it usually means you forgot `-DCMAKE_TOOLCHAIN_FILE=...`.
+> it usually means you forgot `-DCMAKE_TOOLCHAIN_FILE=...` (this is a problem I was having too).
 
 #### 3) Build
 
@@ -107,6 +139,7 @@ Commands:
 
 - `lookup <word>`
 - `correct <word>`
+- `suggest <word>`
 - `exit`
 
 #### 2) Web server
@@ -116,8 +149,9 @@ Commands:
 ```
 
 Open:
+- Frontend (Vite dev server): `cd web && npm install && npm run dev` then open http://localhost:5173
+- Backend API (Crow): http://localhost:8080 (default) — keep this running so the frontend can load data
 
-- `http://localhost:8080/`
 
 #
 ## API
@@ -153,6 +187,10 @@ Response shape:
   "etymology": ["..."]
 }
 ```
+#
+## Autocomplete Query Functionality
+<p align="center"><img width="350" height="350" alt="QueryPyramid" src="https://github.com/user-attachments/assets/8da371ab-d159-4994-b001-dbbf5647adc2" />
+
 
 #
 ## Academia Use & Data Attribution
@@ -166,11 +204,9 @@ _If this project or its data is referenced in academic work, please cite:_
 Tatu Ylonen. Wiktextract: Wiktionary as Machine-Readable Structured Data.
 Proceedings of the 13th Conference on Language Resources and Evaluation (LREC),
 pp. 1317–1325, Marseille, 20–25 June 2022.
-Linking to the Wiktextract project website is also appreciated:
 ```
 
 _Linking to the Wiktextract project website is also appreciated:_
 ```
 https://kaikki.org/
 ```
-
