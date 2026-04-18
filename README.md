@@ -189,7 +189,7 @@ Response shape:
 ```
 #
 ## Autocomplete Query Functionality
-<img width="1080" height="1080" alt="QueryPyramid" src="https://github.com/user-attachments/assets/8da371ab-d159-4994-b001-dbbf5647adc2" />
+<p align="center"><img width="350" height="350" alt="QueryPyramid" src="https://github.com/user-attachments/assets/8da371ab-d159-4994-b001-dbbf5647adc2" />
 
 
 #
