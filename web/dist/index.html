@@ -6,8 +6,8 @@
     <title>Quick Quill</title>
     <link rel="stylesheet" href="/assets/fonts.css" />
     <link rel="icon" href="/assets/quill.png" />
-    <script type="module" crossorigin src="/assets/index-Kh1UqQLH.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-B4UHa8pY.css">
+    <script type="module" crossorigin src="/assets/index-Cc_Gj6oH.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-DCioJPdU.css">
   </head>
   <body>
     <div class="shell">
@@ -26,7 +26,10 @@
         <span class="corner corner-bl"></span>
         <span class="corner corner-br"></span>
         <div class="history-inner">
-          <p class="history-title">Words You'll Like</p>
+          <div class="history-title-container">
+            <p class="history-title">Words You'll Like</p>
+            <button id="clearSuggestions" class="clear-history-button">Clear Suggestions</button>
+          </div>
           <ul id="suggestList" class="history-list"></ul>
           <div id="suggestEmpty" class="history-empty">No suggestions yet.</div>
         </div>
@@ -47,7 +50,10 @@
         <span class="corner corner-bl"></span>
         <span class="corner corner-br"></span>
         <div class="history-inner">
-          <p class="history-title">Recent searches</p>
+          <div class="history-title-container">
+            <p class="history-title">Recent searches</p>
+            <button id="clearHistory" class="clear-history-button">Clear History</button>
+          </div>
           <ul id="historyList" class="history-list"></ul>
           <div id="historyEmpty" class="history-empty">No searches yet.</div>
         </div>
@@ -74,6 +80,13 @@
           <span id="spinner" class="spinner"></span>
           <span id="statusText"></span>
         </div>
+        <div id="resultBox" class="result-box">
+          <div class="corner-tl"></div>
+          <div class="corner-tr"></div>
+          <div class="corner-bl"></div>
+          <div class="corner-br"></div>
+          <div id="result" class="result"></div>
+        </div>
         <div id="suggestedBox" class="result-box suggested-box has-results">
           <div class="corner-tl"></div>
           <div class="corner-tr"></div>
@@ -83,13 +96,6 @@
             <p class="suggested-title">Suggested searches</p>
             <div id="suggestedList" class="suggested-list"></div>
           </div>
-        </div>
-        <div id="resultBox" class="result-box">
-          <div class="corner-tl"></div>
-          <div class="corner-tr"></div>
-          <div class="corner-bl"></div>
-          <div class="corner-br"></div>
-          <div id="result" class="result"></div>
         </div>
       </section>
     </div>

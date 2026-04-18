@@ -122,5 +122,11 @@ namespace http
 			auto result = search(word);
 			return jsonResponse(result.body, result.status);
 		});
+
+		CROW_ROUTE(app, "/api/suggest/<string>")
+		([](const std::string& word) {
+			auto result = suggest(word);
+			return jsonResponse(result.body, result.status);
+		});
 	}
 }

@@ -4,8 +4,12 @@
 #include "Trie.h"
 #include "Database.h"
 #include <nlohmann/json.hpp>
+#include <unordered_set>
 #include <unordered_map>
+#include <algorithm>
 #include <fstream>
+#include <vector>
+#include <string>
 
 class Dictionary
 {
@@ -17,7 +21,7 @@ public:
 	bool contains(std::string_view word) const;
 
 	// spellchecking functions
-	void suggestFromPrefix(std::string_view prefix, std::vector<std::pair<std::string, dct::Frequency>> &results, std::size_t limit) const;
+	std::vector<std::string> suggestFromPrefix(std::string_view word) const;
 	std::vector<std::string> suggestSpelling(std::string_view word) const;
 
 private:	
@@ -29,6 +33,7 @@ private:
 
 	std::string cleanWord(std::string_view word) const;
 	void loadTrie(); // populate Trie using Database 
+	std::unordered_set<std::string> collectSuggestedWords(std::string_view word) const;
 
 };
 #endif

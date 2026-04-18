@@ -17,6 +17,8 @@ public:
 	using WordRecordProcessor = std::function<void(dct::WordId id, std::string_view text, dct::Frequency frequency)>;
 
 	Database(std::string_view filename);
+
+	// rule of 5 needed for creating a mock DB for tests
 	Database(const Database&) = delete;
 	Database& operator=(const Database&) = delete;
 	Database(Database&&) noexcept = default;

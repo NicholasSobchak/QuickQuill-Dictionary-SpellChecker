@@ -9,19 +9,24 @@ const historyToggle = document.getElementById('historyToggle');
 const historyDrawer = document.getElementById('historyDrawer');
 const historyList = document.getElementById('historyList');
 const historyEmpty = document.getElementById('historyEmpty');
+const clearHistoryButton = document.getElementById('clearHistory');
 const suggestToggle = document.getElementById('suggestToggle');
 const suggestDrawer = document.getElementById('suggestDrawer');
 const suggestList = document.getElementById('suggestList');
 const suggestEmpty = document.getElementById('suggestEmpty');
+const clearSuggestionsButton = document.getElementById('clearSuggestions');
 const suggestedBox = document.getElementById('suggestedBox');
 const suggestedList = document.getElementById('suggestedList');
 const mainResultBox = document.getElementById('resultBox');
 const SUGGESTED_LIMIT = 100;
-let suggestedWords = [];
 const HISTORY_KEY = 'quickquill-history';
 const HISTORY_LIMIT = 100;
+const SUGGESTED_KEY = 'quickquill-suggested-words';
 const TOGGLE_GAP = 12;
 let spinnerTimer = null;
+let drawerSuggestedWords = loadSuggestedWords();
+let liveSuggestedWords = [];
+let lastSuggestedQuery = '';
 
 function loadHistory() {
   const stored = localStorage.getItem(HISTORY_KEY);
@@ -30,6 +35,64 @@ function loadHistory() {
 
 function saveHistory(words) {
   localStorage.setItem(HISTORY_KEY, JSON.stringify(words.slice(0, HISTORY_LIMIT)));
+}
+
+function loadSuggestedWords() {
+  const stored = localStorage.getItem(SUGGESTED_KEY);
+  return stored ? JSON.parse(stored) : [];
+}
+
+function saveSuggestedWords(words) {
+  localStorage.setItem(SUGGESTED_KEY, JSON.stringify(words.slice(0, SUGGESTED_LIMIT)));
+}
+
+function addSearchedSuggestion(word) {
+  const cleanedWord = displayWord(word);
+  if (!cleanedWord) return;
+  mergeDrawerSuggestedWords([cleanedWord]);
+}
+
+function mergeDrawerSuggestedWords(words) {
+  if (!Array.isArray(words) || !words.length) return;
+
+  const merged = [
+    ...words.map((word) => displayWord(word)).filter(Boolean),
+    ...drawerSuggestedWords,
+  ];
+  const unique = [];
+  const seen = new Set();
+
+  merged.forEach((item) => {
+    const normalized = item.toLowerCase();
+    if (seen.has(normalized)) return;
+    seen.add(normalized);
+    unique.push(item);
+  });
+
+  drawerSuggestedWords = unique.slice(0, SUGGESTED_LIMIT);
+  saveSuggestedWords(drawerSuggestedWords);
+}
+
+async function storeSuggestionsForQuery(word) {
+  const cleanedWord = displayWord(word);
+  if (!cleanedWord) return;
+
+  if (lastSuggestedQuery.toLowerCase() === cleanedWord.toLowerCase()) {
+    mergeDrawerSuggestedWords(liveSuggestedWords);
+    renderSuggest();
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/suggest/${encodeURIComponent(cleanedWord)}`);
+    if (!res.ok) return;
+
+    const words = (await res.json()).map((item) => displayWord(item)).filter(Boolean);
+    mergeDrawerSuggestedWords(words);
+    renderSuggest();
+  } catch (err) {
+    console.error('Error storing suggestions:', err);
+  }
 }
 
 function renderHistory() {
@@ -57,16 +120,16 @@ function renderHistory() {
 
 function renderSuggest() {
   if (!suggestList) return;
-  suggestedWords = suggestedWords.slice(0, SUGGESTED_LIMIT);
+  drawerSuggestedWords = drawerSuggestedWords.slice(0, SUGGESTED_LIMIT);
   suggestList.innerHTML = '';
-  if (!suggestedWords.length) {
+  if (!drawerSuggestedWords.length) {
     if (suggestEmpty) suggestEmpty.style.display = 'block';
     suggestList.style.display = 'none';
     return;
   }
   if (suggestEmpty) suggestEmpty.style.display = 'none';
   suggestList.style.display = 'flex';
-  suggestedWords.forEach((w) => {
+  drawerSuggestedWords.forEach((w) => {
     const li = document.createElement('li');
     li.className = 'history-item';
     li.textContent = w;
@@ -86,6 +149,21 @@ function addToHistory(word) {
   filtered.unshift(word);
   saveHistory(filtered.slice(0, HISTORY_LIMIT));
   renderHistory();
+}
+
+if (clearHistoryButton) {
+  clearHistoryButton.addEventListener('click', () => {
+    localStorage.removeItem(HISTORY_KEY);
+    renderHistory();
+  });
+}
+
+if (clearSuggestionsButton) {
+  clearSuggestionsButton.addEventListener('click', () => {
+    drawerSuggestedWords = [];
+    localStorage.removeItem(SUGGESTED_KEY);
+    renderSuggest();
+  });
 }
 
 function updateHistoryLayout() {
@@ -189,8 +267,8 @@ function showSuggestedBox() {
 
 function renderSuggestedSearches() {
   if (!suggestedList || !suggestedBox) return;
-  suggestedWords = suggestedWords.slice(0, SUGGESTED_LIMIT);
-  const words = suggestedWords.slice(0, Math.min(10, SUGGESTED_LIMIT));
+  liveSuggestedWords = liveSuggestedWords.slice(0, SUGGESTED_LIMIT);
+  const words = liveSuggestedWords.slice(0, Math.min(10, SUGGESTED_LIMIT));
   suggestedList.innerHTML = '';
   if (!words.length) {
     suggestedBox.classList.remove('hidden');
@@ -227,6 +305,7 @@ function renderSuggestedSearches() {
 }
 
 renderSuggestedSearches();
+clearResult();
 
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && historyDrawer.classList.contains('open')) {
@@ -241,12 +320,39 @@ function clearResult() {
   while (result.firstChild) result.removeChild(result.firstChild);
   if (mainResultBox) {
     mainResultBox.classList.remove('has-results');
+    mainResultBox.classList.add('hidden');
   }
 }
 
 function setStatus(text, isError = false) {
   statusText.innerHTML = text || '';
   statusText.style.color = isError ? '#ff6666' : 'var(--muted)';
+}
+
+function setSuggestionStatus(word, label = word) {
+  statusText.innerHTML = '';
+  statusText.style.color = '#ff6666';
+
+  const message = document.createElement('span');
+  message.textContent = 'Did you mean ';
+
+  const link = document.createElement('a');
+  link.href = '#';
+  link.className = 'suggestion-link';
+  link.addEventListener('click', (event) => {
+    event.preventDefault();
+    input.value = word;
+    lookup();
+  });
+
+  const emphasis = document.createElement('em');
+  emphasis.className = 'corrected-word';
+  emphasis.textContent = label;
+  link.appendChild(emphasis);
+
+  message.appendChild(link);
+  message.append('?');
+  statusText.appendChild(message);
 }
 
 function addSection(title) {
@@ -312,8 +418,7 @@ function renderWord(data) {
 
   if (data.found === false) {
     if (data.suggestion && data.suggestion.toLowerCase() !== data.query.toLowerCase()) {
-      const suggestionHTML = `Did you mean <a href="#" class="suggestion-link" onclick="event.preventDefault(); document.getElementById('word').value='${data.suggestion}'; lookup();"><em class="corrected-word">${data.display_lemma || data.suggestion}</em></a>?`;
-      setStatus(suggestionHTML, true);
+      setSuggestionStatus(data.suggestion, data.display_lemma || data.suggestion);
     } else {
       setStatus(`Word <em>'${input.value}'</em> not found.`, true);
     }
@@ -330,6 +435,7 @@ function renderWord(data) {
   }
 
   if (mainResultBox) {
+    mainResultBox.classList.remove('hidden');
     mainResultBox.classList.add('has-results');
   }
 
@@ -512,10 +618,14 @@ async function lookup() {
     const data = await res.json();
     if (!res.ok) {
       renderWord(data, word);
+      await storeSuggestionsForQuery(word);
     } else {
       renderWord(data, word);
       setStatus('');
       addToHistory(displayWord(word));
+      addSearchedSuggestion(word);
+      await storeSuggestionsForQuery(word);
+      renderSuggest();
     }
   } catch (err) {
     clearResult();
@@ -531,7 +641,39 @@ async function lookup() {
   }
 }
 
+let suggestTimer;
+
+function debounce(fn, delay) {
+  return function debounced(...args) {
+    clearTimeout(suggestTimer);
+    suggestTimer = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
+
+async function fetchSuggestions() {
+  const word = input.value.trim();
+  if (word.length < 2) {
+    liveSuggestedWords = [];
+    lastSuggestedQuery = '';
+    renderSuggest();
+    renderSuggestedSearches();
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/suggest/${encodeURIComponent(word)}`);
+    if (!res.ok) return;
+
+    liveSuggestedWords = (await res.json()).map((item) => displayWord(item)).filter(Boolean);
+    lastSuggestedQuery = displayWord(word);
+    renderSuggestedSearches();
+  } catch (err) {
+    console.error('Error fetching suggestions:', err);
+  }
+}
+
 button.addEventListener('click', lookup);
 input.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') lookup();
 });
+input.addEventListener('keyup', debounce(fetchSuggestions, 300));

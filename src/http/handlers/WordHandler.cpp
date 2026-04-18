@@ -115,5 +115,22 @@ namespace http
 		return { toWordJson(info, decoded), 200 };
 	}
 
-	
+	SuggestResult suggest(const std::string& word)
+	{
+		const std::string decoded = decodeInput(word);
+		if (decoded.empty())
+		{
+			return { "[]", 200 };
+		}
+
+		const std::string sanitized = dct::sanitizeWord(decoded);
+		if (sanitized.empty())
+		{
+			return { "[]", 200 };
+		}
+
+		std::vector<std::string> suggestions = checker().suggest(sanitized);
+		nlohmann::json body = suggestions;
+		return { body.dump(), 200 };
+	}
 }
