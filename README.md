@@ -187,6 +187,10 @@ Response shape:
   "etymology": ["..."]
 }
 ```
+#
+## Autocomplete Query Functionality
+<p align="center"><img width="350" height="350" alt="QueryPyramid" src="https://github.com/user-attachments/assets/8da371ab-d159-4994-b001-dbbf5647adc2" />
+
 
 #
 ## Academia Use & Data Attribution
