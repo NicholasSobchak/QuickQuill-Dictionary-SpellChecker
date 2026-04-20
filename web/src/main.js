@@ -4,6 +4,7 @@ const input = document.getElementById('word');
 const result = document.getElementById('result');
 const spinner = document.getElementById('spinner');
 const statusText = document.getElementById('statusText');
+const alternativeSearches = document.getElementById('alternativeSearches');
 const button = document.getElementById('go');
 const historyToggle = document.getElementById('historyToggle');
 const historyDrawer = document.getElementById('historyDrawer');
@@ -80,6 +81,7 @@ async function storeSuggestionsForQuery(word) {
   if (lastSuggestedQuery.toLowerCase() === cleanedWord.toLowerCase()) {
     mergeDrawerSuggestedWords(liveSuggestedWords);
     renderSuggest();
+    syncSimilarSearchesForEmptyInput();
     return;
   }
 
@@ -90,6 +92,7 @@ async function storeSuggestionsForQuery(word) {
     const words = (await res.json()).map((item) => displayWord(item)).filter(Boolean);
     mergeDrawerSuggestedWords(words);
     renderSuggest();
+    syncSimilarSearchesForEmptyInput();
   } catch (err) {
     console.error('Error storing suggestions:', err);
   }
@@ -163,6 +166,7 @@ if (clearSuggestionsButton) {
     drawerSuggestedWords = [];
     localStorage.removeItem(SUGGESTED_KEY);
     renderSuggest();
+    syncSimilarSearchesForEmptyInput();
   });
 }
 
@@ -265,6 +269,57 @@ function showSuggestedBox() {
   renderSuggestedSearches();
 }
 
+function syncSimilarSearchesForEmptyInput() {
+  if (input.value.trim()) return;
+  liveSuggestedWords = drawerSuggestedWords.slice(0, 10);
+  renderSuggestedSearches();
+}
+
+function clearAlternativeSearches() {
+  if (!alternativeSearches) return;
+  alternativeSearches.innerHTML = '';
+  alternativeSearches.classList.add('hidden');
+}
+
+function renderAlternativeSearches(words) {
+  if (!alternativeSearches) return;
+
+  const alternatives = Array.isArray(words) ? words.filter(Boolean) : [];
+  alternativeSearches.innerHTML = '';
+
+  if (!alternatives.length) {
+    alternativeSearches.classList.add('hidden');
+    return;
+  }
+
+  const label = document.createElement('span');
+  label.className = 'alternative-searches-label';
+  label.textContent = 'Alternative Searches:';
+  alternativeSearches.appendChild(label);
+
+  alternatives.forEach((word, index) => {
+    if (index > 0) {
+      const separator = document.createElement('span');
+      separator.className = 'alternative-searches-separator';
+      separator.textContent = ',';
+      alternativeSearches.appendChild(separator);
+    }
+
+    const link = document.createElement('a');
+    link.href = '#';
+    link.className = 'alternative-search-link';
+    link.textContent = word;
+    link.addEventListener('click', (event) => {
+      event.preventDefault();
+      input.value = word;
+      lookup();
+    });
+    alternativeSearches.appendChild(link);
+  });
+
+  alternativeSearches.classList.remove('hidden');
+}
+
 function renderSuggestedSearches() {
   if (!suggestedList || !suggestedBox) return;
   liveSuggestedWords = liveSuggestedWords.slice(0, SUGGESTED_LIMIT);
@@ -306,6 +361,8 @@ function renderSuggestedSearches() {
 
 renderSuggestedSearches();
 clearResult();
+clearAlternativeSearches();
+syncSimilarSearchesForEmptyInput();
 
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && historyDrawer.classList.contains('open')) {
@@ -318,6 +375,7 @@ document.addEventListener('keydown', (e) => {
 
 function clearResult() {
   while (result.firstChild) result.removeChild(result.firstChild);
+  clearAlternativeSearches();
   if (mainResultBox) {
     mainResultBox.classList.remove('has-results');
     mainResultBox.classList.add('hidden');
@@ -438,6 +496,8 @@ function renderWord(data) {
     mainResultBox.classList.remove('hidden');
     mainResultBox.classList.add('has-results');
   }
+
+  renderAlternativeSearches(data.alternative_searches);
 
   const lemma = document.createElement('h2');
   lemma.className = 'lemma';
@@ -653,7 +713,7 @@ function debounce(fn, delay) {
 async function fetchSuggestions() {
   const word = input.value.trim();
   if (word.length < 2) {
-    liveSuggestedWords = [];
+    liveSuggestedWords = drawerSuggestedWords.slice(0, 10);
     lastSuggestedQuery = '';
     renderSuggest();
     renderSuggestedSearches();

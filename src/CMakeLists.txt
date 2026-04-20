@@ -31,7 +31,7 @@ add_executable(dict_crow
     app/main_crow.cpp
     http/Server.cpp
     http/routes/WordRoutes.cpp
-    http/handlers/WordHandler.cpp
+    http/services/WordService.cpp
     http/dto/WordResponse.cpp
     ${CORE_SOURCES}
 )

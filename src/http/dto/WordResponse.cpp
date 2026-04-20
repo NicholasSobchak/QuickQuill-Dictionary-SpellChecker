@@ -4,7 +4,9 @@
 namespace http
 {
 	// converts WordInfo into JSON response format
-	std::string toWordJson(const WordInfo& info, const std::string& query)
+	std::string toWordJson(const WordInfo& info,
+	                      const std::string& query,
+	                      const std::vector<std::string>& alternativeSearches)
 	{
 		nlohmann::json j;
 		j["id"] = info.id;
@@ -31,6 +33,7 @@ namespace http
 		}
 
 		j["etymology"] = info.etymology;
+		j["alternative_searches"] = alternativeSearches;
 
 		return j.dump();
 	}

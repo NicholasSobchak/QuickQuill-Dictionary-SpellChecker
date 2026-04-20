@@ -18,6 +18,7 @@ public:
     ~Dictionary() = default;
 
 	WordInfo getWordInfo(std::string_view word) const;
+	std::vector<std::string> getAlternativeSearches(std::string_view word, dct::WordId currentId = dct::WordId{dct::g_defaultId}) const;
 	bool contains(std::string_view word) const;
 
 	// spellchecking functions

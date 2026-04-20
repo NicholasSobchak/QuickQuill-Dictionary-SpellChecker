@@ -13,7 +13,6 @@ namespace http
 {
 	void runServer(const int port)
 	{
-		// TODO: Implement Crow server bootstrapping.
 		crow::SimpleApp app;
 		registerWordRoutes(app);
 		app.port(port).multithreaded().run();

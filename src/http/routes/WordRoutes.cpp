@@ -1,5 +1,5 @@
 #include "http/routes/WordRoutes.h"
-#include "http/handlers/WordHandler.h"
+#include "http/services/WordService.h"
 
 #include <fstream>
 #include <sstream>
@@ -119,13 +119,13 @@ namespace http
 
 		CROW_ROUTE(app, "/api/word/<string>")
 		([](const std::string& word) {
-			auto result = search(word);
+			auto result = wordService().search(word);
 			return jsonResponse(result.body, result.status);
 		});
 
 		CROW_ROUTE(app, "/api/suggest/<string>")
 		([](const std::string& word) {
-			auto result = suggest(word);
+			auto result = wordService().suggest(word);
 			return jsonResponse(result.body, result.status);
 		});
 	}

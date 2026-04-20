@@ -13,7 +13,7 @@ add_executable(runTests
     ../src/core/Trie.cpp
     ../src/data/Database.cpp
     ../src/app/Config.cpp
-    ../src/http/handlers/WordHandler.cpp
+    ../src/http/services/WordService.cpp
     ../src/http/dto/WordResponse.cpp
 )
 

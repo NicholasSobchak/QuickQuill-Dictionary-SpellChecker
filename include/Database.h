@@ -41,6 +41,7 @@ public:
 	void streamAllWordsAndForms(const WordRecordProcessor& processor) const;
 
 	WordInfo getInfo(dct::WordId word_id) const;
+	std::vector<dct::WordId> findMatchingWordIds(std::string_view word) const;
 
 private:
 	struct Sqlite3Deleter

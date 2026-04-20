@@ -29,6 +29,43 @@ WordInfo Dictionary::getWordInfo(std::string_view word) const
     return info;
 }
 
+std::vector<std::string> Dictionary::getAlternativeSearches(std::string_view word, dct::WordId currentId) const
+{
+    std::vector<std::string> alternatives;
+    std::string clean = cleanWord(word);
+    if (clean.empty()) return alternatives;
+
+    const auto ids = m_db.findMatchingWordIds(clean);
+    if (ids.size() <= 1) return alternatives;
+
+    std::unordered_set<std::string> seen;
+    for (const auto& id : ids)
+    {
+        if (currentId.value != dct::g_defaultId && id.value == currentId.value) continue;
+
+        WordInfo info;
+        auto cached = m_cache.find(id.value);
+        if (cached != m_cache.end())
+        {
+            info = cached->second;
+        }
+        else
+        {
+            info = m_db.getInfo(id);
+            m_cache.try_emplace(id.value, info);
+        }
+
+        const std::string label = info.displayLemma.empty() ? info.lemma : info.displayLemma;
+        if (label.empty()) continue;
+
+        const std::string normalized = cleanWord(label);
+        if (normalized.empty() || !seen.insert(normalized).second) continue;
+        alternatives.push_back(label);
+    }
+
+    return alternatives;
+}
+
 bool Dictionary::contains(std::string_view word) const
 {
     std::string clean = cleanWord(word);
@@ -51,6 +88,7 @@ std::vector<std::string> Dictionary::suggestFromPrefix(std::string_view word) co
     std::unordered_set<std::string> suggestionsSet = collectSuggestedWords(clean);
     std::vector<std::string> suggestions(suggestionsSet.begin(), suggestionsSet.end());
 
+	suggestions.erase(std::remove(suggestions.begin(), suggestions.end(), clean), suggestions.end());
 	// rank suggestions based on lambda calling Levenshteins's algorithm
 	std::sort(suggestions.begin(), suggestions.end(), [&](const std::string& a, const std::string& b) {
 		return dct::calculateLevenshteinDistance(clean, a) < dct::calculateLevenshteinDistance(clean, b);

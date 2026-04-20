@@ -385,6 +385,35 @@ WordInfo Database::getInfo(dct::WordId word_id) const {
     return info;
 }
 
+std::vector<dct::WordId> Database::findMatchingWordIds(std::string_view word) const {
+    std::vector<dct::WordId> ids;
+    if (word.empty())
+        return ids;
+
+    sqlite3_stmt *stmt = nullptr;
+    const char *sql =
+        "SELECT DISTINCT id FROM ("
+        "SELECT id FROM words WHERE lemma = ? "
+        "UNION "
+        "SELECT word_id AS id FROM forms WHERE form = ?"
+        ");";
+
+    if (sqlite3_prepare_v2(m_db.get(), sql, -1, &stmt, nullptr) != SQLITE_OK)
+        return ids;
+
+    sqlite3_bind_text(stmt, 1, word.data(), static_cast<int>(word.size()), SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 2, word.data(), static_cast<int>(word.size()), SQLITE_TRANSIENT);
+
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        ids.push_back(dct::WordId{sqlite3_column_int(stmt, 0)});
+    }
+
+    if (stmt)
+        sqlite3_finalize(stmt);
+
+    return ids;
+}
+
 void Database::streamAllWordsAndForms(
     const WordRecordProcessor &processor) const {
     // NOTE: This assumes m_db is a smart pointer, so we use .get()

@@ -1,11 +1,10 @@
 #include "http/Server.h"
-#include "http/handlers/WordHandler.h"
+#include "http/services/WordService.h"
 #include "Config.h"
 
 int main()
 {
-	// construct dictionary and database
-	http::warmupDictionary();
+	http::wordService().warmupDictionary();
 	http::runServer(Config::getInstance().getServerPort());
     return 0;
 }

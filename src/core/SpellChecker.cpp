@@ -70,7 +70,7 @@ void SpellChecker::printSuggest(const std::vector<std::string> &out) const
 	{
 		for (const auto &word : out)
 		{
-			std::cout << "  → " << word << '\n'; 
+			std::cout << "  → " << std::quoted(word) << '\n'; 
 		}
 	}
 }

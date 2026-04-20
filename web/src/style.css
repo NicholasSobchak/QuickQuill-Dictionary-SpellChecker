@@ -646,6 +646,34 @@ input {
   gap: 8px;
 }
 
+.alternative-searches {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.alternative-searches-label {
+  color: var(--muted);
+}
+
+.alternative-searches-separator {
+  color: var(--muted);
+  margin-right: 2px;
+}
+
+.alternative-search-link {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.alternative-search-link:hover {
+  text-decoration: underline;
+}
+
 .spinner {
   width: 1ch;
   display: none;
