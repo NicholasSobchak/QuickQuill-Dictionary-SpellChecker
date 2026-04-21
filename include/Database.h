@@ -40,6 +40,10 @@ public:
 	void clearDB();
 	void streamAllWordsAndForms(const WordRecordProcessor& processor) const;
 
+	// Escape hatch for import/maintenance tools that need prepared statements.
+	// The Database instance retains ownership; callers must not close the handle.
+	sqlite3* handle() const noexcept;
+
 	WordInfo getInfo(dct::WordId word_id) const;
 	std::vector<dct::WordId> findMatchingWordIds(std::string_view word) const;
 

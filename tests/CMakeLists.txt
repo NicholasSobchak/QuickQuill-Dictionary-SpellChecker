@@ -7,11 +7,13 @@ add_executable(runTests
     unit/TrieTests.cpp
 	unit/DictionaryTests.cpp
 	unit/DatabaseTests.cpp
+    unit/KaikkiImporterTests.cpp
 	unit/SpellCheckerTests.cpp
     ../src/core/Dictionary.cpp
     ../src/core/SpellChecker.cpp
     ../src/core/Trie.cpp
     ../src/data/Database.cpp
+    ../src/data/KaikkiImporter.cpp
     ../src/app/Config.cpp
     ../src/http/services/WordService.cpp
     ../src/http/dto/WordResponse.cpp

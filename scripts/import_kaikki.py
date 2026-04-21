@@ -1,9 +1,9 @@
-#AL
 #!/usr/bin/env python3
-"""Populate dictionary.db with the Kaikki English dictionary dump.
+"""
+Populate dictionary.db with the Kaikki English dictionary dump.
 
-The script streams the Kaikki JSONL file, normalizes each entry so it matches the
-schema expected by the C++ Dictionary/Database classes, and writes everything into
+This script streams the Kaikki JSONL file and normalizes each entry so it matches the
+word format expected by the C++ Dictionary/Database classes, it writes everything into
 SQLite in batches so we can efficiently seed the database once.
 """
 from __future__ import annotations

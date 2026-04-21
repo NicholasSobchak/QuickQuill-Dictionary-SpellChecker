@@ -1,15 +1,101 @@
 #include "Database.h"
 #include "Utils.h"
 
-Database::Database(std::string_view filename) {
+namespace
+{
+
+bool tableExists(sqlite3 *db, const char *table)
+{
+    sqlite3_stmt *stmt = nullptr;
+    const char *sql =
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1;";
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+        return false;
+    }
+
+    sqlite3_bind_text(stmt, 1, table, -1, SQLITE_TRANSIENT);
+    bool exists = (sqlite3_step(stmt) == SQLITE_ROW);
+    sqlite3_finalize(stmt);
+    return exists;
+}
+
+bool tableHasColumn(sqlite3 *db, const char *table,
+                    const char *column) { // NOLINT(bugprone-easily-swappable-parameters)
+    if (!tableExists(db, table)) {
+        return false;
+    }
+
+    sqlite3_stmt *stmt = nullptr;
+    std::string sql = "PRAGMA table_info(";
+    sql += table;
+    sql += ");";
+
+    if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+        return false;
+    }
+
+    bool found = false;
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        const char *name =
+            reinterpret_cast<const char *>(sqlite3_column_text(stmt, 1));
+        if (name && std::string_view{name} == column) {
+            found = true;
+            break;
+        }
+    }
+
+    sqlite3_finalize(stmt);
+    return found;
+}
+
+bool tableHasAnyRows(sqlite3 *db, const char *table)
+{
+    if (!tableExists(db, table)) {
+        return false;
+    }
+
+    sqlite3_stmt *stmt = nullptr;
+    std::string sql{"SELECT 1 FROM "};
+    sql += table;
+    sql += " LIMIT 1;";
+
+    if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+        return false;
+    }
+
+    bool hasRows = (sqlite3_step(stmt) == SQLITE_ROW);
+    sqlite3_finalize(stmt);
+    return hasRows;
+}
+
+void execBestEffort(sqlite3 *db, const char *sql)
+{
+    char *errMsg = nullptr;
+    if (sqlite3_exec(db, sql, nullptr, nullptr, &errMsg) != SQLITE_OK) {
+        if (errMsg) {
+            std::cerr << "SQL error: " << errMsg << '\n';
+            sqlite3_free(errMsg);
+        }
+    }
+}
+
+} // namespace
+
+Database::Database(std::string_view filename)
+{
     sqlite3 *db_ptr = nullptr;
     if (sqlite3_open(filename.data(), &db_ptr)) {
         throw std::runtime_error("Error: Can't open database\n");
     }
     m_db.reset(db_ptr);
+
+    // Ensure foreign keys + ON DELETE CASCADE behave as expected.
+    execBestEffort(m_db.get(), "PRAGMA foreign_keys = ON;");
 }
 
-void Database::createTables() {
+void Database::createTables()
+{
     /*
         Word
         ├── Etymology (one)
@@ -20,6 +106,19 @@ void Database::createTables() {
             ├── Synonyms (many)
             └── Antonyms (many)
     */
+
+    // Legacy schema cleanup/migration.
+    // - Older DBs had antonyms(antonyms TEXT) instead of antonyms(antonym TEXT).
+    if (tableExists(m_db.get(), "antonyms") &&
+        !tableHasColumn(m_db.get(), "antonyms", "antonym")) {
+        execBestEffort(m_db.get(), "DROP TABLE antonyms;");
+    }
+
+    // - Older DBs may be missing display_lemma.
+    if (tableExists(m_db.get(), "words") &&
+        !tableHasColumn(m_db.get(), "words", "display_lemma")) {
+        execBestEffort(m_db.get(), "ALTER TABLE words ADD COLUMN display_lemma TEXT;");
+    }
 
     const char *stmts[] = {
         "CREATE TABLE IF NOT EXISTS words ("
@@ -75,6 +174,17 @@ void Database::createTables() {
         }
     }
 
+    // Migrate old misspelled table if present (etymologys -> etymologies).
+    if (tableExists(m_db.get(), "etymologys") &&
+        !tableHasAnyRows(m_db.get(), "etymologies") &&
+        tableHasAnyRows(m_db.get(), "etymologys")) {
+        execBestEffort(
+            m_db.get(),
+            "INSERT INTO etymologies (word_id, etymology) "
+            "SELECT word_id, etymology FROM etymologys;");
+        execBestEffort(m_db.get(), "DROP TABLE etymologys;");
+    }
+
     const char *idx[] = {
         "CREATE INDEX IF NOT EXISTS idx_words_lemma ON words(lemma);",
         "CREATE INDEX IF NOT EXISTS idx_etymologies_word_id ON "
@@ -93,6 +203,11 @@ void Database::createTables() {
             sqlite3_free(errMsg);
         }
     }
+}
+
+sqlite3 *Database::handle() const noexcept
+{
+    return m_db.get();
 }
 
 dct::WordId Database::insertWord(const std::string &lemma,
@@ -205,7 +320,8 @@ bool Database::insertForm(dct::WordId word_id, const std::string &form,
     return true;
 }
 
-bool Database::insertExample(dct::WordId sense_id, const std::string &example) {
+bool Database::insertExample(dct::WordId sense_id, const std::string &example)
+{
     sqlite3_stmt *stmt = nullptr;
     const char *sql{"INSERT INTO examples (sense_id, example) VALUES (?, ?);"};
     if (sqlite3_prepare_v2(m_db.get(), sql, -1, &stmt, nullptr) != SQLITE_OK)
@@ -224,7 +340,8 @@ bool Database::insertExample(dct::WordId sense_id, const std::string &example) {
     return true;
 }
 
-bool Database::insertSynonym(dct::WordId sense_id, const std::string &synonym) {
+bool Database::insertSynonym(dct::WordId sense_id, const std::string &synonym)
+{
     sqlite3_stmt *stmt = nullptr;
     const char *sql{"INSERT INTO synonyms (sense_id, synonym) VALUES (?, ?);"};
     if (sqlite3_prepare_v2(m_db.get(), sql, -1, &stmt, nullptr) != SQLITE_OK)
@@ -243,7 +360,8 @@ bool Database::insertSynonym(dct::WordId sense_id, const std::string &synonym) {
     return true;
 }
 
-bool Database::insertAntonym(dct::WordId sense_id, const std::string &antonym) {
+bool Database::insertAntonym(dct::WordId sense_id, const std::string &antonym)
+{
     sqlite3_stmt *stmt = nullptr;
     const char *sql{"INSERT INTO antonyms (sense_id, antonym) VALUES (?, ?);"};
     if (sqlite3_prepare_v2(m_db.get(), sql, -1, &stmt, nullptr) != SQLITE_OK)
@@ -262,7 +380,8 @@ bool Database::insertAntonym(dct::WordId sense_id, const std::string &antonym) {
     return true;
 }
 
-bool Database::isEmpty() const {
+bool Database::isEmpty() const
+{
     sqlite3_stmt *stmt = nullptr;
     const char *sql{"SELECT 1 FROM words LIMIT 1;"};
     if (sqlite3_prepare_v2(m_db.get(), sql, -1, &stmt, nullptr) != SQLITE_OK)
@@ -275,7 +394,8 @@ bool Database::isEmpty() const {
     return (rc != SQLITE_ROW);
 }
 
-bool Database::contains(std::string_view word) const {
+bool Database::contains(std::string_view word) const
+{
     if (isEmpty())
         return false;
 
@@ -298,7 +418,8 @@ bool Database::contains(std::string_view word) const {
     return exists;
 }
 
-void Database::clearDB() {
+void Database::clearDB()
+{
     if (isEmpty())
         return;
 
@@ -324,7 +445,8 @@ void Database::clearDB() {
     }
 }
 
-WordInfo Database::getInfo(dct::WordId word_id) const {
+WordInfo Database::getInfo(dct::WordId word_id) const
+{
     WordInfo info;
     info.id = word_id;
 
@@ -385,7 +507,8 @@ WordInfo Database::getInfo(dct::WordId word_id) const {
     return info;
 }
 
-std::vector<dct::WordId> Database::findMatchingWordIds(std::string_view word) const {
+std::vector<dct::WordId> Database::findMatchingWordIds(std::string_view word) const
+{
     std::vector<dct::WordId> ids;
     if (word.empty())
         return ids;
@@ -420,9 +543,17 @@ void Database::streamAllWordsAndForms(
     sqlite3 *sqlDB = m_db.get();
     sqlite3_stmt *stmt = nullptr;
 
-    // A more efficient single query to get both words and forms
-    const char *query = "SELECT id, lemma, frequency FROM words UNION ALL SELECT word_id, "
-                        "form, 0 FROM forms;";
+    // Stream lemmas first, then forms. This prevents a form record from "winning"
+    // over the lemma in the Trie when they share the same sanitized text.
+    const char *query =
+        "SELECT id, text, frequency FROM ("
+        "  SELECT id AS id, lemma AS text, frequency AS frequency, 1 AS is_lemma"
+        "  FROM words"
+        "  UNION ALL "
+        "  SELECT word_id AS id, form AS text, 0 AS frequency, 0 AS is_lemma"
+        "  FROM forms"
+        ") "
+        "ORDER BY is_lemma DESC, frequency DESC;";
 
     if (sqlite3_prepare_v2(sqlDB, query, -1, &stmt, nullptr) != SQLITE_OK) {
         // You should probably log an error here
@@ -507,7 +638,8 @@ std::vector<std::string> Database::fetchStrings(std::string_view sql,
     return result;
 }
 
-std::vector<Form> Database::fetchForms(dct::WordId word_id) const {
+std::vector<Form> Database::fetchForms(dct::WordId word_id) const
+{
     std::vector<Form> forms;
     sqlite3_stmt *stmt{nullptr};
 

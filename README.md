@@ -5,8 +5,8 @@
 <a href="https://github.com/NicholasSobchak/QuickQuill-Dictionary-SpellChecker/actions"><img src="https://github.com/NicholasSobchak/QuickQuill-Dictionary-SpellChecker/actions/workflows/ci.yml/badge.svg" alt="Build and test"></a>
 <!-- Placeholder -->
 <a href="https://github.com/NicholasSobchak/QuickQuill-Dictionary-SpellChecker/releases"><img src="https://img.shields.io/badge/version-0.0.0-black" alt="Version"></a>
-<a href="."><img src="https://img.shields.io/badge/C%2B%2B-55.3%25-00599C?logo=cplusplus" alt="C++"></a>
-<a href="."><img src="https://img.shields.io/badge/JavaScript-14.6%25-F7DF1E?logo=javascript" alt="JavaScript"></a>
+<a href="."><img src="https://img.shields.io/badge/C%2B%2B-25-00599C?logo=cplusplus" alt="C++"></a>
+<a href="."><img src="https://img.shields.io/badge/JavaScript-25-F7DF1E?logo=javascript" alt="JavaScript"></a>
 </p>
 
 #
@@ -64,6 +64,7 @@ Then place `dictionary.db` in the project root.
   - [Crow (HTTP)](https://crowcpp.org/master/)
   - [Catch2](https://github.com/catchorg/Catch2)
   - nlohmann/json
+  - python3
   - Node.js
   - Vite
 > Check out dependencies in vcpkg.json
@@ -78,7 +79,7 @@ Then place `dictionary.db` in the project root.
 - `tests/*`: contains all C++ unit and integration tests.
 - `web/*`: directory for frontend development.
 - `web/index.html`: main entry point for the frontend web application
-- `scripts/import_kaikki.py`: database import script
+- `src/app/main_import.cpp`: JSONL-to-SQLite import tool (`dict_import`)
 
 ### Configuration
 
@@ -128,6 +129,14 @@ cmake --build build -j
 ### Run
 
 After building, the executables are located under `build/src/`.
+
+#### 0) (Optional) Build/seed the database from JSONL
+
+If you have a Kaikki/Wiktextract-style JSONL file, you can import it into SQLite:
+
+```bash
+./build/src/dict_import --json nlohmann/kaikki.org-dictionary-English.jsonl --db dictionary.db
+```
 
 #### 1) Console test mode
 

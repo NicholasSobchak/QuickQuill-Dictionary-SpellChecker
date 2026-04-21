@@ -25,6 +25,24 @@ target_link_libraries(dict PRIVATE
     unofficial::sqlite3::sqlite3
 )
 
+#
+# --- Import / Seeding Tool ---
+add_executable(dict_import
+    app/main_import.cpp
+    data/Database.cpp
+    data/KaikkiImporter.cpp
+)
+
+target_include_directories(dict_import PRIVATE
+    ../include
+    $<TARGET_PROPERTY:unofficial::sqlite3::sqlite3,INTERFACE_INCLUDE_DIRECTORIES>
+)
+
+target_link_libraries(dict_import PRIVATE
+    nlohmann_json::nlohmann_json
+    unofficial::sqlite3::sqlite3
+)
+
 
 # --- Web Application ---
 add_executable(dict_crow
