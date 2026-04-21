@@ -14,4 +14,4 @@ config.json
 .codex
 web/node_modules/
 vcpkg/
-dictionary_words
+nlohmann/dictionary_words.json

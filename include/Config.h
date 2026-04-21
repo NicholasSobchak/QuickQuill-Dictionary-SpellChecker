@@ -13,8 +13,10 @@ public:
         return instance;
     }
 
-    Config(Config const&) = delete;
-    void operator=(Config const&) = delete;
+    Config(const Config&) = delete;
+    Config operator=(const Config&) = delete;
+	Config(Config&&) = delete;
+	Config operator=(Config&&) = delete;
 
     std::string getDatabasePath() const;
     int getServerPort() const;
