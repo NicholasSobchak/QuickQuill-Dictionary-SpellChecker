@@ -58,13 +58,14 @@ Then place `dictionary.db` in the project root.
 
 ### This Project Uses
   - C++17
+  -  python3
   - [SQLite3](https://sqlite.org/cintro.html) 
   - [Crow (HTTP)](https://crowcpp.org/master/)
   - [Catch2](https://github.com/catchorg/Catch2)
-  - nlohmann/json
-  - python3
-  - Node.js
-  - Vite
+  - [CMake](https://cmake.org/documentation/)
+  - [nlohmann/json](https://json.nlohmann.me/)
+  - Vite (Node.js)
+  - clang-tidy & clang-format
 > Check out dependencies in vcpkg.json
 
 ### Project Layout
