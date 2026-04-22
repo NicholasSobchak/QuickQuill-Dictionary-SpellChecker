@@ -1,159 +1,149 @@
 // Fall 2025 - Dictionary/Spell Checker - Collaborative Project
-#include "Utils.h"
-#include "Dictionary.h"
-#include "SpellChecker.h"
-
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
 #include <chrono>
-#include <sstream>
 #include <iostream>
+#include <sstream>
 #include <string>
+
+#include "Dictionary.h"
+#include "SpellChecker.h"
+#include "Utils.h"
 
 using json = nlohmann::json;
 
-namespace
-{
-	void printWordInfo(const WordInfo& info)
-	{
-		std::cout << "\nWord ID: " << info.id << "\n";
-		std::cout << "Lemma: " << (info.lemma.empty() ? "UNKNOWN" : info.lemma) << "\n";
-		std::cout << "Display Lemma: " << (info.displayLemma.empty() ? "UNKNOWN" : info.displayLemma) << "\n";
+namespace {
+void printWordInfo(const WordInfo& info) {
+  std::cout << "\nWord ID: " << info.id << "\n";
+  std::cout << "Lemma: " << (info.lemma.empty() ? "UNKNOWN" : info.lemma)
+            << "\n";
+  std::cout << "Display Lemma: "
+            << (info.displayLemma.empty() ? "UNKNOWN" : info.displayLemma)
+            << "\n";
 
-		if (!info.senses.empty())
-		{
-			for (std::size_t i = 0; i < info.senses.size(); ++i)
-			{
-				const auto& s = info.senses[i];
-				std::cout << "  [" << i + 1 << "] "
-						  << (s.pos.empty() ? "" : s.pos + " ")
-						  << "(id " << s.id << ")\n";
+  if (!info.senses.empty()) {
+    for (std::size_t i = 0; i < info.senses.size(); ++i) {
+      const auto& s = info.senses[i];
+      std::cout << "  [" << i + 1 << "] " << (s.pos.empty() ? "" : s.pos + " ")
+                << "(id " << s.id << ")\n";
 
-				std::cout << "    Definition: "
-						  << (s.definition.empty() ? "UNKNOWN" : s.definition) << "\n";
+      std::cout << "    Definition: "
+                << (s.definition.empty() ? "UNKNOWN" : s.definition) << "\n";
 
-				if (!s.examples.empty())
-				{
-					std::cout << "    Examples:\n";
-					for (const auto& ex : s.examples)
-						std::cout << "      - " << ex << "\n";
-				}
+      if (!s.examples.empty()) {
+        std::cout << "    Examples:\n";
+        for (const auto& ex : s.examples)
+          std::cout << "      - " << ex << "\n";
+      }
 
-				if (!s.synonyms.empty())
-				{
-					std::cout << "    Synonyms: ";
-					for (std::size_t j = 0; j < s.synonyms.size(); ++j)
-					{
-						if (j) std::cout << ", ";
-						std::cout << s.synonyms[j];
-					}
-					std::cout << "\n";
-				}
+      if (!s.synonyms.empty()) {
+        std::cout << "    Synonyms: ";
+        for (std::size_t j = 0; j < s.synonyms.size(); ++j) {
+          if (j)
+            std::cout << ", ";
+          std::cout << s.synonyms[j];
+        }
+        std::cout << "\n";
+      }
 
-				if (!s.antonyms.empty())
-				{
-					std::cout << "    Antonyms: ";
-					for (std::size_t j = 0; j < s.antonyms.size(); ++j)
-					{
-						if (j) std::cout << ", ";
-						std::cout << s.antonyms[j];
-					}
-					std::cout << "\n";
-				}
+      if (!s.antonyms.empty()) {
+        std::cout << "    Antonyms: ";
+        for (std::size_t j = 0; j < s.antonyms.size(); ++j) {
+          if (j)
+            std::cout << ", ";
+          std::cout << s.antonyms[j];
+        }
+        std::cout << "\n";
+      }
 
-				std::cout << "\n";
-			}
-		}
-		else
-		{
-			std::cout << "\nNo senses available.\n";
-		}
+      std::cout << "\n";
+    }
+  } else {
+    std::cout << "\nNo senses available.\n";
+  }
 
-		if (!info.forms.empty())
-		{
-			std::cout << "Forms:\n";
-			for (std::size_t i = 0; i < info.forms.size(); ++i)
-			{
-				const auto& f = info.forms[i];
-				std::cout << "  [" << i + 1 << "] " << f.form;
-				if (!f.tag.empty()) std::cout << " (" << f.tag << ")";
-				std::cout << "\n";
-			}
-		}	
-	}
+  if (!info.forms.empty()) {
+    std::cout << "Forms:\n";
+    for (std::size_t i = 0; i < info.forms.size(); ++i) {
+      const auto& f = info.forms[i];
+      std::cout << "  [" << i + 1 << "] " << f.form;
+      if (!f.tag.empty())
+        std::cout << " (" << f.tag << ")";
+      std::cout << "\n";
+    }
+  }
 }
+} // namespace
 
-int main()
-{
-    Dictionary dict;
-    SpellChecker checker(dict);
-#if 1 
-    std::cout << "TEST BUILD: lookup <word>, correct <word>, suggest <word>, exit\n";
+int main() {
+  Dictionary dict;
+  SpellChecker checker(dict);
+#if 1
+  std::cout << "TEST BUILD: lookup <word>, correct <word>, suggest "
+               "<word>, exit\n";
 
-	// currently testing funcitons needed to be implemented (printWordInfo, checker.correct, checker.suggest
-	std::string line;
-	while (std::cout << "> " && std::getline(std::cin, line))
-	{
-		if (line.empty()) continue;
-		std::istringstream iss(line);
-		std::string command;
-		std::string arg;
-		iss >> command >> arg;
+  // currently testing funcitons needed to be implemented (printWordInfo,
+  // checker.correct, checker.suggest
+  std::string line;
+  while (std::cout << "> " && std::getline(std::cin, line)) {
+    if (line.empty())
+      continue;
+    std::istringstream iss(line);
+    std::string command;
+    std::string arg;
+    iss >> command >> arg;
 
-		if (command == "exit")
-		{
-			break;
-		}
+    if (command == "exit") {
+      break;
+    }
 
-		if (arg.empty())
-		{
-			std::cout << "Usage: lookup <word> | correct <word> | suggest <word> | exit\n";
-			continue;
-		}
+    if (arg.empty()) {
+      std::cout << "Usage: lookup <word> | correct <word> | "
+                   "suggest <word> | exit\n";
+      continue;
+    }
 
-		if (command == "lookup")
-		{
-			// time query
-			auto start = std::chrono::high_resolution_clock::now();
-			WordInfo info = dict.getWordInfo(arg);
-			auto end = std::chrono::high_resolution_clock::now();
-			std::chrono::duration<double, std::milli> elapsed = end - start;
+    if (command == "lookup") {
+      // time query
+      auto start = std::chrono::high_resolution_clock::now();
+      WordInfo info = dict.getWordInfo(arg);
+      auto end = std::chrono::high_resolution_clock::now();
+      std::chrono::duration<double, std::milli> elapsed = end - start;
 
-			if (info.lemma.empty())
-			{
-				std::cout << "Word not found\n";
-				continue;
-			}
+      if (info.lemma.empty()) {
+        std::cout << "Word not found\n";
+        continue;
+      }
 
-			printWordInfo(info);
-			std::cout << "Database query executed in " << elapsed.count() << " milliseconds\n";
-			continue;
-		}
+      printWordInfo(info);
+      std::cout << "Database query executed in " << elapsed.count()
+                << " milliseconds\n";
+      continue;
+    }
 
-		if (command == "correct") 
-		{
-			const std::string correction = checker.correct(arg);
-			if (correction.empty())
-			{
-				std::cout << "No suggestions found.\n";
-				continue;
-			}
+    if (command == "correct") {
+      const std::string correction = checker.correct(arg);
+      if (correction.empty()) {
+        std::cout << "No suggestions found.\n";
+        continue;
+      }
 
-			std::cout << "Did you mean " << correction << "?\n";
-			continue;
-		}
+      std::cout << "Did you mean " << correction << "?\n";
+      continue;
+    }
 
-		if (command == "suggest")
-		{
-			checker.printSuggest(checker.suggest(arg));	
-			continue;
-		}
+    if (command == "suggest") {
+      checker.printSuggest(checker.suggest(arg));
+      continue;
+    }
 
-		std::cout << "Unknown command. Use: lookup <word> | correct <word> | suggest <word> | exit\n";
-	}
-#endif	
+    std::cout << "Unknown command. Use: lookup <word> | correct "
+                 "<word> | "
+                 "suggest <word> | exit\n";
+  }
+#endif
 // basic HTTP TCP server build
 #if 0
 	int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -224,5 +214,5 @@ int main()
 	close(serverSocket);
 #endif
 
-    return 0;
+  return 0;
 }

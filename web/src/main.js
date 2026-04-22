@@ -659,7 +659,6 @@ async function lookup() {
     return;
   }
 
-  hideSuggestedBox();
   button.disabled = true;
   spinner.style.display = 'inline-block';
   if (spinnerTimer) clearInterval(spinnerTimer);
@@ -678,13 +677,13 @@ async function lookup() {
     const data = await res.json();
     if (!res.ok) {
       renderWord(data, word);
-      await storeSuggestionsForQuery(word);
+      storeSuggestionsForQuery(word);
     } else {
       renderWord(data, word);
       setStatus('');
       addToHistory(displayWord(word));
       addSearchedSuggestion(word);
-      await storeSuggestionsForQuery(word);
+      storeSuggestionsForQuery(word);
       renderSuggest();
     }
   } catch (err) {
@@ -732,8 +731,9 @@ async function fetchSuggestions() {
   }
 }
 
+input.addEventListener('input', debounce(fetchSuggestions, 300));
+
 button.addEventListener('click', lookup);
 input.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') lookup();
 });
-input.addEventListener('keyup', debounce(fetchSuggestions, 300));

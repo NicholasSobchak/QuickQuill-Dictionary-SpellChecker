@@ -1,4 +1,4 @@
-name: build_and_test 
+name: Build & Test 
 
 on:
   push:
@@ -9,18 +9,20 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    env:
+      CLANG_FORMAT_VERSION: "17"
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
-        submodules: 'recursive' # Important if you have git submodules
+        submodules: 'recursive' 
 
     # Frontend (Web) Build and Dependencies
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20' # You can specify a different Node.js version if needed
+        node-version: '20'
 
     - name: Install Frontend Dependencies
       run: npm install
@@ -34,7 +36,11 @@ jobs:
     - name: Install C++ Build Tools
       run: |
         sudo apt-get update
-        sudo apt-get install -y cmake ninja-build build-essential
+        sudo apt-get install -y cmake ninja-build build-essential clang-format-17 
+
+    - name: Check C++ Formatting
+      run: find src include tests -type f \( -name "*.cpp" -o -name "*.h" \) -exec clang-format-17 --dry-run --Werror {} +
+
 
     - name: Bootstrap Vcpkg
       run: |
@@ -53,5 +59,4 @@ jobs:
       run: cmake --build build
 
     - name: Run C++ Tests
-      # This assumes your C++ tests are set up with CTest and can be run via 'ctest'
       run: cd build && ctest --output-on-failure

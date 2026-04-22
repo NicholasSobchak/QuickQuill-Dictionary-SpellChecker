@@ -5,8 +5,6 @@
 <a href="https://github.com/NicholasSobchak/QuickQuill-Dictionary-SpellChecker/actions"><img src="https://github.com/NicholasSobchak/QuickQuill-Dictionary-SpellChecker/actions/workflows/ci.yml/badge.svg" alt="Build and test"></a>
 <!-- Placeholder -->
 <a href="https://github.com/NicholasSobchak/QuickQuill-Dictionary-SpellChecker/releases"><img src="https://img.shields.io/badge/version-0.0.0-black" alt="Version"></a>
-<a href="."><img src="https://img.shields.io/badge/C%2B%2B-25-00599C?logo=cplusplus" alt="C++"></a>
-<a href="."><img src="https://img.shields.io/badge/JavaScript-25-F7DF1E?logo=javascript" alt="JavaScript"></a>
 </p>
 
 #
@@ -96,6 +94,34 @@ Example `config.json`:
 
 - `database_path`: The path to the SQLite database file.
 - `server_port`: The port for the web server to listen on.
+
+### Code Formatting (Pre-commit Hook)
+To ensure consistent code formatting across the project, a `pre-commit` hook is configured. This hook automatically runs `clang-format` on your staged C++ files before each commit.
+
+CI uses `clang-format-17` by default. To match CI locally on Ubuntu/Debian:
+
+```bash
+bash scripts/install-clang-format.sh 17
+```
+
+To run the same formatting check as CI:
+
+```bash
+bash scripts/format-check.sh
+```
+
+**Setup Instructions (One-Time):**
+
+1.  **Install `pre-commit`:** If you don't have it already, install `pre-commit` using `pip`:
+    ```bash
+    pip install pre-commit
+    ```
+2.  **Install Git Hooks:** From the project root directory, install the Git hooks:
+    ```bash
+    pre-commit install
+    ```
+
+Once installed, `clang-format` will automatically run on your staged C++ files every time you run `git commit`. If `clang-format` makes any changes, the commit will be aborted. You will then need to `git add` the newly formatted files and run `git commit` again. This helps maintain a clean and consistently formatted codebase.
 
 ### Build
 

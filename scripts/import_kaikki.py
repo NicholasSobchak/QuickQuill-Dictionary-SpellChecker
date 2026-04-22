@@ -69,12 +69,7 @@ def ensure_tables(conn: sqlite3.Connection) -> None:
                 etymology TEXT NOT NULL,
                 FOREIGN KEY(word_id) REFERENCES words(id) ON DELETE CASCADE
             );""",
-        """CREATE TABLE IF NOT EXISTS etymologys (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                word_id INTEGER NOT NULL,
-                etymology TEXT NOT NULL,
-                FOREIGN KEY(word_id) REFERENCES words(id) ON DELETE CASCADE
-            );""",
+
         """CREATE TABLE IF NOT EXISTS forms (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 word_id INTEGER NOT NULL,
@@ -128,7 +123,6 @@ def clear_db(conn: sqlite3.Connection) -> None:
             "senses",
             "forms",
             "etymologies",
-            "etymologys",
             "words",
         ):
             cur.execute(f"DELETE FROM {table};")

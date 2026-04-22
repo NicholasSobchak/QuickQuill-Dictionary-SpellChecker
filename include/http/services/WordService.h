@@ -6,37 +6,34 @@
 
 #include <string>
 
-namespace http
-{
-	struct SearchResult
-	{
-		std::string body;
-		int status{ 200 };
-	};
+namespace http {
+struct SearchResult {
+  std::string body;
+  int status{200};
+};
 
-	struct SuggestResult
-	{
-		std::string body;
-		int status{ 200 };
-	};
+struct SuggestResult {
+  std::string body;
+  int status{200};
+};
 
-	class WordService
-	{
-	public:
-		WordService(Dictionary& dict, SpellChecker& checker);
+class WordService {
+public:
+  WordService(Dictionary& dict, SpellChecker& checker);
 
-		SearchResult search(const std::string& word) const;
-		SuggestResult suggest(const std::string& word) const;
-		void warmupDictionary() const;
+  SearchResult search(const std::string& word) const;
+  SuggestResult suggest(const std::string& word) const;
+  void warmupDictionary() const;
 
-	private:
-		static std::string decodeInput(const std::string& in);
+private:
+  static std::string decodeInput(const std::string& in);
 
-		Dictionary& m_dict;
-		SpellChecker& m_checker;
-	};
+  Dictionary& m_dict;
+  SpellChecker& m_checker;
+};
 
-	WordService& wordService();
-}
+WordService& wordService();
+void warmupDictionary();
+} // namespace http
 
 #endif

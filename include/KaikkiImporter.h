@@ -1,11 +1,11 @@
 #ifndef KAIKKI_IMPORTER_H
 #define KAIKKI_IMPORTER_H
 
-#include "Database.h"
-
 #include <cstddef>
 #include <istream>
 #include <string>
+
+#include "Database.h"
 
 /**
  * This is an JSONL importer that migrated from a python script to C++
@@ -13,29 +13,29 @@
  * It is strictly for importing the Kaikki web extract into the .db file
  */
 
-struct KaikkiImportOptions
-{
-    std::size_t batchSize{5000};
-    std::size_t progressInterval{10000};
-    std::size_t maxEntries{0}; // 0 = no limit
-    bool clearDatabase{true};
-    bool setFastPragmas{true};
+struct KaikkiImportOptions {
+  std::size_t batchSize{5000};
+  std::size_t progressInterval{10000};
+  std::size_t maxEntries{0}; // 0 = no limit
+  bool clearDatabase{true};
+  bool setFastPragmas{true};
 };
 
-struct KaikkiImportStats
-{
-    std::size_t entries{0};
-    std::size_t words{0};
-    std::size_t etymologies{0};
-    std::size_t forms{0};
-    std::size_t senses{0};
-    std::size_t examples{0};
-    std::size_t synonyms{0};
-    std::size_t antonyms{0};
+struct KaikkiImportStats {
+  std::size_t entries{0};
+  std::size_t words{0};
+  std::size_t etymologies{0};
+  std::size_t forms{0};
+  std::size_t senses{0};
+  std::size_t examples{0};
+  std::size_t synonyms{0};
+  std::size_t antonyms{0};
 };
 
 // Imports Kaikki/Wiktextract-style JSONL into the provided Database.
-// The stream is consumed line-by-line to avoid holding the full dataset in memory.
-KaikkiImportStats importKaikkiJsonl(Database &db, std::istream &jsonl, const KaikkiImportOptions &options);
+// The stream is consumed line-by-line to avoid holding the full dataset in
+// memory.
+KaikkiImportStats importKaikkiJsonl(Database& db, std::istream& jsonl,
+                                    const KaikkiImportOptions& options);
 
 #endif

@@ -1,28 +1,26 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include <string>
 #include <nlohmann/json.hpp>
+#include <string>
 
-class Config 
-{
+class Config {
 public:
-    static Config& getInstance() 
-	{
-        static Config instance;
-        return instance;
-    }
+  static Config& getInstance() {
+    static Config instance;
+    return instance;
+  }
 
-    Config(const Config&) = delete;
-    Config operator=(const Config&) = delete;
-	Config(Config&&) = delete;
-	Config operator=(Config&&) = delete;
+  Config(const Config&) = delete;
+  Config operator=(const Config&) = delete;
+  Config(Config&&) = delete;
+  Config operator=(Config&&) = delete;
 
-    std::string getDatabasePath() const;
-    int getServerPort() const;
+  std::string getDatabasePath() const;
+  int getServerPort() const;
 
 private:
-    Config();
-    nlohmann::json data;
+  Config();
+  nlohmann::json data;
 };
 #endif // CONFIG_H
