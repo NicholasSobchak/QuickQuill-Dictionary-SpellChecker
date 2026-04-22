@@ -100,21 +100,11 @@ To ensure consistent code formatting across the project, a `pre-commit` hook is 
 
 CI uses `clang-format-17` by default. To match CI locally on Ubuntu/Debian:
 
-```bash
-bash scripts/install-clang-format.sh 17
-```
+**Setup Instructions:**
 
-To run the same formatting check as CI:
-
-```bash
-bash scripts/format-check.sh
-```
-
-**Setup Instructions (One-Time):**
-
-1.  **Install `pre-commit`:** If you don't have it already, install `pre-commit` using `pip`:
+1.  **Install `pre-commit`:** If you don't have it already, install `pre-commit`:
     ```bash
-    pip install pre-commit
+    sudo apt install pre-commit
     ```
 2.  **Install Git Hooks:** From the project root directory, install the Git hooks:
     ```bash
@@ -155,14 +145,6 @@ cmake --build build -j
 ### Run
 
 After building, the executables are located under `build/src/`.
-
-#### 0) (Optional) Build/seed the database from JSONL
-
-If you have a Kaikki/Wiktextract-style JSONL file, you can import it into SQLite:
-
-```bash
-./build/src/dict_import --json nlohmann/kaikki.org-dictionary-English.jsonl --db dictionary.db
-```
 
 #### 1) Console test mode
 

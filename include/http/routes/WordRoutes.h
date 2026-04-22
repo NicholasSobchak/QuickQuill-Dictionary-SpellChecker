@@ -9,9 +9,8 @@
 #error "Crow headers not found (need crow.h or crow/crow.h)"
 #endif
 
-namespace http
-{
-	void registerWordRoutes(crow::SimpleApp& app);
+namespace http {
+void registerWordRoutes(crow::SimpleApp& app);
 }
 
 #endif
