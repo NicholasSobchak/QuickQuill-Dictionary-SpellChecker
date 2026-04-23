@@ -1,8 +1,8 @@
 #ifndef HTTP_SERVICES_WORDSERVICE_H
 #define HTTP_SERVICES_WORDSERVICE_H
 
-#include "Dictionary.h"
-#include "SpellChecker.h"
+#include "core/Dictionary.h"
+#include "core/SpellChecker.h"
 
 #include <string>
 
@@ -19,20 +19,20 @@ struct SuggestResult {
 
 class WordService {
 public:
-  WordService(Dictionary& dict, SpellChecker& checker);
+  WordService(Dictionary &dict, SpellChecker &checker);
 
-  SearchResult search(const std::string& word) const;
-  SuggestResult suggest(const std::string& word) const;
+  SearchResult search(const std::string &word) const;
+  SuggestResult suggest(const std::string &word) const;
   void warmupDictionary() const;
 
 private:
-  static std::string decodeInput(const std::string& in);
+  static std::string decodeInput(const std::string &in);
 
-  Dictionary& m_dict;
-  SpellChecker& m_checker;
+  Dictionary &m_dict;
+  SpellChecker &m_checker;
 };
 
-WordService& wordService();
+WordService &wordService();
 void warmupDictionary();
 } // namespace http
 

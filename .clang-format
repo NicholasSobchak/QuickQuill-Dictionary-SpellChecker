@@ -2,9 +2,4 @@ BasedOnStyle: LLVM
 IndentWidth: 2
 TabWidth: 2
 UseTab: Never
-ColumnLimit: 80
-PointerAlignment: Left
-SpaceBeforeParens: ControlStatements
-AlwaysBreakTemplateDeclarations: Yes
-BreakBeforeBraces: Attach
 SortIncludes: true

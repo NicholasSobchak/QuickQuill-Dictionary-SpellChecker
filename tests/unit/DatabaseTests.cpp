@@ -3,9 +3,9 @@
 #include <filesystem>
 #include <string>
 
-#include "Database.h"
-#include "Trie.h"
-#include "Utils.h"
+#include "core/Trie.h"
+#include "data/Database.h"
+#include "dct/dct.h"
 
 namespace {
 

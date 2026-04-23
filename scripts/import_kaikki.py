@@ -19,7 +19,7 @@ DEFAULT_DB_PATH = Path("dictionary.db")
 
 
 def sanitize_word(word: str | None) -> str:
-    """Match Utils::sanitizeWord: keep only alphabetic chars, lowercase."""
+    """Match dct::sanitizeWord: keep only alphabetic chars, lowercase."""
     if not word:
         return ""
     return "".join(ch.lower() for ch in word if ch.isalpha())

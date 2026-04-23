@@ -1,7 +1,8 @@
-#include "Dictionary.h"
+#include "core/Dictionary.h"
 
-#include "Config.h"
-#include "Utils.h"
+#include "app/Config.h"
+#include "dct/dct.h"
+#include "random.h"
 
 Dictionary::Dictionary() : m_db{Config::getInstance().getDatabasePath()} {
   m_db.createTables();
@@ -10,7 +11,7 @@ Dictionary::Dictionary() : m_db{Config::getInstance().getDatabasePath()} {
 
 WordInfo Dictionary::getWordInfo(std::string_view word) const {
   WordInfo info;
-  std::string clean = cleanWord(word);
+  std::string clean{cleanWord(word)};
   if (clean.empty())
     return info;
 
@@ -33,7 +34,7 @@ std::vector<std::string>
 Dictionary::getAlternativeSearches(std::string_view word,
                                    dct::WordId currentId) const {
   std::vector<std::string> alternatives;
-  std::string clean = cleanWord(word);
+  std::string clean{cleanWord(word)};
   if (clean.empty())
     return alternatives;
 
@@ -42,7 +43,7 @@ Dictionary::getAlternativeSearches(std::string_view word,
     return alternatives;
 
   std::unordered_set<std::string> seen;
-  for (const auto& id : ids) {
+  for (const auto &id : ids) {
     if (currentId.value != dct::g_defaultId && id.value == currentId.value)
       continue;
 
@@ -67,6 +68,37 @@ Dictionary::getAlternativeSearches(std::string_view word,
   }
 
   return alternatives;
+}
+
+std::vector<std::string>
+Dictionary::suggestSynonyms(std::string_view word) const {
+  std::vector<std::string> synonymSuggestions;
+  std::string clean{cleanWord(word)};
+  if (clean.empty())
+    return synonymSuggestions;
+
+  const WordInfo info{getWordInfo(clean)};
+  if (!info.senses.empty()) {
+    for (std::size_t i{0}; i < info.senses.size(); ++i) {
+      int count{};
+      const auto &s = info.senses[i];
+      if (!s.synonyms.empty()) {
+        const auto pick = Random::get<std::size_t>(
+            0, s.synonyms.size() - 1); // fix: pick can be 0
+        for (std::size_t j{0}; j < s.synonyms.size(); ++j) {
+          if (count == pick)
+            break;
+          const auto index = Random::get<std::size_t>(
+              0,
+              s.synonyms.size() -
+                  1); // remove the synonym so its not part of the draw anymore
+          synonymSuggestions.push_back(s.synonyms[index]);
+          count++;
+        }
+      }
+    }
+  }
+  return synonymSuggestions;
 }
 
 bool Dictionary::contains(std::string_view word) const {
@@ -95,7 +127,7 @@ Dictionary::suggestFromPrefix(std::string_view word) const {
                     suggestions.end());
   // rank suggestions based on lambda calling Levenshteins's algorithm
   std::sort(suggestions.begin(), suggestions.end(),
-            [&](const std::string& a, const std::string& b) {
+            [&](const std::string &a, const std::string &b) {
               return dct::calculateLevenshteinDistance(clean, a) <
                      dct::calculateLevenshteinDistance(clean, b);
             });
@@ -118,7 +150,7 @@ Dictionary::suggestSpelling(std::string_view word) const {
 
   // rank suggestions based on lambda calling Levenshteins's alorithm
   std::sort(suggestions.begin(), suggestions.end(),
-            [&](const std::string& a, const std::string& b) {
+            [&](const std::string &a, const std::string &b) {
               return dct::calculateLevenshteinDistance(clean, a) <
                      dct::calculateLevenshteinDistance(clean, b);
             });

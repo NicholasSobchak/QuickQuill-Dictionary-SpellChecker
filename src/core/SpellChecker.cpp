@@ -1,11 +1,11 @@
-#include "SpellChecker.h"
+#include "core/SpellChecker.h"
 
 #include <algorithm>
 #include <unordered_set>
 
-#include "Utils.h"
+#include "dct/dct.h"
 
-SpellChecker::SpellChecker(const Dictionary& dict) : m_dict{dict} {}
+SpellChecker::SpellChecker(const Dictionary &dict) : m_dict{dict} {}
 
 std::vector<std::string> SpellChecker::suggest(std::string_view prefix) const {
   std::string clean = dct::sanitizeWord(prefix);
@@ -16,7 +16,7 @@ std::vector<std::string> SpellChecker::suggest(std::string_view prefix) const {
 
   std::vector<std::string> results;
   int count{};
-  for (const auto& word : suggestions) {
+  for (const auto &word : suggestions) {
     if (count == dct::g_max_suggestions) {
       break;
     }
@@ -59,11 +59,11 @@ std::string SpellChecker::autofill(std::string_view word) const {
   return std::string{word}; // Return the original word if no suggestions found
 }
 
-void SpellChecker::printSuggest(const std::vector<std::string>& out) const {
+void SpellChecker::printSuggest(const std::vector<std::string> &out) const {
   if (out.empty()) {
     return;
   } else {
-    for (const auto& word : out) {
+    for (const auto &word : out) {
       std::cout << "  → " << std::quoted(word) << '\n';
     }
   }

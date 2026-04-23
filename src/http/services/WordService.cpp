@@ -9,21 +9,21 @@
 
 namespace http {
 namespace {
-Dictionary& dict() {
+Dictionary &dict() {
   static Dictionary instance;
   return instance;
 }
 
-SpellChecker& checker() {
+SpellChecker &checker() {
   static SpellChecker instance{dict()};
   return instance;
 }
 } // namespace
 
-WordService::WordService(Dictionary& dict, SpellChecker& checker)
+WordService::WordService(Dictionary &dict, SpellChecker &checker)
     : m_dict{dict}, m_checker{checker} {}
 
-WordService& wordService() {
+WordService &wordService() {
   static WordService instance{dict(), checker()};
   return instance;
 }
@@ -36,7 +36,7 @@ void WordService::warmupDictionary() const { m_dict.getWordInfo("warmup"); }
 /**
  * Removes random characters that could potentially corrupt the search query
  */
-std::string WordService::decodeInput(const std::string& in) {
+std::string WordService::decodeInput(const std::string &in) {
   std::string out;
   out.reserve(in.size());
   for (size_t i = 0; i < in.size(); ++i) {
@@ -44,7 +44,7 @@ std::string WordService::decodeInput(const std::string& in) {
       if (i + 2 >= in.size())
         return "";
       auto hex = in.substr(i + 1, 2);
-      char* end = nullptr;
+      char *end = nullptr;
       long val = std::strtol(hex.c_str(), &end, 16);
       if (end != hex.c_str() + 2)
         return "";
@@ -59,7 +59,7 @@ std::string WordService::decodeInput(const std::string& in) {
   return out;
 }
 
-SearchResult WordService::search(const std::string& word) const {
+SearchResult WordService::search(const std::string &word) const {
   const std::string decoded = decodeInput(word);
   if (decoded.empty()) {
     nlohmann::json body = {{"error", "Enter a valid word"}};
@@ -85,6 +85,7 @@ SearchResult WordService::search(const std::string& word) const {
     return {body.dump(), 404};
   }
 
+  // alternative searches comes from words with the same id's (same lemmas)
   const auto alternativeSearches =
       dict().getAlternativeSearches(sanitized, info.id);
   return {toWordJson(info, decoded, alternativeSearches), 200};
@@ -93,7 +94,7 @@ SearchResult WordService::search(const std::string& word) const {
 /*
  * Provides similar searches using the suggest function
  */
-SuggestResult WordService::suggest(const std::string& word) const {
+SuggestResult WordService::suggest(const std::string &word) const {
   const std::string decoded = decodeInput(word);
   if (decoded.empty()) {
     return {"[]", 200};

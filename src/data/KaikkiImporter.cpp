@@ -9,7 +9,7 @@
 #include <string_view>
 #include <vector>
 
-#include "Utils.h"
+#include "dct/dct.h"
 
 /**
  * This is an JSONL importer that migrated from a python script to C++
@@ -19,8 +19,8 @@
 
 namespace {
 
-void execOrThrow(sqlite3* db, const char* sql) {
-  char* errMsg = nullptr;
+void execOrThrow(sqlite3 *db, const char *sql) {
+  char *errMsg = nullptr;
   const int rc = sqlite3_exec(db, sql, nullptr, nullptr, &errMsg);
   if (rc != SQLITE_OK) {
     std::string msg = errMsg ? errMsg : "sqlite error";
@@ -29,9 +29,9 @@ void execOrThrow(sqlite3* db, const char* sql) {
   }
 }
 
-void begin(sqlite3* db) { execOrThrow(db, "BEGIN;"); }
+void begin(sqlite3 *db) { execOrThrow(db, "BEGIN;"); }
 
-void commit(sqlite3* db) { execOrThrow(db, "COMMIT;"); }
+void commit(sqlite3 *db) { execOrThrow(db, "COMMIT;"); }
 
 std::string trim(std::string_view in) {
   std::size_t start = 0;
@@ -46,13 +46,13 @@ std::string trim(std::string_view in) {
   return std::string{in.substr(start, end - start)};
 }
 
-std::string joinStrings(const nlohmann::json& arr) {
+std::string joinStrings(const nlohmann::json &arr) {
   if (!arr.is_array()) {
     return {};
   }
   std::string out;
   bool first = true;
-  for (const auto& item : arr) {
+  for (const auto &item : arr) {
     if (!item.is_string()) {
       continue;
     }
@@ -69,7 +69,7 @@ std::string joinStrings(const nlohmann::json& arr) {
   return out;
 }
 
-std::string definitionFromSense(const nlohmann::json& sense) {
+std::string definitionFromSense(const nlohmann::json &sense) {
   if (!sense.is_object()) {
     return {};
   }
@@ -94,13 +94,13 @@ std::string definitionFromSense(const nlohmann::json& sense) {
   return {};
 }
 
-std::vector<std::string> extractTextList(const nlohmann::json& items,
+std::vector<std::string> extractTextList(const nlohmann::json &items,
                                          std::string_view key) {
   std::vector<std::string> out;
   if (!items.is_array()) {
     return out;
   }
-  for (const auto& item : items) {
+  for (const auto &item : items) {
     std::string value;
     if (item.is_string()) {
       value = trim(item.get<std::string_view>());
@@ -125,23 +125,23 @@ std::vector<std::string> extractTextList(const nlohmann::json& items,
 }
 
 struct Stmt {
-  sqlite3_stmt* stmt{nullptr};
+  sqlite3_stmt *stmt{nullptr};
 
   Stmt() = default;
 
-  Stmt(sqlite3* db, const char* sql) {
+  Stmt(sqlite3 *db, const char *sql) {
     if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
       throw std::runtime_error("sqlite prepare failed");
     }
   }
 
-  Stmt(const Stmt&) = delete;
+  Stmt(const Stmt &) = delete;
 
-  Stmt& operator=(const Stmt&) = delete;
+  Stmt &operator=(const Stmt &) = delete;
 
-  Stmt(Stmt&& other) noexcept : stmt(other.stmt) { other.stmt = nullptr; }
+  Stmt(Stmt &&other) noexcept : stmt(other.stmt) { other.stmt = nullptr; }
 
-  Stmt& operator=(Stmt&& other) noexcept {
+  Stmt &operator=(Stmt &&other) noexcept {
     if (this == &other) {
       return *this;
     }
@@ -165,10 +165,10 @@ struct Stmt {
   }
 };
 
-std::optional<int> insertOrGetWordId(sqlite3* db, Stmt& insertWord,
-                                     Stmt& selectWord, std::string_view lemma,
+std::optional<int> insertOrGetWordId(sqlite3 *db, Stmt &insertWord,
+                                     Stmt &selectWord, std::string_view lemma,
                                      std::string_view displayLemma,
-                                     int frequency, bool& inserted) {
+                                     int frequency, bool &inserted) {
   insertWord.reset();
   sqlite3_bind_text(insertWord.stmt, 1, lemma.data(),
                     static_cast<int>(lemma.size()), SQLITE_TRANSIENT);
@@ -192,8 +192,8 @@ std::optional<int> insertOrGetWordId(sqlite3* db, Stmt& insertWord,
 
 } // namespace
 
-KaikkiImportStats importKaikkiJsonl(Database& db, std::istream& jsonl,
-                                    const KaikkiImportOptions& options) {
+KaikkiImportStats importKaikkiJsonl(Database &db, std::istream &jsonl,
+                                    const KaikkiImportOptions &options) {
   KaikkiImportStats stats;
 
   db.createTables();
@@ -201,7 +201,7 @@ KaikkiImportStats importKaikkiJsonl(Database& db, std::istream& jsonl,
     db.clearDB();
   }
 
-  sqlite3* sqlDB = db.handle();
+  sqlite3 *sqlDB = db.handle();
   if (!sqlDB) {
     throw std::runtime_error("database handle is null");
   }
@@ -245,7 +245,7 @@ KaikkiImportStats importKaikkiJsonl(Database& db, std::istream& jsonl,
     }
 
     if (entry.contains("lang_code")) {
-      const auto& lang = entry.at("lang_code");
+      const auto &lang = entry.at("lang_code");
       if (lang.is_string() && lang.get<std::string_view>() != "en") {
         continue;
       }
@@ -253,7 +253,7 @@ KaikkiImportStats importKaikkiJsonl(Database& db, std::istream& jsonl,
 
     std::string_view rawWord;
     if (entry.contains("word") && entry.at("word").is_string()) {
-      rawWord = entry.at("word").get_ref<const std::string&>();
+      rawWord = entry.at("word").get_ref<const std::string &>();
     } else {
       continue;
     }
@@ -285,7 +285,7 @@ KaikkiImportStats importKaikkiJsonl(Database& db, std::istream& jsonl,
     if (entry.contains("etymology_text") &&
         entry.at("etymology_text").is_string()) {
       std::string_view ety =
-          entry.at("etymology_text").get_ref<const std::string&>();
+          entry.at("etymology_text").get_ref<const std::string &>();
       std::stringstream ss(std::string{ety});
       std::string etyLine;
       while (std::getline(ss, etyLine)) {
@@ -304,7 +304,7 @@ KaikkiImportStats importKaikkiJsonl(Database& db, std::istream& jsonl,
     }
 
     if (entry.contains("forms") && entry.at("forms").is_array()) {
-      for (const auto& formEntry : entry.at("forms")) {
+      for (const auto &formEntry : entry.at("forms")) {
         if (!formEntry.is_object()) {
           continue;
         }
@@ -320,7 +320,7 @@ KaikkiImportStats importKaikkiJsonl(Database& db, std::istream& jsonl,
         std::string tag;
         if (formEntry.contains("tags") && formEntry.at("tags").is_array() &&
             !formEntry.at("tags").empty()) {
-          const auto& first = formEntry.at("tags").front();
+          const auto &first = formEntry.at("tags").front();
           if (first.is_string()) {
             tag = first.get<std::string>();
           }
@@ -344,7 +344,7 @@ KaikkiImportStats importKaikkiJsonl(Database& db, std::istream& jsonl,
     }
 
     if (entry.contains("senses") && entry.at("senses").is_array()) {
-      for (const auto& sense : entry.at("senses")) {
+      for (const auto &sense : entry.at("senses")) {
         const std::string definition = definitionFromSense(sense);
         if (definition.empty()) {
           continue;
@@ -375,7 +375,7 @@ KaikkiImportStats importKaikkiJsonl(Database& db, std::istream& jsonl,
 
         if (sense.is_object() && sense.contains("examples")) {
           const auto examples = extractTextList(sense.at("examples"), "text");
-          for (const auto& ex : examples) {
+          for (const auto &ex : examples) {
             insertExample.reset();
             sqlite3_bind_int(insertExample.stmt, 1, senseId);
             sqlite3_bind_text(insertExample.stmt, 2, ex.c_str(), -1,
@@ -388,7 +388,7 @@ KaikkiImportStats importKaikkiJsonl(Database& db, std::istream& jsonl,
 
         if (sense.is_object() && sense.contains("synonyms")) {
           const auto synonyms = extractTextList(sense.at("synonyms"), "word");
-          for (const auto& syn : synonyms) {
+          for (const auto &syn : synonyms) {
             insertSynonym.reset();
             sqlite3_bind_int(insertSynonym.stmt, 1, senseId);
             sqlite3_bind_text(insertSynonym.stmt, 2, syn.c_str(), -1,
@@ -401,7 +401,7 @@ KaikkiImportStats importKaikkiJsonl(Database& db, std::istream& jsonl,
 
         if (sense.is_object() && sense.contains("antonyms")) {
           const auto antonyms = extractTextList(sense.at("antonyms"), "word");
-          for (const auto& ant : antonyms) {
+          for (const auto &ant : antonyms) {
             insertAntonym.reset();
             sqlite3_bind_int(insertAntonym.stmt, 1, senseId);
             sqlite3_bind_text(insertAntonym.stmt, 2, ant.c_str(), -1,

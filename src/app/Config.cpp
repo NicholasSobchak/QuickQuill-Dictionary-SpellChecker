@@ -1,4 +1,4 @@
-#include "Config.h"
+#include "app/Config.h"
 
 #include <cstdlib>
 #include <fstream>
@@ -15,7 +15,7 @@ Config::Config() {
 }
 
 std::string Config::getDatabasePath() const {
-  if (const char* env = std::getenv("DATABASE_PATH"); env && *env) {
+  if (const char *env = std::getenv("DATABASE_PATH"); env && *env) {
     return std::string(env);
   }
   if (data.contains("database_path")) {
@@ -25,7 +25,7 @@ std::string Config::getDatabasePath() const {
 }
 
 int Config::getServerPort() const {
-  if (const char* env = std::getenv("SERVER_PORT"); env && *env) {
+  if (const char *env = std::getenv("SERVER_PORT"); env && *env) {
     return std::atoi(env);
   }
   if (data.contains("server_port")) {

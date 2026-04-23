@@ -1,6 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 
-#include "Trie.h"
+#include "core/Trie.h"
 
 // insertion tests
 TEST_CASE("reject duplicate insertions", "[trie]") {

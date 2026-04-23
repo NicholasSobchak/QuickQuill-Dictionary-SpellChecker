@@ -7,7 +7,7 @@
 #include <string_view>
 #include <vector>
 
-#include "Utils.h"
+#include "dct/dct.h"
 
 class Trie {
 public:
@@ -16,7 +16,7 @@ public:
 
   bool insert(std::string_view word, dct::WordId word_id,
               dct::Frequency frequency);
-  bool remove(const std::string& word);
+  bool remove(const std::string &word);
   bool contains(std::string_view word) const;
   bool isEmpty() const;
 
@@ -24,7 +24,7 @@ public:
 
   void
   collectWithPrefix(std::string_view prefix,
-                    std::vector<std::pair<std::string, dct::Frequency>>& out,
+                    std::vector<std::pair<std::string, dct::Frequency>> &out,
                     std::size_t limit) const;
   void dump() const;
   void dumpWord(std::string_view word) const;
@@ -45,10 +45,10 @@ private:
   static int indexForChar(char c);
 
   // Returns true if the node should be deleted by its parent.
-  bool removeWord(TrieNode* node, std::string_view word);
-  void dumpNode(const TrieNode* node, const std::string& prefix) const;
-  void wordsFromNode(const TrieNode* node, std::string& currentWord,
-                     std::vector<std::pair<std::string, dct::Frequency>>& out,
+  bool removeWord(TrieNode *node, std::string_view word);
+  void dumpNode(const TrieNode *node, const std::string &prefix) const;
+  void wordsFromNode(const TrieNode *node, std::string &currentWord,
+                     std::vector<std::pair<std::string, dct::Frequency>> &out,
                      std::size_t limit) const;
 };
 #endif

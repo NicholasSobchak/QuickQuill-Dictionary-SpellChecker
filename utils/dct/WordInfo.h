@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include "Utils.h"
+#include "dct/dct.h"
 
 struct Sense {
   dct::WordId id;

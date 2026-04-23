@@ -19,12 +19,12 @@ struct WordId {
   explicit WordId(int val = g_defaultId) : value{val} {}
   int value;
 
-  bool operator==(const WordId& other) const { return value == other.value; }
+  bool operator==(const WordId &other) const { return value == other.value; }
 };
 
-inline void to_json(nlohmann::json& j, const WordId& id) { j = id.value; }
+inline void to_json(nlohmann::json &j, const WordId &id) { j = id.value; }
 
-inline std::ostream& operator<<(std::ostream& os, const WordId& id) {
+inline std::ostream &operator<<(std::ostream &os, const WordId &id) {
   os << id.value;
   return os;
 }
@@ -36,14 +36,14 @@ struct Frequency {
   explicit Frequency(int val = 0) : value{val} {}
   int value;
 
-  bool operator==(const Frequency& other) const { return value == other.value; }
+  bool operator==(const Frequency &other) const { return value == other.value; }
 };
 
-inline void to_json(nlohmann::json& j, const Frequency& freq) {
+inline void to_json(nlohmann::json &j, const Frequency &freq) {
   j = freq.value;
 }
 
-inline std::ostream& operator<<(std::ostream& os, const Frequency& freq) {
+inline std::ostream &operator<<(std::ostream &os, const Frequency &freq) {
   os << freq.value;
   return os;
 }

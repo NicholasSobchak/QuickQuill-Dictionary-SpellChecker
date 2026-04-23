@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.10)
-project(QuickQuill)
+cmake_minimum_required(VERSION 3.16)
+project(QuickQuill LANGUAGES CXX)
 
 # Enable clang-tidy
 find_program(CLANG_TIDY clang-tidy)
@@ -9,6 +9,7 @@ endif()
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # find system libraries
 # vcpkg will ensure these are found

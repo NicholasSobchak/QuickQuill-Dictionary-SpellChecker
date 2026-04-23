@@ -8,9 +8,9 @@
 #include <unordered_set>
 #include <vector>
 
-#include "Database.h"
-#include "Trie.h"
-#include "WordInfo.h"
+#include "core/Trie.h"
+#include "data/Database.h"
+#include "dct/WordInfo.h"
 
 class Dictionary {
 public:
@@ -21,6 +21,7 @@ public:
   std::vector<std::string> getAlternativeSearches(
       std::string_view word,
       dct::WordId currentId = dct::WordId{dct::g_defaultId}) const;
+  std::vector<std::string> suggestSynonyms(std::string_view word) const;
   bool contains(std::string_view word) const;
 
   // spellchecking functions

@@ -1,4 +1,4 @@
-#include "Trie.h"
+#include "core/Trie.h"
 
 #include <cctype> // for std::tolower()
 
@@ -9,7 +9,7 @@ bool Trie::insert(std::string_view word, dct::WordId word_id,
   if (word.empty())
     return false;
 
-  TrieNode* node{m_root.get()};
+  TrieNode *node{m_root.get()};
 
   for (char c : word) {
     int index = indexForChar(c);
@@ -31,7 +31,7 @@ bool Trie::insert(std::string_view word, dct::WordId word_id,
   return true;
 }
 
-bool Trie::remove(const std::string& word) {
+bool Trie::remove(const std::string &word) {
   bool removed = removeWord(m_root.get(), word);
   return removed;
 }
@@ -40,7 +40,7 @@ bool Trie::contains(std::string_view word) const {
   if (word.empty())
     return false;
 
-  TrieNode* node{m_root.get()};
+  TrieNode *node{m_root.get()};
 
   for (char c : word) {
     int index = indexForChar(c);
@@ -60,7 +60,7 @@ void Trie::dump() const {
 void Trie::dumpWord(std::string_view word) const {
   if (!contains(word))
     return;
-  const TrieNode* node{m_root.get()};
+  const TrieNode *node{m_root.get()};
   if (!node)
     return;
 
@@ -107,7 +107,7 @@ dct::WordId Trie::getWordId(std::string_view word) const {
   if (word.empty())
     return dct::WordId{dct::g_defaultId};
 
-  TrieNode* node{m_root.get()};
+  TrieNode *node{m_root.get()};
 
   for (char c : word) {
     int index = indexForChar(c);
@@ -122,7 +122,7 @@ dct::WordId Trie::getWordId(std::string_view word) const {
 }
 
 std::string Trie::getPrefix(std::string_view word) const {
-  const TrieNode* node{m_root.get()};
+  const TrieNode *node{m_root.get()};
   std::string prefix;
 
   for (char c : word) {
@@ -142,11 +142,11 @@ std::string Trie::getPrefix(std::string_view word) const {
  */
 void Trie::collectWithPrefix(
     std::string_view prefix,
-    std::vector<std::pair<std::string, dct::Frequency>>& out,
+    std::vector<std::pair<std::string, dct::Frequency>> &out,
     std::size_t limit) const {
   if (prefix.empty() || limit == 0)
     return; // collect nothing
-  const TrieNode* node{m_root.get()};
+  const TrieNode *node{m_root.get()};
   std::string currentWord;
 
   // DFS
@@ -175,14 +175,14 @@ int Trie::indexForChar(char c) {
   return lowercase - 'a';
 }
 
-void Trie::dumpNode(const TrieNode* node, const std::string& prefix) const {
+void Trie::dumpNode(const TrieNode *node, const std::string &prefix) const {
   if (!node)
     return;
 
   // DFS
   for (int i{0}; i < dct::g_alpha; ++i) {
     char letter{static_cast<char>('a' + i)};
-    const TrieNode* child = node->m_children[i].get();
+    const TrieNode *child = node->m_children[i].get();
     if (!child)
       continue;
     bool isLast = true;
@@ -207,7 +207,7 @@ void Trie::dumpNode(const TrieNode* node, const std::string& prefix) const {
   }
 }
 
-bool Trie::removeWord(TrieNode* node, std::string_view word) {
+bool Trie::removeWord(TrieNode *node, std::string_view word) {
   if (!node)
     return false;
 
@@ -229,7 +229,7 @@ bool Trie::removeWord(TrieNode* node, std::string_view word) {
 
   // If the child is now empty (no children and not end-of-word), prune
   // it.
-  TrieNode* child = node->m_children[index].get();
+  TrieNode *child = node->m_children[index].get();
   if (child && !child->m_isEndOfWord) {
     bool hasAnyChild = false;
     for (int i{0}; i < dct::g_alpha; ++i) {
@@ -247,8 +247,8 @@ bool Trie::removeWord(TrieNode* node, std::string_view word) {
 }
 
 void Trie::wordsFromNode(
-    const TrieNode* node, std::string& currentWord,
-    std::vector<std::pair<std::string, dct::Frequency>>& out,
+    const TrieNode *node, std::string &currentWord,
+    std::vector<std::pair<std::string, dct::Frequency>> &out,
     std::size_t limit) const {
   if (!node || out.size() >= limit)
     return;

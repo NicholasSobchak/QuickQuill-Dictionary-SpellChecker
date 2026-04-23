@@ -5,7 +5,7 @@
 #include <istream>
 #include <string>
 
-#include "Database.h"
+#include "data/Database.h"
 
 /**
  * This is an JSONL importer that migrated from a python script to C++
@@ -35,7 +35,7 @@ struct KaikkiImportStats {
 // Imports Kaikki/Wiktextract-style JSONL into the provided Database.
 // The stream is consumed line-by-line to avoid holding the full dataset in
 // memory.
-KaikkiImportStats importKaikkiJsonl(Database& db, std::istream& jsonl,
-                                    const KaikkiImportOptions& options);
+KaikkiImportStats importKaikkiJsonl(Database &db, std::istream &jsonl,
+                                    const KaikkiImportOptions &options);
 
 #endif

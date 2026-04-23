@@ -1,5 +1,4 @@
-# Add all core and data source files that are common to both applications
-set(CORE_SOURCES
+add_library(quickquill_core STATIC
     app/Config.cpp
     core/Dictionary.cpp
     core/SpellChecker.cpp
@@ -7,65 +6,62 @@ set(CORE_SOURCES
     data/Database.cpp
 )
 
-# --- Console Application ---
-add_executable(dict
-    app/main.cpp
-    ${CORE_SOURCES}
-)
-
-# Set common include directories for the dict target
-target_include_directories(dict PRIVATE
+target_include_directories(quickquill_core PUBLIC
     ../include
-    $<TARGET_PROPERTY:unofficial::sqlite3::sqlite3,INTERFACE_INCLUDE_DIRECTORIES>
+    ../utils
 )
 
-# Link executable against all required libraries
-target_link_libraries(dict PRIVATE
+target_link_libraries(quickquill_core PUBLIC
     nlohmann_json::nlohmann_json
     unofficial::sqlite3::sqlite3
 )
 
-#
-# --- Import / Seeding Tool ---
-add_executable(dict_import
-    app/main_import.cpp
-    data/Database.cpp
+add_library(quickquill_importer STATIC
     data/KaikkiImporter.cpp
 )
 
-target_include_directories(dict_import PRIVATE
-    ../include
-    $<TARGET_PROPERTY:unofficial::sqlite3::sqlite3,INTERFACE_INCLUDE_DIRECTORIES>
+target_link_libraries(quickquill_importer PUBLIC
+    quickquill_core
 )
 
-target_link_libraries(dict_import PRIVATE
-    nlohmann_json::nlohmann_json
-    unofficial::sqlite3::sqlite3
-)
-
-
-# --- Web Application ---
-add_executable(dict_crow
-    app/main_crow.cpp
+add_library(quickquill_http STATIC
     http/Server.cpp
     http/routes/WordRoutes.cpp
     http/services/WordService.cpp
     http/dto/WordResponse.cpp
-    ${CORE_SOURCES}
 )
 
-# Set common include directories for the dict_crow target
-target_include_directories(dict_crow PRIVATE
-    ../include
-    $<TARGET_PROPERTY:unofficial::sqlite3::sqlite3,INTERFACE_INCLUDE_DIRECTORIES>
-)
-
-# Link executable against all required libraries
-target_link_libraries(dict_crow PRIVATE
-    nlohmann_json::nlohmann_json
+target_link_libraries(quickquill_http PUBLIC
+    quickquill_core
     Crow::Crow
     Threads::Threads
-    unofficial::sqlite3::sqlite3
+)
+
+# --- Console Application ---
+add_executable(dict
+    app/main.cpp
+)
+
+target_link_libraries(dict PRIVATE
+    quickquill_core
+)
+
+# --- Import / Seeding Tool ---
+add_executable(dict_import
+    app/main_import.cpp
+)
+
+target_link_libraries(dict_import PRIVATE
+    quickquill_importer
+)
+
+# --- Web Application ---
+add_executable(dict_crow
+    app/main_crow.cpp
+)
+
+target_link_libraries(dict_crow PRIVATE
+    quickquill_http
 )
 
 # Define the static file directory for Crow at compile time

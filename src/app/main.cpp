@@ -8,14 +8,14 @@
 #include <sstream>
 #include <string>
 
-#include "Dictionary.h"
-#include "SpellChecker.h"
-#include "Utils.h"
+#include "core/Dictionary.h"
+#include "core/SpellChecker.h"
+#include "dct/dct.h"
 
 using json = nlohmann::json;
 
 namespace {
-void printWordInfo(const WordInfo& info) {
+void printWordInfo(const WordInfo &info) {
   std::cout << "\nWord ID: " << info.id << "\n";
   std::cout << "Lemma: " << (info.lemma.empty() ? "UNKNOWN" : info.lemma)
             << "\n";
@@ -24,8 +24,8 @@ void printWordInfo(const WordInfo& info) {
             << "\n";
 
   if (!info.senses.empty()) {
-    for (std::size_t i = 0; i < info.senses.size(); ++i) {
-      const auto& s = info.senses[i];
+    for (std::size_t i{0}; i < info.senses.size(); ++i) {
+      const auto &s = info.senses[i];
       std::cout << "  [" << i + 1 << "] " << (s.pos.empty() ? "" : s.pos + " ")
                 << "(id " << s.id << ")\n";
 
@@ -34,13 +34,13 @@ void printWordInfo(const WordInfo& info) {
 
       if (!s.examples.empty()) {
         std::cout << "    Examples:\n";
-        for (const auto& ex : s.examples)
+        for (const auto &ex : s.examples)
           std::cout << "      - " << ex << "\n";
       }
 
       if (!s.synonyms.empty()) {
         std::cout << "    Synonyms: ";
-        for (std::size_t j = 0; j < s.synonyms.size(); ++j) {
+        for (std::size_t j{0}; j < s.synonyms.size(); ++j) {
           if (j)
             std::cout << ", ";
           std::cout << s.synonyms[j];
@@ -50,7 +50,7 @@ void printWordInfo(const WordInfo& info) {
 
       if (!s.antonyms.empty()) {
         std::cout << "    Antonyms: ";
-        for (std::size_t j = 0; j < s.antonyms.size(); ++j) {
+        for (std::size_t j{0}; j < s.antonyms.size(); ++j) {
           if (j)
             std::cout << ", ";
           std::cout << s.antonyms[j];
@@ -67,7 +67,7 @@ void printWordInfo(const WordInfo& info) {
   if (!info.forms.empty()) {
     std::cout << "Forms:\n";
     for (std::size_t i = 0; i < info.forms.size(); ++i) {
-      const auto& f = info.forms[i];
+      const auto &f = info.forms[i];
       std::cout << "  [" << i + 1 << "] " << f.form;
       if (!f.tag.empty())
         std::cout << " (" << f.tag << ")";
