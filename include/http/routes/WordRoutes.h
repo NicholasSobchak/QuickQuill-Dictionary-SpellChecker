@@ -10,7 +10,7 @@
 #endif
 
 namespace http {
-void registerWordRoutes(crow::SimpleApp& app);
+void registerWordRoutes(crow::SimpleApp &app);
 }
 
 #endif

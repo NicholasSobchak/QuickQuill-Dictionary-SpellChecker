@@ -20,7 +20,7 @@ void printUsage(std::string_view argv0) {
                "[--no-clear]\n";
 }
 
-bool parseSizeT(const std::string& s, std::size_t& out) {
+bool parseSizeT(const std::string &s, std::size_t &out) {
   try {
     std::size_t idx = 0;
     const auto value = std::stoull(s, &idx, 10);
@@ -36,7 +36,7 @@ bool parseSizeT(const std::string& s, std::size_t& out) {
 
 } // namespace
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
   std::string jsonPath;
   std::string dbPath = "dictionary.db";
 
@@ -116,7 +116,7 @@ int main(int argc, char** argv) {
     std::cout << "  Synonyms    : " << stats.synonyms << "\n";
     std::cout << "  Antonyms    : " << stats.antonyms << "\n";
     std::cout << "  Etymologies : " << stats.etymologies << "\n";
-  } catch (const std::exception& e) {
+  } catch (const std::exception &e) {
     std::cerr << "Import failed: " << e.what() << "\n";
     return 1;
   }

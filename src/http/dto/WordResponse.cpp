@@ -4,8 +4,8 @@
 
 namespace http {
 // converts WordInfo into JSON response format
-std::string toWordJson(const WordInfo& info, const std::string& query,
-                       const std::vector<std::string>& alternativeSearches) {
+std::string toWordJson(const WordInfo &info, const std::string &query,
+                       const std::vector<std::string> &alternativeSearches) {
   nlohmann::json j;
   j["id"] = info.id;
   j["lemma"] = info.lemma;
@@ -15,12 +15,12 @@ std::string toWordJson(const WordInfo& info, const std::string& query,
     j["query"] = query;
 
   j["forms"] = nlohmann::json::array();
-  for (const auto& f : info.forms) {
+  for (const auto &f : info.forms) {
     j["forms"].push_back({{"form", f.form}, {"tag", f.tag}});
   }
 
   j["senses"] = nlohmann::json::array();
-  for (const auto& s : info.senses) {
+  for (const auto &s : info.senses) {
     j["senses"].push_back({{"pos", s.pos},
                            {"definition", s.definition},
                            {"examples", s.examples},
