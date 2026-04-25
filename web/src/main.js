@@ -6,6 +6,7 @@ const spinner = document.getElementById('spinner');
 const statusText = document.getElementById('statusText');
 const alternativeSearches = document.getElementById('alternativeSearches');
 const button = document.getElementById('go');
+const promptButton = document.getElementById('promptGo');
 const historyToggle = document.getElementById('historyToggle');
 const historyDrawer = document.getElementById('historyDrawer');
 const historyList = document.getElementById('historyList');
@@ -734,6 +735,7 @@ async function fetchSuggestions() {
 input.addEventListener('input', debounce(fetchSuggestions, 300));
 
 button.addEventListener('click', lookup);
+promptButton.addEventListener('click', lookup);
 input.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') lookup();
 });
