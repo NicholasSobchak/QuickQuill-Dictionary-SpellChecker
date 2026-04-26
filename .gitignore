@@ -14,10 +14,15 @@ dictionary-db.zip
 dictionary.db-shm
 dictionary.db-wal
 
-# Build Files
+# File types
 *.o
 *.obj
 *.exe
+*.pem
+.env
+*.key
+*.log
+
 
 # Config
 config.json

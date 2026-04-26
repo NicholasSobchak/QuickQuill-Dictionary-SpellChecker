@@ -1,0 +1,12 @@
+# Ignore local build artifacts and large files
+build/
+.dictionary.db
+dictionary.db
+.git
+.gitignore
+node_modules/
+web/node_modules/
+web/dist/
+.vscode/
+.DS_Store
+**/.cache
