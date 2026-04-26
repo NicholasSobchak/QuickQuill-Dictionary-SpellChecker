@@ -3,3 +3,8 @@ IndentWidth: 2
 TabWidth: 2
 UseTab: Never
 SortIncludes: true
+ColumnLimit: 100
+AlignAfterOpenBracket: AlwaysBreak
+BinPackParameters: false
+BreakBeforeBraces: Allman
+InsertBraces: true
