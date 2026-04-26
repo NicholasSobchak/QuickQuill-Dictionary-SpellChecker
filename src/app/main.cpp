@@ -167,20 +167,6 @@ int main()
       continue;
     }
 
-    if (command == "synonym")
-    {
-      std::vector<std::string> syns = dict.suggestSynonyms(arg);
-      if (syns.empty())
-      {
-        std::cout << "no synonyms!\n";
-      }
-      for (const auto &s : syns)
-      {
-        std::cout << s << " ";
-      }
-      std::cout << '\n';
-      continue;
-    }
     std::cout << "Unknown command. Use: lookup <word> | correct "
                  "<word> | "
                  "suggest <word> | exit\n";
