@@ -13,8 +13,7 @@
  * It is strictly for importing the Kaikki web extract into the .db file
  */
 
-struct KaikkiImportOptions
-{
+struct KaikkiImportOptions {
   std::size_t batchSize{5000};
   std::size_t progressInterval{10000};
   std::size_t maxEntries{0}; // 0 = no limit
@@ -22,8 +21,7 @@ struct KaikkiImportOptions
   bool setFastPragmas{true};
 };
 
-struct KaikkiImportStats
-{
+struct KaikkiImportStats {
   std::size_t entries{0};
   std::size_t words{0};
   std::size_t etymologies{0};
@@ -37,7 +35,7 @@ struct KaikkiImportStats
 // Imports Kaikki/Wiktextract-style JSONL into the provided Database.
 // The stream is consumed line-by-line to avoid holding the full dataset in
 // memory.
-KaikkiImportStats
-importKaikkiJsonl(Database &db, std::istream &jsonl, const KaikkiImportOptions &options);
+KaikkiImportStats importKaikkiJsonl(Database &db, std::istream &jsonl,
+                                    const KaikkiImportOptions &options);
 
 #endif

@@ -4,41 +4,31 @@
 #include <fstream>
 #include <iostream>
 
-Config::Config()
-{
+Config::Config() {
   std::ifstream f("config.json");
-  if (f)
-  {
+  if (f) {
     data = nlohmann::json::parse(f);
-  }
-  else
-  {
+  } else {
     std::cerr << "Warning: config.json not found. Using default "
                  "values.\n";
   }
 }
 
-std::string Config::getDatabasePath() const
-{
-  if (const char *env = std::getenv("DATABASE_PATH"); env && *env)
-  {
+std::string Config::getDatabasePath() const {
+  if (const char *env = std::getenv("DATABASE_PATH"); env && *env) {
     return std::string(env);
   }
-  if (data.contains("database_path"))
-  {
+  if (data.contains("database_path")) {
     return data["database_path"].get<std::string>();
   }
   return "dictionary.db"; // Default value
 }
 
-int Config::getServerPort() const
-{
-  if (const char *env = std::getenv("SERVER_PORT"); env && *env)
-  {
+int Config::getServerPort() const {
+  if (const char *env = std::getenv("SERVER_PORT"); env && *env) {
     return std::atoi(env);
   }
-  if (data.contains("server_port"))
-  {
+  if (data.contains("server_port")) {
     return data["server_port"].get<int>();
   }
   return 8080; // Default value

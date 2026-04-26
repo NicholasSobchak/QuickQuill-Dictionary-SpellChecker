@@ -11,53 +11,42 @@
  * It is strictly for importing the Kaikki web extract into the .db file
  */
 
-namespace
-{
+namespace {
 
-void printUsage(std::string_view argv0)
-{
+void printUsage(std::string_view argv0) {
   std::cerr << "Usage:\n"
             << "  " << argv0 << " --json <path.jsonl> [--db <dictionary.db>]\n"
             << "       [--max-entries N] [--progress N] [--batch N] "
                "[--no-clear]\n";
 }
 
-bool parseSizeT(const std::string &s, std::size_t &out)
-{
-  try
-  {
+bool parseSizeT(const std::string &s, std::size_t &out) {
+  try {
     std::size_t idx = 0;
     const auto value = std::stoull(s, &idx, 10);
-    if (idx != s.size())
-    {
+    if (idx != s.size()) {
       return false;
     }
     out = static_cast<std::size_t>(value);
     return true;
-  }
-  catch (...)
-  {
+  } catch (...) {
     return false;
   }
 }
 
 } // namespace
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
   std::string jsonPath;
   std::string dbPath = "dictionary.db";
 
   KaikkiImportOptions options;
 
-  for (int i = 1; i < argc; ++i)
-  {
+  for (int i = 1; i < argc; ++i) {
     const std::string arg = argv[i];
 
-    auto requireValue = [&](std::string_view flag) -> std::string
-    {
-      if (i + 1 >= argc)
-      {
+    auto requireValue = [&](std::string_view flag) -> std::string {
+      if (i + 1 >= argc) {
         std::cerr << flag << " requires a value\n";
         printUsage(argv[0]);
         std::exit(2);
@@ -65,76 +54,55 @@ int main(int argc, char **argv)
       return std::string(argv[++i]);
     };
 
-    if (arg == "--json")
-    {
+    if (arg == "--json") {
       jsonPath = requireValue("--json");
-    }
-    else if (arg == "--db")
-    {
+    } else if (arg == "--db") {
       dbPath = requireValue("--db");
-    }
-    else if (arg == "--max-entries")
-    {
+    } else if (arg == "--max-entries") {
       std::size_t v = 0;
-      if (!parseSizeT(requireValue("--max-entries"), v))
-      {
+      if (!parseSizeT(requireValue("--max-entries"), v)) {
         std::cerr << "Invalid --max-entries\n";
         return 2;
       }
       options.maxEntries = v;
-    }
-    else if (arg == "--progress")
-    {
+    } else if (arg == "--progress") {
       std::size_t v = 0;
-      if (!parseSizeT(requireValue("--progress"), v))
-      {
+      if (!parseSizeT(requireValue("--progress"), v)) {
         std::cerr << "Invalid --progress\n";
         return 2;
       }
       options.progressInterval = v;
-    }
-    else if (arg == "--batch")
-    {
+    } else if (arg == "--batch") {
       std::size_t v = 0;
-      if (!parseSizeT(requireValue("--batch"), v))
-      {
+      if (!parseSizeT(requireValue("--batch"), v)) {
         std::cerr << "Invalid --batch\n";
         return 2;
       }
       options.batchSize = v;
-    }
-    else if (arg == "--no-clear")
-    {
+    } else if (arg == "--no-clear") {
       options.clearDatabase = false;
-    }
-    else if (arg == "-h" || arg == "--help")
-    {
+    } else if (arg == "-h" || arg == "--help") {
       printUsage(argv[0]);
       return 0;
-    }
-    else
-    {
+    } else {
       std::cerr << "Unknown argument: " << arg << "\n";
       printUsage(argv[0]);
       return 2;
     }
   }
 
-  if (jsonPath.empty())
-  {
+  if (jsonPath.empty()) {
     printUsage(argv[0]);
     return 2;
   }
 
   std::ifstream input(jsonPath);
-  if (!input)
-  {
+  if (!input) {
     std::cerr << "Could not open JSONL file: " << jsonPath << "\n";
     return 1;
   }
 
-  try
-  {
+  try {
     Database db{dbPath};
     std::cerr << "Importing from " << jsonPath << " into " << dbPath << "...\n";
     const auto stats = importKaikkiJsonl(db, input, options);
@@ -148,9 +116,7 @@ int main(int argc, char **argv)
     std::cout << "  Synonyms    : " << stats.synonyms << "\n";
     std::cout << "  Antonyms    : " << stats.antonyms << "\n";
     std::cout << "  Etymologies : " << stats.etymologies << "\n";
-  }
-  catch (const std::exception &e)
-  {
+  } catch (const std::exception &e) {
     std::cerr << "Import failed: " << e.what() << "\n";
     return 1;
   }

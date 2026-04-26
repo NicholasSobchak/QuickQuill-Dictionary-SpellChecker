@@ -4,11 +4,9 @@
 #include "MockDB.h"
 #include "http/services/WordService.h"
 
-TEST_CASE("search returns 200 with found word", "[integration][api]")
-{
+TEST_CASE("search returns 200 with found word", "[integration][api]") {
   static bool seeded = false;
-  if (!seeded)
-  {
+  if (!seeded) {
     auto tmp = test_support::tempDbPath("qq_integration.sqlite");
     auto db = test_support::makeFreshDb(tmp);
     test_support::seedWord(db, "lumen", "unit of luminous flux", {"light"});
@@ -24,11 +22,10 @@ TEST_CASE("search returns 200 with found word", "[integration][api]")
   CHECK(json["senses"][0]["definition"] == "unit of luminous flux");
 }
 
-TEST_CASE("search returns 404 with suggestion when missing", "[integration][api]")
-{
+TEST_CASE("search returns 404 with suggestion when missing",
+          "[integration][api]") {
   static bool seeded = false;
-  if (!seeded)
-  {
+  if (!seeded) {
     auto tmp = test_support::tempDbPath("qq_integration.sqlite");
     auto db = test_support::makeFreshDb(tmp);
     test_support::seedWord(db, "lumen", "unit of luminous flux", {"light"});

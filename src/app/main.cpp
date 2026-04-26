@@ -14,57 +14,45 @@
 
 using json = nlohmann::json;
 
-namespace
-{
-void printWordInfo(const WordInfo &info)
-{
+namespace {
+void printWordInfo(const WordInfo &info) {
   std::cout << "\nWord ID: " << info.id << "\n";
-  std::cout << "Lemma: " << (info.lemma.empty() ? "UNKNOWN" : info.lemma) << "\n";
-  std::cout << "Display Lemma: " << (info.displayLemma.empty() ? "UNKNOWN" : info.displayLemma)
+  std::cout << "Lemma: " << (info.lemma.empty() ? "UNKNOWN" : info.lemma)
+            << "\n";
+  std::cout << "Display Lemma: "
+            << (info.displayLemma.empty() ? "UNKNOWN" : info.displayLemma)
             << "\n";
 
-  if (!info.senses.empty())
-  {
-    for (std::size_t i{0}; i < info.senses.size(); ++i)
-    {
+  if (!info.senses.empty()) {
+    for (std::size_t i{0}; i < info.senses.size(); ++i) {
       const auto &s = info.senses[i];
-      std::cout << "  [" << i + 1 << "] " << (s.pos.empty() ? "" : s.pos + " ") << "(id " << s.id
-                << ")\n";
+      std::cout << "  [" << i + 1 << "] " << (s.pos.empty() ? "" : s.pos + " ")
+                << "(id " << s.id << ")\n";
 
-      std::cout << "    Definition: " << (s.definition.empty() ? "UNKNOWN" : s.definition) << "\n";
+      std::cout << "    Definition: "
+                << (s.definition.empty() ? "UNKNOWN" : s.definition) << "\n";
 
-      if (!s.examples.empty())
-      {
+      if (!s.examples.empty()) {
         std::cout << "    Examples:\n";
         for (const auto &ex : s.examples)
-        {
           std::cout << "      - " << ex << "\n";
-        }
       }
 
-      if (!s.synonyms.empty())
-      {
+      if (!s.synonyms.empty()) {
         std::cout << "    Synonyms: ";
-        for (std::size_t j{0}; j < s.synonyms.size(); ++j)
-        {
+        for (std::size_t j{0}; j < s.synonyms.size(); ++j) {
           if (j)
-          {
             std::cout << ", ";
-          }
           std::cout << s.synonyms[j];
         }
         std::cout << "\n";
       }
 
-      if (!s.antonyms.empty())
-      {
+      if (!s.antonyms.empty()) {
         std::cout << "    Antonyms: ";
-        for (std::size_t j{0}; j < s.antonyms.size(); ++j)
-        {
+        for (std::size_t j{0}; j < s.antonyms.size(); ++j) {
           if (j)
-          {
             std::cout << ", ";
-          }
           std::cout << s.antonyms[j];
         }
         std::cout << "\n";
@@ -72,31 +60,24 @@ void printWordInfo(const WordInfo &info)
 
       std::cout << "\n";
     }
-  }
-  else
-  {
+  } else {
     std::cout << "\nNo senses available.\n";
   }
 
-  if (!info.forms.empty())
-  {
+  if (!info.forms.empty()) {
     std::cout << "Forms:\n";
-    for (std::size_t i = 0; i < info.forms.size(); ++i)
-    {
+    for (std::size_t i = 0; i < info.forms.size(); ++i) {
       const auto &f = info.forms[i];
       std::cout << "  [" << i + 1 << "] " << f.form;
       if (!f.tag.empty())
-      {
         std::cout << " (" << f.tag << ")";
-      }
       std::cout << "\n";
     }
   }
 }
 } // namespace
 
-int main()
-{
+int main() {
   Dictionary dict;
   SpellChecker checker(dict);
 #if 1
@@ -106,53 +87,45 @@ int main()
   // currently testing funcitons needed to be implemented (printWordInfo,
   // checker.correct, checker.suggest
   std::string line;
-  while (std::cout << "> " && std::getline(std::cin, line))
-  {
+  while (std::cout << "> " && std::getline(std::cin, line)) {
     if (line.empty())
-    {
       continue;
-    }
     std::istringstream iss(line);
     std::string command;
     std::string arg;
     iss >> command >> arg;
 
-    if (command == "exit")
-    {
+    if (command == "exit") {
       break;
     }
 
-    if (arg.empty())
-    {
+    if (arg.empty()) {
       std::cout << "Usage: lookup <word> | correct <word> | "
                    "suggest <word> | exit\n";
       continue;
     }
 
-    if (command == "lookup")
-    {
+    if (command == "lookup") {
       // time query
       auto start = std::chrono::high_resolution_clock::now();
       WordInfo info = dict.getWordInfo(arg);
       auto end = std::chrono::high_resolution_clock::now();
       std::chrono::duration<double, std::milli> elapsed = end - start;
 
-      if (info.lemma.empty())
-      {
+      if (info.lemma.empty()) {
         std::cout << "Word not found\n";
         continue;
       }
 
       printWordInfo(info);
-      std::cout << "Database query executed in " << elapsed.count() << " milliseconds\n";
+      std::cout << "Database query executed in " << elapsed.count()
+                << " milliseconds\n";
       continue;
     }
 
-    if (command == "correct")
-    {
+    if (command == "correct") {
       const std::string correction = checker.correct(arg);
-      if (correction.empty())
-      {
+      if (correction.empty()) {
         std::cout << "No suggestions found.\n";
         continue;
       }
@@ -161,26 +134,11 @@ int main()
       continue;
     }
 
-    if (command == "suggest")
-    {
+    if (command == "suggest") {
       checker.printSuggest(checker.suggest(arg));
       continue;
     }
 
-    if (command == "synonym")
-    {
-      std::vector<std::string> syns = dict.suggestSynonyms(arg);
-      if (syns.empty())
-      {
-        std::cout << "no synonyms!\n";
-      }
-      for (const auto &s : syns)
-      {
-        std::cout << s << " ";
-      }
-      std::cout << '\n';
-      continue;
-    }
     std::cout << "Unknown command. Use: lookup <word> | correct "
                  "<word> | "
                  "suggest <word> | exit\n";

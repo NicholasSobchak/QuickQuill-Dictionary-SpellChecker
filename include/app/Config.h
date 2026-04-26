@@ -4,11 +4,9 @@
 #include <nlohmann/json.hpp>
 #include <string>
 
-class Config
-{
+class Config {
 public:
-  static Config &getInstance()
-  {
+  static Config &getInstance() {
     static Config instance;
     return instance;
   }

@@ -49,9 +49,9 @@ function saveSuggestedWords(words) {
 }
 
 function addSearchedSuggestion(word) {
-  // Don't add the actively searched word into the suggested-words drawer.
-  // Keep function for compatibility but no-op to ensure the current query isn't suggested.
-  return;
+  const cleanedWord = displayWord(word);
+  if (!cleanedWord) return;
+  mergeDrawerSuggestedWords([cleanedWord]);
 }
 
 function mergeDrawerSuggestedWords(words) {
@@ -79,21 +79,20 @@ async function storeSuggestionsForQuery(word) {
   const cleanedWord = displayWord(word);
   if (!cleanedWord) return;
 
+  if (lastSuggestedQuery.toLowerCase() === cleanedWord.toLowerCase()) {
+    mergeDrawerSuggestedWords(liveSuggestedWords);
+    renderSuggest();
+    syncSimilarSearchesForEmptyInput();
+    return;
+  }
+
   try {
-    const res = await fetch(`/api/synonym/${encodeURIComponent(cleanedWord)}`);
+    const res = await fetch(`/api/suggest/${encodeURIComponent(cleanedWord)}`);
     if (!res.ok) return;
 
     const words = (await res.json()).map((item) => displayWord(item)).filter(Boolean);
-    // Filter out the searched word itself so it never appears in the suggested drawer
-    const filtered = words.filter((w) => w.toLowerCase() !== cleanedWord.toLowerCase());
-    // Merge backend-provided synonyms into the existing drawer without clearing it
-    mergeDrawerSuggestedWords(filtered);
-
-    // Update live view and render
-    liveSuggestedWords = drawerSuggestedWords.slice(0, 10);
-    lastSuggestedQuery = cleanedWord;
+    mergeDrawerSuggestedWords(words);
     renderSuggest();
-    renderSuggestedSearches();
     syncSimilarSearchesForEmptyInput();
   } catch (err) {
     console.error('Error storing suggestions:', err);
@@ -712,18 +711,25 @@ function debounce(fn, delay) {
 }
 
 async function fetchSuggestions() {
-  // No dynamic fetching for suggestions on input anymore.
-  // Show stored drawer suggestions in the live view instead.
   const word = input.value.trim();
   if (word.length < 2) {
     liveSuggestedWords = drawerSuggestedWords.slice(0, 10);
-  } else {
-    // For typed input, still show the stored suggestions (no backend call)
-    liveSuggestedWords = drawerSuggestedWords.slice(0, 10);
+    lastSuggestedQuery = '';
+    renderSuggest();
+    renderSuggestedSearches();
+    return;
   }
-  lastSuggestedQuery = '';
-  renderSuggest();
-  renderSuggestedSearches();
+
+  try {
+    const res = await fetch(`/api/suggest/${encodeURIComponent(word)}`);
+    if (!res.ok) return;
+
+    liveSuggestedWords = (await res.json()).map((item) => displayWord(item)).filter(Boolean);
+    lastSuggestedQuery = displayWord(word);
+    renderSuggestedSearches();
+  } catch (err) {
+    console.error('Error fetching suggestions:', err);
+  }
 }
 
 input.addEventListener('input', debounce(fetchSuggestions, 300));

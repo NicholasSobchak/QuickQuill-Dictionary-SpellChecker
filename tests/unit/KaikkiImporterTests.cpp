@@ -6,20 +6,18 @@
 
 #include "KaikkiImporter.h"
 
-namespace
-{
+namespace {
 
-std::filesystem::path makeTempDbPath()
-{
+std::filesystem::path makeTempDbPath() {
   auto dir = std::filesystem::temp_directory_path();
-  const auto stamp = std::chrono::steady_clock::now().time_since_epoch().count();
+  const auto stamp =
+      std::chrono::steady_clock::now().time_since_epoch().count();
   return dir / ("quickquill-import-test-" + std::to_string(stamp) + ".db");
 }
 
 } // namespace
 
-TEST_CASE("importKaikkiJsonl imports lemma, form, and senses", "[import]")
-{
+TEST_CASE("importKaikkiJsonl imports lemma, form, and senses", "[import]") {
   const auto dbPath = makeTempDbPath();
 
   std::istringstream jsonl(R"jsonl(

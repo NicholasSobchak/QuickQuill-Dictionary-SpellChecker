@@ -3,22 +3,21 @@
 #include "core/Trie.h"
 
 // insertion tests
-TEST_CASE("reject duplicate insertions", "[trie]")
-{
+TEST_CASE("reject duplicate insertions", "[trie]") {
   Trie trie;
   REQUIRE(trie.isEmpty());
 
   REQUIRE(trie.insert("had", dct::WordId{1}, dct::Frequency{1}));
   REQUIRE(trie.insert("hath", dct::WordId{2}, dct::Frequency{1}));
-  REQUIRE_FALSE(trie.insert("hath", dct::WordId{3}, dct::Frequency{1})); // duplicate rejected
+  REQUIRE_FALSE(trie.insert("hath", dct::WordId{3},
+                            dct::Frequency{1})); // duplicate rejected
 
   REQUIRE(trie.contains("had"));
   REQUIRE(trie.contains("hath"));
   REQUIRE_FALSE(trie.contains("impaired"));
 }
 
-TEST_CASE("reject non-alpha input", "[trie]")
-{
+TEST_CASE("reject non-alpha input", "[trie]") {
   Trie trie;
   REQUIRE_FALSE(trie.insert("raven!", dct::WordId{1}, dct::Frequency{1}));
   REQUIRE_FALSE(trie.insert("tress01", dct::WordId{2}, dct::Frequency{1}));
@@ -27,8 +26,7 @@ TEST_CASE("reject non-alpha input", "[trie]")
   REQUIRE_FALSE(trie.contains("%walks^!"));
 }
 
-TEST_CASE("case handling", "[trie]")
-{
+TEST_CASE("case handling", "[trie]") {
   Trie trie;
   trie.insert("beauty", dct::WordId{1}, dct::Frequency{1});
   trie.insert("LIKE", dct::WordId{2}, dct::Frequency{1});
@@ -37,36 +35,33 @@ TEST_CASE("case handling", "[trie]")
   REQUIRE(trie.contains("like"));
 }
 
-TEST_CASE("insert long word and retrieve", "[trie]")
-{
+TEST_CASE("insert long word and retrieve", "[trie]") {
   Trie trie;
-  CHECK(trie.insert(
-      "hippopotomonstrosesquipedaliophobia", dct::WordId{1}, dct::Frequency{1})); // 35 characters
+  CHECK(trie.insert("hippopotomonstrosesquipedaliophobia", dct::WordId{1},
+                    dct::Frequency{1})); // 35 characters
 
   REQUIRE(trie.contains("hippopotomonstrosesquipedaliophobia"));
   std::vector<std::pair<std::string, dct::Frequency>> out;
   trie.collectWithPrefix("hippo", out, 1);
   REQUIRE(out.size() == 1);
-  CHECK(
-      out[0].first == "hippopotomonstrosesquipedaliophobi"
-                      "a"); // check collectWithPrefix
-                            // return it
+  CHECK(out[0].first == "hippopotomonstrosesquipedaliophobi"
+                        "a"); // check collectWithPrefix
+                              // return it
 }
 
 // id tests
-TEST_CASE("getWordId returns correct id", "[trie]")
-{
+TEST_CASE("getWordId returns correct id", "[trie]") {
   Trie trie;
   trie.insert("this", dct::WordId{42}, dct::Frequency{1});
   trie.insert("nameless", dct::WordId{7}, dct::Frequency{1});
 
   REQUIRE(trie.getWordId("this").value == 42);
   REQUIRE(trie.getWordId("nameless").value == 7);
-  REQUIRE(trie.getWordId("name").value == -1); // not the end of a word, default id is -1
+  REQUIRE(trie.getWordId("name").value ==
+          -1); // not the end of a word, default id is -1
 }
 
-TEST_CASE("getWordId returns correct id after removal", "[trie]")
-{
+TEST_CASE("getWordId returns correct id after removal", "[trie]") {
   Trie trie;
   trie.insert("thats", dct::WordId{1}, dct::Frequency{1});
   trie.insert("best", dct::WordId{2}, dct::Frequency{1});
@@ -77,8 +72,7 @@ TEST_CASE("getWordId returns correct id after removal", "[trie]")
 }
 
 // prefix tests
-TEST_CASE("collectWithPrefix respects limit order", "[trie]")
-{
+TEST_CASE("collectWithPrefix respects limit order", "[trie]") {
   Trie trie;
   // insert 3 words with the prefix "gra"
   trie.insert("grace", dct::WordId{1}, dct::Frequency{1});
@@ -93,8 +87,7 @@ TEST_CASE("collectWithPrefix respects limit order", "[trie]")
   REQUIRE(out[1].first == "grandeur");
 }
 
-TEST_CASE("prefix not present", "[trie]")
-{
+TEST_CASE("prefix not present", "[trie]") {
   Trie trie;
   trie.insert("and", dct::WordId{1}, dct::Frequency{1});
   trie.insert("starry", dct::WordId{2}, dct::Frequency{1});
@@ -106,8 +99,7 @@ TEST_CASE("prefix not present", "[trie]")
 }
 
 // removal tests
-TEST_CASE("remove deletes only targeted word", "[trie]")
-{
+TEST_CASE("remove deletes only targeted word", "[trie]") {
   Trie trie;
   trie.insert("wave", dct::WordId{1}, dct::Frequency{1});
   trie.insert("waves", dct::WordId{2}, dct::Frequency{1});
@@ -117,8 +109,7 @@ TEST_CASE("remove deletes only targeted word", "[trie]")
   REQUIRE(trie.contains("waves")); // sibling branch still intact
 }
 
-TEST_CASE("remove deletes only targeted word (single letter word)", "[trie]")
-{
+TEST_CASE("remove deletes only targeted word (single letter word)", "[trie]") {
   Trie trie;
   trie.insert("o", dct::WordId{1}, dct::Frequency{1});
   trie.insert("or", dct::WordId{2}, dct::Frequency{1});
@@ -128,8 +119,7 @@ TEST_CASE("remove deletes only targeted word (single letter word)", "[trie]")
   REQUIRE(trie.contains("or"));
 }
 
-TEST_CASE("remove non-existent word", "[trie]")
-{
+TEST_CASE("remove non-existent word", "[trie]") {
   Trie trie;
   trie.insert("the", dct::WordId{1}, dct::Frequency{1});
   trie.insert("night", dct::WordId{2}, dct::Frequency{1});
@@ -139,8 +129,7 @@ TEST_CASE("remove non-existent word", "[trie]")
   REQUIRE(trie.contains("night"));
 }
 
-TEST_CASE("removing only word leaves trie empty (only root)", "[trie]")
-{
+TEST_CASE("removing only word leaves trie empty (only root)", "[trie]") {
   Trie trie;
   trie.insert("cloudless", dct::WordId{1}, dct::Frequency{1});
 
@@ -153,8 +142,7 @@ TEST_CASE("removing only word leaves trie empty (only root)", "[trie]")
 }
 
 // emtpy tests
-TEST_CASE("clear() empties trie", "[trie]")
-{
+TEST_CASE("clear() empties trie", "[trie]") {
   Trie trie;
   trie.insert("in", dct::WordId{1}, dct::Frequency{1});
   trie.clear();
@@ -163,8 +151,7 @@ TEST_CASE("clear() empties trie", "[trie]")
   REQUIRE(trie.getWordId("in").value == -1);
 }
 
-TEST_CASE("empty input", "[trie]")
-{
+TEST_CASE("empty input", "[trie]") {
   Trie trie;
   REQUIRE_FALSE(trie.insert("", dct::WordId{1}, dct::Frequency{1}));
 

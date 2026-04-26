@@ -12,15 +12,15 @@
 #include "data/Database.h"
 #include "dct/WordInfo.h"
 
-class Dictionary
-{
+class Dictionary {
 public:
   explicit Dictionary();
   ~Dictionary() = default;
 
   WordInfo getWordInfo(std::string_view word) const;
   std::vector<std::string> getAlternativeSearches(
-      std::string_view word, dct::WordId currentId = dct::WordId{dct::g_defaultId}) const;
+      std::string_view word,
+      dct::WordId currentId = dct::WordId{dct::g_defaultId}) const;
   std::vector<std::string> suggestSynonyms(std::string_view word) const;
   bool contains(std::string_view word) const;
 
@@ -30,13 +30,15 @@ public:
 
 private:
   // Cache storage
-  mutable std::unordered_map<int, WordInfo> m_cache; // mutable allows getWordInfo to be const
+  mutable std::unordered_map<int, WordInfo>
+      m_cache; // mutable allows getWordInfo to be const
 
   Trie m_trie;
   Database m_db;
 
   std::string cleanWord(std::string_view word) const;
   void loadTrie(); // populate Trie using Database
-  std::unordered_set<std::string> collectSuggestedWords(std::string_view word) const;
+  std::unordered_set<std::string>
+  collectSuggestedWords(std::string_view word) const;
 };
 #endif

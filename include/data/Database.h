@@ -15,12 +15,11 @@
 /**
  * This class acts as a wrapper around a C library
  */
-class Database
-{
+class Database {
 public:
   // callback function for word frequency
-  using WordRecordProcessor =
-      std::function<void(dct::WordId id, std::string_view text, dct::Frequency frequency)>;
+  using WordRecordProcessor = std::function<void(
+      dct::WordId id, std::string_view text, dct::Frequency frequency)>;
 
   Database(std::string_view filename);
 
@@ -31,18 +30,21 @@ public:
   Database &operator=(Database &&) noexcept = default;
   ~Database() = default;
 
-  bool insertEtymology(dct::WordId word_id, const std::vector<std::string> &etymology);
-  bool insertForm(dct::WordId word_id, const std::string &form, const std::string &tag);
+  bool insertEtymology(dct::WordId word_id,
+                       const std::vector<std::string> &etymology);
+  bool insertForm(dct::WordId word_id, const std::string &form,
+                  const std::string &tag);
   bool insertExample(dct::WordId sense_id, const std::string &example);
   bool insertSynonym(dct::WordId sense_id, const std::string &synonym);
   bool insertAntonym(dct::WordId sense_id, const std::string &antonym);
   bool isEmpty() const;
   bool contains(std::string_view word) const;
 
-  dct::WordId
-  insertWord(const std::string &lemma, const std::string &displayLemma, dct::Frequency frequency);
-  dct::WordId
-  insertSense(dct::WordId word_id, const std::string &pos, const std::string &definition);
+  dct::WordId insertWord(const std::string &lemma,
+                         const std::string &displayLemma,
+                         dct::Frequency frequency);
+  dct::WordId insertSense(dct::WordId word_id, const std::string &pos,
+                          const std::string &definition);
 
   void createTables();
   void clearDB();
@@ -57,12 +59,9 @@ public:
   std::vector<dct::WordId> findMatchingWordIds(std::string_view word) const;
 
 private:
-  struct Sqlite3Deleter
-  {
-    void operator()(sqlite3 *db) const
-    {
-      if (db)
-      {
+  struct Sqlite3Deleter {
+    void operator()(sqlite3 *db) const {
+      if (db) {
         sqlite3_close(db);
       }
     }
@@ -71,11 +70,11 @@ private:
   std::unique_ptr<sqlite3, Sqlite3Deleter> m_db;
 
   std::vector<Form> fetchForms(dct::WordId word_id) const;
-  std::unordered_map<int, std::vector<std::string>> fetchGroupedStrings(
-      std::string_view table,
-      std::string_view value_col,
-      std::string_view id_col,
-      const std::vector<dct::WordId> &ids) const;
-  std::vector<std::string> fetchStrings(std::string_view sql, dct::WordId id) const;
+  std::unordered_map<int, std::vector<std::string>>
+  fetchGroupedStrings(std::string_view table, std::string_view value_col,
+                      std::string_view id_col,
+                      const std::vector<dct::WordId> &ids) const;
+  std::vector<std::string> fetchStrings(std::string_view sql,
+                                        dct::WordId id) const;
 };
 #endif

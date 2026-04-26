@@ -6,33 +6,27 @@
 #include <string>
 #include <vector>
 
-namespace http
-{
-namespace
-{
+namespace http {
+namespace {
 const std::string kDistRoot = "web/dist";
 
 /**
  * Type safety: wrapper carrying a MIME type string
  */
-struct ContentType
-{
+struct ContentType {
   std::string value;
   explicit ContentType(std::string v) : value(std::move(v)) {}
 };
 
-crow::response jsonResponse(const std::string &body, int status = 200)
-{
+crow::response jsonResponse(const std::string &body, int status = 200) {
   crow::response response(status, body);
   response.set_header("Content-Type", "application/json");
   return response;
 }
 
-crow::response htmlResponseFromFile(const std::string &path)
-{
+crow::response htmlResponseFromFile(const std::string &path) {
   std::ifstream file(path);
-  if (!file)
-  {
+  if (!file) {
     return crow::response(500, "Failed to load frontend HTML.");
   }
 
@@ -43,8 +37,7 @@ crow::response htmlResponseFromFile(const std::string &path)
   return response;
 }
 
-std::string guessContentType(const std::string &path)
-{
+std::string guessContentType(const std::string &path) {
   static const std::vector<std::pair<std::string, std::string>> mapping = {
       {".html", "text/html; charset=utf-8"},
       {".js", "application/javascript"},
@@ -61,21 +54,19 @@ std::string guessContentType(const std::string &path)
       {".otf", "font/otf"},
   };
 
-  for (const auto &[ext, mime] : mapping)
-  {
-    if (path.size() >= ext.size() && path.compare(path.size() - ext.size(), ext.size(), ext) == 0)
-    {
+  for (const auto &[ext, mime] : mapping) {
+    if (path.size() >= ext.size() &&
+        path.compare(path.size() - ext.size(), ext.size(), ext) == 0) {
       return mime;
     }
   }
   return "application/octet-stream";
 }
 
-crow::response fileResponseFromFile(const std::string &path, const ContentType &contentType)
-{
+crow::response fileResponseFromFile(const std::string &path,
+                                    const ContentType &contentType) {
   std::ifstream file(path, std::ios::binary);
-  if (!file)
-  {
+  if (!file) {
     return crow::response(404, "File not found.");
   }
 
@@ -90,8 +81,7 @@ crow::response fileResponseFromFile(const std::string &path, const ContentType &
 /**
  * Requests
  */
-void registerWordRoutes(crow::SimpleApp &app)
-{
+void registerWordRoutes(crow::SimpleApp &app) {
   /**
    * Static frontend from Vite build (web/dist)
    */
@@ -102,13 +92,11 @@ void registerWordRoutes(crow::SimpleApp &app)
    * Serve hashed assets (and public assets) with a catch-all in /assets/
    */
   CROW_ROUTE(app, "/assets/<path>")
-  (
-      [](const std::string &path)
-      {
-        const std::string full = kDistRoot + "/assets/" + path;
-        const auto mime = guessContentType(full);
-        return fileResponseFromFile(full, ContentType(mime));
-      });
+  ([](const std::string &path) {
+    const std::string full = kDistRoot + "/assets/" + path;
+    const auto mime = guessContentType(full);
+    return fileResponseFromFile(full, ContentType(mime));
+  });
 
   /**
    * GET requests
@@ -116,27 +104,15 @@ void registerWordRoutes(crow::SimpleApp &app)
   CROW_ROUTE(app, "/api/health")([] { return jsonResponse("{\"ok\":true}"); });
 
   CROW_ROUTE(app, "/api/word/<string>")
-  (
-      [](const std::string &word)
-      {
-        auto result = wordService().search(word);
-        return jsonResponse(result.body, result.status);
-      });
+  ([](const std::string &word) {
+    auto result = wordService().search(word);
+    return jsonResponse(result.body, result.status);
+  });
 
   CROW_ROUTE(app, "/api/suggest/<string>")
-  (
-      [](const std::string &word)
-      {
-        auto result = wordService().suggest(word);
-        return jsonResponse(result.body, result.status);
-      });
-
-  CROW_ROUTE(app, "/api/synonym/<string>")
-  (
-      [](const std::string &word)
-      {
-        const auto res = wordService().suggestSynonym(word);
-        return jsonResponse(res.body, res.status);
-      });
+  ([](const std::string &word) {
+    auto result = wordService().suggest(word);
+    return jsonResponse(result.body, result.status);
+  });
 }
 } // namespace http

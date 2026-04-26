@@ -1,24 +1,16 @@
-# Build
-/build/
-/bin/
-.venv/
-vcpkg/
-web/node_modules/
-web/dist/
-
-# Dictionary
 nlohmann/kaikki.org-dictionary-English.jsonl
 dictionary.db
 dictionary.zip
 dictionary-db.zip
 dictionary.db-shm
 dictionary.db-wal
-
-# Build Files
 *.o
 *.obj
 *.exe
-
-# Config
+/build/
+/bin/
+.venv/
 config.json
 .codex
+web/node_modules/
+vcpkg/

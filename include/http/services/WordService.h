@@ -6,34 +6,23 @@
 
 #include <string>
 
-namespace http
-{
-struct SearchResult
-{
+namespace http {
+struct SearchResult {
   std::string body;
   int status{200};
 };
 
-struct SuggestResult
-{
+struct SuggestResult {
   std::string body;
   int status{200};
 };
 
-struct SuggestSynonymResult
-{
-  std::string body;
-  int status{200};
-};
-
-class WordService
-{
+class WordService {
 public:
   WordService(Dictionary &dict, SpellChecker &checker);
 
   SearchResult search(const std::string &word) const;
   SuggestResult suggest(const std::string &word) const;
-  SuggestSynonymResult suggestSynonym(const std::string &word) const;
   void warmupDictionary() const;
 
 private:

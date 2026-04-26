@@ -7,29 +7,23 @@
 #include <cctype>
 #include <cstdlib>
 
-namespace http
-{
-namespace
-{
-Dictionary &dict()
-{
+namespace http {
+namespace {
+Dictionary &dict() {
   static Dictionary instance;
   return instance;
 }
 
-SpellChecker &checker()
-{
+SpellChecker &checker() {
   static SpellChecker instance{dict()};
   return instance;
 }
 } // namespace
 
-WordService::WordService(Dictionary &dict, SpellChecker &checker) : m_dict{dict}, m_checker{checker}
-{
-}
+WordService::WordService(Dictionary &dict, SpellChecker &checker)
+    : m_dict{dict}, m_checker{checker} {}
 
-WordService &wordService()
-{
+WordService &wordService() {
   static WordService instance{dict(), checker()};
   return instance;
 }
@@ -42,112 +36,77 @@ void WordService::warmupDictionary() const { m_dict.getWordInfo("warmup"); }
 /**
  * Removes random characters that could potentially corrupt the search query
  */
-std::string WordService::decodeInput(const std::string &in)
-{
+std::string WordService::decodeInput(const std::string &in) {
   std::string out;
   out.reserve(in.size());
-  for (size_t i = 0; i < in.size(); ++i)
-  {
-    if (in[i] == '%')
-    {
+  for (size_t i = 0; i < in.size(); ++i) {
+    if (in[i] == '%') {
       if (i + 2 >= in.size())
-      {
         return "";
-      }
       auto hex = in.substr(i + 1, 2);
       char *end = nullptr;
       long val = std::strtol(hex.c_str(), &end, 16);
       if (end != hex.c_str() + 2)
-      {
         return "";
-      }
       out.push_back(static_cast<char>(val));
       i += 2;
-    }
-    else if (in[i] == '+')
-    {
+    } else if (in[i] == '+') {
       out.push_back(' ');
-    }
-    else
-    {
+    } else {
       out.push_back(in[i]);
     }
   }
   return out;
 }
 
-SearchResult WordService::search(const std::string &word) const
-{
+SearchResult WordService::search(const std::string &word) const {
   const std::string decoded = decodeInput(word);
-  if (decoded.empty())
-  {
+  if (decoded.empty()) {
     nlohmann::json body = {{"error", "Enter a valid word"}};
     return {body.dump(), 400};
   }
 
-  const bool allowedChars = std::all_of(
-      decoded.begin(), decoded.end(),
-      [](unsigned char c)
-      { return std::isalpha(c) || c == '\'' || c == '-' || c == ' ' || c == '.'; });
+  const bool allowedChars =
+      std::all_of(decoded.begin(), decoded.end(), [](unsigned char c) {
+        return std::isalpha(c) || c == '\'' || c == '-' || c == ' ' || c == '.';
+      });
 
   const std::string sanitized = dct::sanitizeWord(decoded);
-  if (!allowedChars || sanitized.empty())
-  {
+  if (!allowedChars || sanitized.empty()) {
     nlohmann::json body = {{"error", "Enter a valid word"}};
     return {body.dump(), 400};
   }
 
   WordInfo info = dict().getWordInfo(sanitized);
-  if (info.lemma.empty())
-  {
+  if (info.lemma.empty()) {
     const std::string correctWord = checker().correct(sanitized);
-    nlohmann::json body = {{"query", sanitized}, {"found", false}, {"suggestion", correctWord}};
+    nlohmann::json body = {
+        {"query", sanitized}, {"found", false}, {"suggestion", correctWord}};
     return {body.dump(), 404};
   }
 
   // alternative searches comes from words with the same id's (same lemmas)
-  const auto alternativeSearches = dict().getAlternativeSearches(sanitized, info.id);
+  const auto alternativeSearches =
+      dict().getAlternativeSearches(sanitized, info.id);
   return {toWordJson(info, decoded, alternativeSearches), 200};
 }
 
 /*
  * Provides similar searches using the suggest function
  */
-SuggestResult WordService::suggest(const std::string &word) const
-{
+SuggestResult WordService::suggest(const std::string &word) const {
   const std::string decoded = decodeInput(word);
-  if (decoded.empty())
-  {
+  if (decoded.empty()) {
     return {"[]", 200};
   }
 
   const std::string sanitized = dct::sanitizeWord(decoded);
-  if (sanitized.empty())
-  {
+  if (sanitized.empty()) {
     return {"[]", 200};
   }
 
-  std::vector<std::string> suggestions = m_checker.suggest(sanitized);
+  std::vector<std::string> suggestions = checker().suggest(sanitized);
   nlohmann::json body = suggestions;
-  return {body.dump(), 200};
-}
-
-SuggestSynonymResult WordService::suggestSynonym(const std::string &word) const
-{
-  const std::string decoded = decodeInput(word);
-  if (decoded.empty())
-  {
-    return {"[]", 200};
-  }
-
-  const std::string sanitized = dct::sanitizeWord(decoded);
-  if (sanitized.empty())
-  {
-    return {"[]", 200};
-  }
-
-  std::vector<std::string> synonyms = m_dict.suggestSynonyms(sanitized);
-  nlohmann::json body = synonyms;
   return {body.dump(), 200};
 }
 } // namespace http

@@ -9,10 +9,8 @@
 #error "Crow headers not found (need crow.h or crow/crow.h)"
 #endif
 
-namespace http
-{
-void runServer(const int port)
-{
+namespace http {
+void runServer(const int port) {
   crow::SimpleApp app;
   registerWordRoutes(app);
   app.port(port).multithreaded().run();
