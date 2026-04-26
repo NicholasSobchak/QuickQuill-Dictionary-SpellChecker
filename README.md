@@ -40,12 +40,7 @@ Import Complete:
 ```
 
 ### Technical Highlights
-  - Trie-based autocomplete supporting 1.2M+ words
-  - Sub-0.18ms cached search queries for words with extensive data
-  - Memory-efficient dictionary indexing
-  - REST API backend written in C++
-  - Unit tested with Catch2
- 
+  - coming soon
 #
 ## Setting Up / Building this Project Locally
 
@@ -69,17 +64,20 @@ Then place `dictionary.db` in the project root.
 > Check out dependencies in vcpkg.json
 
 ### Project Layout
-
-- `src/app/main.cpp`: local console test entrypoint
-- `src/app/main_crow.cpp`: web server entrypoint
-- `src/http/*`: routes, handlers, DTOs
-- `src/core/*`: dictionary, trie, spell checker
-- `src/data/*`: SQLite persistence layer
-- `tests/*`: contains all C++ unit and integration tests.
-- `web/*`: directory for frontend development.
-- `web/index.html`: main entry point for the frontend web application
-- `src/app/main_import.cpp`: JSONL-to-SQLite import tool (`dict_import`)
-
+```
+.
+├── src/
+│   ├── app/
+│   │   ├── main.cpp
+│   │   ├── main_crow.cpp
+│   │   └── main_import.cpp
+│   ├── http/
+│   ├── core/
+│   └── data/
+├── tests/
+└── web/
+    └── index.html
+```
 ### Configuration
 
 QuickQuill can be configured via a `config.json` file in the project root.
@@ -112,8 +110,6 @@ CI uses `clang-format-17` by default. To match CI locally on Ubuntu/Debian:
     pre-commit install
     ```
 
-Once installed, `clang-format` will automatically run on your staged C++ files every time you run `git commit`. If `clang-format` makes any changes, the commit will be aborted. You will then need to `git add` the newly formatted files and run `git commit` again. This helps maintain a clean and consistently formatted codebase.
-
 ### Build
 
 This project uses **CMake** + **vcpkg** (manifest mode via `vcpkg.json`) to fetch/build dependencies.
@@ -145,20 +141,11 @@ cmake --build build -j
 
 ### Run
 
-After building, the executables are located under `build/src/`.
-
 #### 1) Console test mode
 
 ```bash
 ./build/src/dict
 ```
-
-Commands:
-
-- `lookup <word>`
-- `correct <word>`
-- `suggest <word>`
-- `exit`
 
 #### 2) Web server
 
@@ -173,12 +160,6 @@ Open:
 
 #
 ## API
-
-### Health
-
-```http
-GET /api/health
-```
 
 ### Word lookup
 
@@ -205,10 +186,6 @@ Response shape:
   "etymology": ["..."]
 }
 ```
-#
-## Autocomplete Query Functionality
-<p align="center"><img width="350" height="350" alt="QueryPyramid" src="https://github.com/user-attachments/assets/8da371ab-d159-4994-b001-dbbf5647adc2" />
-
 
 #
 ## Academia Use & Data Attribution
