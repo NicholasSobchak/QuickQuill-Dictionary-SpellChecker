@@ -1,4 +1,4 @@
-name: Build & Test 
+name: Build & Test
 
 on:
   push:
@@ -16,7 +16,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
-        submodules: 'recursive' 
+        submodules: 'recursive'
 
     # Frontend (Web) Build and Dependencies
     - name: Setup Node.js
@@ -24,8 +24,15 @@ jobs:
       with:
         node-version: '20'
 
+    - name: Cache npm
+      uses: actions/cache@v4
+      with:
+        path: ~/.npm
+        key: npm-${{ hashFiles('web/package-lock.json') }}
+        restore-keys: npm-
+
     - name: Install Frontend Dependencies
-      run: npm install
+      run: npm ci
       working-directory: web/
 
     - name: Build Frontend
@@ -36,27 +43,30 @@ jobs:
     - name: Install C++ Build Tools
       run: |
         sudo apt-get update
-        sudo apt-get install -y cmake ninja-build build-essential clang-format-17 
+        sudo apt-get install -y ninja-build build-essential clang-format-17
 
     - name: Check C++ Formatting
       run: find src include tests -type f \( -name "*.cpp" -o -name "*.h" \) -exec clang-format-17 --dry-run --Werror {} +
 
+    - name: Cache vcpkg binary cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/vcpkg/archives
+        key: vcpkg-${{ hashFiles('vcpkg.json') }}
+        restore-keys: vcpkg-
 
     - name: Bootstrap Vcpkg
-      run: |
-        git clone https://github.com/microsoft/vcpkg.git
-        ./vcpkg/bootstrap-vcpkg.sh
+      run: ./vcpkg/bootstrap-vcpkg.sh
+      # vcpkg should be added as a submodule, not cloned fresh each run
 
     - name: Install C++ Dependencies with Vcpkg
-      run: |
-        ./vcpkg/vcpkg install --triplet x64-linux # Adjust triplet if targeting different platforms
-      # Vcpkg will automatically use vcpkg.json from the project root
+      run: ./vcpkg/vcpkg install --triplet x64-linux
 
     - name: Configure CMake
-      run: cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake
+      run: cmake -B build -S . -G Ninja -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake
 
     - name: Build C++ Project
       run: cmake --build build
 
     - name: Run C++ Tests
-      run: cd build && ctest --output-on-failure
+      run: ctest --test-dir build --output-on-failure
