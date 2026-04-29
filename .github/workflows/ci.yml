@@ -56,8 +56,20 @@ jobs:
         restore-keys: vcpkg-
 
     - name: Bootstrap Vcpkg
-      run: ./vcpkg/bootstrap-vcpkg.sh
-      # vcpkg should be added as a submodule, not cloned fresh each run
+      #- name: Cache vcpkg installation
+      uses: actions/cache@v4
+      with:
+        path: vcpkg
+        key: vcpkg-tool-${{ hashFiles('vcpkg.json') }}
+        restore-keys: vcpkg-tool-
+
+    - name: Bootstrap Vcpkg
+      run: |
+        if [ ! -f vcpkg/vcpkg ]; then
+          git clone https://github.com/microsoft/vcpkg.git
+          git -C vcpkg checkout 2025.04.09
+          ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
+        fi 
 
     - name: Install C++ Dependencies with Vcpkg
       run: ./vcpkg/vcpkg install --triplet x64-linux
