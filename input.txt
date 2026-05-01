@@ -1,3 +1,0 @@
-lookup hello
-suggest hel
-exit
