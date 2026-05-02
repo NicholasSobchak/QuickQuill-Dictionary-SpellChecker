@@ -10,9 +10,6 @@ RUN npm run build
 
 ### Builder stage
 FROM debian:bookworm-slim AS builder
-
-### Builder stage
-FROM debian:bookworm-slim AS builder
 RUN apt-get update \
   && apt-get install -y --no-install-recommends build-essential cmake git ca-certificates curl pkg-config unzip tar zip python3 \
   && rm -rf /var/lib/apt/lists/*
