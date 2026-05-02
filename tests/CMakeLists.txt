@@ -5,6 +5,7 @@ add_executable(runTests
     integration/WordApiIntegration.cpp
     unit/TrieTests.cpp
 	unit/DictionaryTests.cpp
+    unit/DictionaryConcurrencyTests.cpp
 	unit/DatabaseTests.cpp
     unit/KaikkiImporterTests.cpp
 	unit/SpellCheckerTests.cpp

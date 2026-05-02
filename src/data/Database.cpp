@@ -11,6 +11,10 @@ Database::Database(std::string_view filename)
   }
   m_db.reset(db_ptr);
 
+  // Prevent requests from blocking indefinitely when another connection holds a lock.
+  // Note: this is a per-connection setting.
+  sqlite3_busy_timeout(m_db.get(), 2000);
+
   char *errMsg = nullptr;
   if (sqlite3_exec(m_db.get(), "PRAGMA foreign_keys = ON;", nullptr, nullptr, &errMsg) != SQLITE_OK)
   {

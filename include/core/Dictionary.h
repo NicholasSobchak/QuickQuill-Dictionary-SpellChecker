@@ -2,6 +2,7 @@
 #define DICTIONARY_H
 #include <algorithm>
 #include <fstream>
+#include <mutex>
 #include <nlohmann/json.hpp>
 #include <string>
 #include <unordered_map>
@@ -29,6 +30,10 @@ public:
   std::vector<std::string> suggestSpelling(std::string_view word) const;
 
 private:
+  // Protects m_cache and the shared sqlite connection inside m_db.
+  // The HTTP server runs with concurrency > 1, so Dictionary must be thread-safe.
+  mutable std::mutex m_mutex;
+
   // Cache storage
   mutable std::unordered_map<int, WordInfo> m_cache; // mutable allows getWordInfo to be const
 

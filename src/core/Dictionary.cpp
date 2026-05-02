@@ -4,6 +4,8 @@
 #include "dct/dct.h"
 #include "random.h"
 
+#include <mutex>
+
 Dictionary::Dictionary() : m_db{Config::getInstance().getDatabasePath()}
 {
   m_db.createTables();
@@ -12,6 +14,8 @@ Dictionary::Dictionary() : m_db{Config::getInstance().getDatabasePath()}
 
 WordInfo Dictionary::getWordInfo(std::string_view word) const
 {
+  std::lock_guard<std::mutex> lock{m_mutex};
+
   WordInfo info;
   std::string clean{cleanWord(word)};
   if (clean.empty())
@@ -40,6 +44,8 @@ WordInfo Dictionary::getWordInfo(std::string_view word) const
 std::vector<std::string>
 Dictionary::getAlternativeSearches(std::string_view word, dct::WordId currentId) const
 {
+  std::lock_guard<std::mutex> lock{m_mutex};
+
   std::vector<std::string> alternatives;
   std::string clean{cleanWord(word)};
   if (clean.empty())
@@ -92,6 +98,8 @@ Dictionary::getAlternativeSearches(std::string_view word, dct::WordId currentId)
 
 std::vector<std::string> Dictionary::suggestSynonyms(std::string_view word) const
 {
+  std::lock_guard<std::mutex> lock{m_mutex};
+
   std::vector<std::string> synonymSuggestions;
   std::string clean{cleanWord(word)};
   if (clean.empty())
@@ -99,7 +107,25 @@ std::vector<std::string> Dictionary::suggestSynonyms(std::string_view word) cons
     return synonymSuggestions;
   }
 
-  const WordInfo info{getWordInfo(clean)};
+  // Avoid calling getWordInfo() here since it also takes m_mutex.
+  // Reuse the same lookup logic to keep locking simple.
+  dct::WordId id = m_trie.getWordId(clean);
+  if (id.value == dct::g_defaultId)
+  {
+    return synonymSuggestions;
+  }
+
+  WordInfo info;
+  auto cached = m_cache.find(id.value);
+  if (cached != m_cache.end())
+  {
+    info = cached->second;
+  }
+  else
+  {
+    info = m_db.getInfo(id);
+    m_cache.try_emplace(id.value, info);
+  }
 
   // create pool
   std::vector<std::string> pool;
