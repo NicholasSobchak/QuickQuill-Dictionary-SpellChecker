@@ -1,6 +1,6 @@
 services:
   backend:
-    build: . 
+    image: nicksobchak/quickquill 
     restart: unless-stopped
     working_dir: /app
     volumes:
