@@ -1,5 +1,16 @@
 # Multi-stage Dockerfile: build the C++ backend inside the image and produce a small runtime image
 
+### Frontend build stage
+FROM node:20-slim AS frontend
+WORKDIR /web
+COPY web/package*.json ./
+RUN npm install
+COPY web/ ./
+RUN npm run build
+
+### Builder stage
+FROM debian:bookworm-slim AS builder
+
 ### Builder stage
 FROM debian:bookworm-slim AS builder
 RUN apt-get update \
@@ -31,6 +42,7 @@ WORKDIR /app
 # Copy only the built binary and config; do NOT copy dictionary.db (mount at runtime)
 COPY --from=builder /src/build/src/dict_crow ./dict_crow
 COPY config.json ./config.json
+COPY --from=frontend /web/dist ./web/dist
 RUN chmod +x ./dict_crow
 
 EXPOSE 8080
