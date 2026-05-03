@@ -29,7 +29,6 @@ const DRAWER_UNLOAD_DELAY = 280;
 let spinnerTimer = null;
 let drawerSuggestedWords = loadSuggestedWords();
 let liveSuggestedWords = [];
-let lastSuggestedQuery = '';
 let historyDrawerNeedsRender = true;
 let suggestDrawerNeedsRender = true;
 let historyUnloadTimer = null;
@@ -53,7 +52,7 @@ function saveSuggestedWords(words) {
   localStorage.setItem(SUGGESTED_KEY, JSON.stringify(words.slice(0, SUGGESTED_LIMIT)));
 }
 
-function addSearchedSuggestion(word) {
+function addSearchedSuggestion() {
   // Don't add the actively searched word into the suggested-words drawer.
   // Keep function for compatibility but no-op to ensure the current query isn't suggested.
   return;
@@ -96,7 +95,6 @@ async function storeSuggestionsForQuery(word) {
 
     // Update live view and render
     liveSuggestedWords = drawerSuggestedWords.slice(0, 10);
-    lastSuggestedQuery = cleanedWord;
     suggestDrawerNeedsRender = true;
     if (suggestDrawer.classList.contains('open')) renderSuggest();
     renderSuggestedSearches();
@@ -732,7 +730,7 @@ async function lookup() {
       renderWord(data, word);
       setStatus('');
       addToHistory(displayWord(word));
-      addSearchedSuggestion(word);
+      addSearchedSuggestion();
       storeSuggestionsForQuery(word);
       suggestDrawerNeedsRender = true;
       if (suggestDrawer.classList.contains('open')) renderSuggest();
@@ -775,7 +773,6 @@ async function fetchSuggestions() {
     // For typed input, still show the stored suggestions (no backend call)
     liveSuggestedWords = drawerSuggestedWords.slice(0, 10);
   }
-  lastSuggestedQuery = '';
   suggestDrawerNeedsRender = true;
   if (suggestDrawer.classList.contains('open')) renderSuggest();
   renderSuggestedSearches();
