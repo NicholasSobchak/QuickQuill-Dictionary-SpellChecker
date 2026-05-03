@@ -4,6 +4,7 @@
 #include "nlohmann/json.hpp"
 
 #include <algorithm>
+#include <array>
 #include <cctype>
 #include <cstdlib>
 
@@ -37,7 +38,29 @@ WordService &wordService()
 /*
  * Forces static dictionary to construct and touch DB
  */
-void WordService::warmupDictionary() const { m_dict.getWordInfo("warmup"); }
+void WordService::warmupDictionary() const
+{
+  static constexpr std::array<std::string_view, 4> kWarmupCandidates = {
+      "nameless", "grace", "raven", "tress"};
+
+  for (const auto candidate : kWarmupCandidates)
+  {
+    if (!m_dict.contains(candidate))
+    {
+      continue;
+    }
+
+    const WordInfo info = m_dict.getWordInfo(candidate);
+    if (info.lemma.empty())
+    {
+      continue;
+    }
+
+    m_dict.getAlternativeSearches(candidate, info.id);
+    m_dict.suggestSynonyms(candidate);
+    return;
+  }
+}
 
 /**
  * Removes random characters that could potentially corrupt the search query
@@ -97,16 +120,16 @@ SearchResult WordService::search(const std::string &word) const
     return {body.dump(), 400};
   }
 
-  WordInfo info = dict().getWordInfo(sanitized);
+  WordInfo info = m_dict.getWordInfo(sanitized);
   if (info.lemma.empty())
   {
-    const std::string correctWord = checker().correct(sanitized);
+    const std::string correctWord = m_checker.correct(sanitized);
     nlohmann::json body = {{"query", sanitized}, {"found", false}, {"suggestion", correctWord}};
     return {body.dump(), 404};
   }
 
   // alternative searches comes from words with the same id's (same lemmas)
-  const auto alternativeSearches = dict().getAlternativeSearches(sanitized, info.id);
+  const auto alternativeSearches = m_dict.getAlternativeSearches(sanitized, info.id);
   return {toWordJson(info, decoded, alternativeSearches), 200};
 }
 

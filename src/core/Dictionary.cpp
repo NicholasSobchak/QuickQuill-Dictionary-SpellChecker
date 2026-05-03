@@ -6,11 +6,7 @@
 
 struct Dictionary::ThreadResources
 {
-  explicit ThreadResources(std::string dbPath) : db{std::move(dbPath)}
-  {
-    // Idempotent; ensures tables exist even in test DBs.
-    db.createTables();
-  }
+  explicit ThreadResources(const std::string &dbPath) : db{dbPath} {}
 
   Database db;
   std::unordered_map<int, WordInfo> cache;

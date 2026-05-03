@@ -15,6 +15,6 @@ void runServer(const int port)
 {
   crow::SimpleApp app;
   registerWordRoutes(app);
-  app.port(port).multithreaded().run();
+  app.port(port).concurrency(2).run();
 }
 } // namespace http

@@ -25,10 +25,15 @@ const HISTORY_KEY = 'quickquill-history';
 const HISTORY_LIMIT = 100;
 const SUGGESTED_KEY = 'quickquill-suggested-words';
 const TOGGLE_GAP = 12;
+const DRAWER_UNLOAD_DELAY = 280;
 let spinnerTimer = null;
 let drawerSuggestedWords = loadSuggestedWords();
 let liveSuggestedWords = [];
 let lastSuggestedQuery = '';
+let historyDrawerNeedsRender = true;
+let suggestDrawerNeedsRender = true;
+let historyUnloadTimer = null;
+let suggestUnloadTimer = null;
 
 function loadHistory() {
   const stored = localStorage.getItem(HISTORY_KEY);
@@ -92,7 +97,8 @@ async function storeSuggestionsForQuery(word) {
     // Update live view and render
     liveSuggestedWords = drawerSuggestedWords.slice(0, 10);
     lastSuggestedQuery = cleanedWord;
-    renderSuggest();
+    suggestDrawerNeedsRender = true;
+    if (suggestDrawer.classList.contains('open')) renderSuggest();
     renderSuggestedSearches();
     syncSimilarSearchesForEmptyInput();
   } catch (err) {
@@ -101,6 +107,7 @@ async function storeSuggestionsForQuery(word) {
 }
 
 function renderHistory() {
+  historyDrawerNeedsRender = false;
   const items = loadHistory();
   historyList.innerHTML = '';
   if (!items.length) {
@@ -125,6 +132,7 @@ function renderHistory() {
 
 function renderSuggest() {
   if (!suggestList) return;
+  suggestDrawerNeedsRender = false;
   drawerSuggestedWords = drawerSuggestedWords.slice(0, SUGGESTED_LIMIT);
   suggestList.innerHTML = '';
   if (!drawerSuggestedWords.length) {
@@ -153,13 +161,15 @@ function addToHistory(word) {
   const filtered = items.filter((w) => w.toLowerCase() !== word.toLowerCase());
   filtered.unshift(word);
   saveHistory(filtered.slice(0, HISTORY_LIMIT));
-  renderHistory();
+  historyDrawerNeedsRender = true;
+  if (historyDrawer.classList.contains('open')) renderHistory();
 }
 
 if (clearHistoryButton) {
   clearHistoryButton.addEventListener('click', () => {
     localStorage.removeItem(HISTORY_KEY);
-    renderHistory();
+    historyDrawerNeedsRender = true;
+    if (historyDrawer.classList.contains('open')) renderHistory();
   });
 }
 
@@ -167,7 +177,8 @@ if (clearSuggestionsButton) {
   clearSuggestionsButton.addEventListener('click', () => {
     drawerSuggestedWords = [];
     localStorage.removeItem(SUGGESTED_KEY);
-    renderSuggest();
+    suggestDrawerNeedsRender = true;
+    if (suggestDrawer.classList.contains('open')) renderSuggest();
     syncSimilarSearchesForEmptyInput();
   });
 }
@@ -219,15 +230,26 @@ function toggleHistory(open) {
   const shouldOpen = open ?? !historyDrawer.classList.contains('open');
   if (shouldOpen) {
     toggleSuggest(false);
+    if (historyUnloadTimer) {
+      clearTimeout(historyUnloadTimer);
+      historyUnloadTimer = null;
+    }
   }
   historyDrawer.classList.toggle('open', shouldOpen);
   historyDrawer.setAttribute('aria-hidden', shouldOpen ? 'false' : 'true');
   historyToggle.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+  if (shouldOpen && historyDrawerNeedsRender) renderHistory();
+  if (!shouldOpen) {
+    historyDrawerNeedsRender = true;
+    historyUnloadTimer = setTimeout(() => {
+      historyList.innerHTML = '';
+      historyUnloadTimer = null;
+    }, DRAWER_UNLOAD_DELAY);
+  }
   requestAnimationFrame(() => {
     updateHistoryLayout();
     resolveToggleOverlap();
   });
-  if (shouldOpen) renderHistory();
 }
 
 historyToggle.addEventListener('click', () => toggleHistory());
@@ -246,11 +268,22 @@ function toggleSuggest(open) {
   const shouldOpen = open ?? !suggestDrawer.classList.contains('open');
   if (shouldOpen) {
     toggleHistory(false);
+    if (suggestUnloadTimer) {
+      clearTimeout(suggestUnloadTimer);
+      suggestUnloadTimer = null;
+    }
   }
   suggestDrawer.classList.toggle('open', shouldOpen);
   suggestDrawer.setAttribute('aria-hidden', shouldOpen ? 'false' : 'true');
   suggestToggle.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
-  if (shouldOpen) renderSuggest();
+  if (shouldOpen && suggestDrawerNeedsRender) renderSuggest();
+  if (!shouldOpen) {
+    suggestDrawerNeedsRender = true;
+    suggestUnloadTimer = setTimeout(() => {
+      suggestList.innerHTML = '';
+      suggestUnloadTimer = null;
+    }, DRAWER_UNLOAD_DELAY);
+  }
   requestAnimationFrame(() => {
     updateSuggestLayout();
     resolveToggleOverlap();
@@ -265,9 +298,16 @@ function hideSuggestedBox() {
   }
 }
 
+function updateSuggestedBoxSpacing() {
+  if (!suggestedBox || !mainResultBox) return;
+  const mainResultVisible = !mainResultBox.classList.contains('hidden');
+  suggestedBox.classList.toggle('standalone', !mainResultVisible);
+}
+
 function showSuggestedBox() {
   if (!suggestedBox) return;
   suggestedBox.classList.remove('hidden');
+  updateSuggestedBoxSpacing();
   renderSuggestedSearches();
 }
 
@@ -324,6 +364,7 @@ function renderAlternativeSearches(words) {
 
 function renderSuggestedSearches() {
   if (!suggestedList || !suggestedBox) return;
+  updateSuggestedBoxSpacing();
   liveSuggestedWords = liveSuggestedWords.slice(0, SUGGESTED_LIMIT);
   const words = liveSuggestedWords.slice(0, Math.min(10, SUGGESTED_LIMIT));
   suggestedList.innerHTML = '';
@@ -382,6 +423,7 @@ function clearResult() {
     mainResultBox.classList.remove('has-results');
     mainResultBox.classList.add('hidden');
   }
+  updateSuggestedBoxSpacing();
 }
 
 function setStatus(text, isError = false) {
@@ -473,6 +515,11 @@ function displayWord(text) {
     .trim();
 }
 
+function sanitizeSearchInput(text) {
+  if (!text) return '';
+  return text.replace(/[^A-Za-z'\- .]+/g, '');
+}
+
 function renderWord(data) {
   clearResult();
 
@@ -498,6 +545,7 @@ function renderWord(data) {
     mainResultBox.classList.remove('hidden');
     mainResultBox.classList.add('has-results');
   }
+  updateSuggestedBoxSpacing();
 
   renderAlternativeSearches(data.alternative_searches);
 
@@ -686,7 +734,8 @@ async function lookup() {
       addToHistory(displayWord(word));
       addSearchedSuggestion(word);
       storeSuggestionsForQuery(word);
-      renderSuggest();
+      suggestDrawerNeedsRender = true;
+      if (suggestDrawer.classList.contains('open')) renderSuggest();
     }
   } catch (err) {
     clearResult();
@@ -712,6 +761,11 @@ function debounce(fn, delay) {
 }
 
 async function fetchSuggestions() {
+  const sanitizedValue = sanitizeSearchInput(input.value);
+  if (input.value !== sanitizedValue) {
+    input.value = sanitizedValue;
+  }
+
   // No dynamic fetching for suggestions on input anymore.
   // Show stored drawer suggestions in the live view instead.
   const word = input.value.trim();
@@ -722,7 +776,8 @@ async function fetchSuggestions() {
     liveSuggestedWords = drawerSuggestedWords.slice(0, 10);
   }
   lastSuggestedQuery = '';
-  renderSuggest();
+  suggestDrawerNeedsRender = true;
+  if (suggestDrawer.classList.contains('open')) renderSuggest();
   renderSuggestedSearches();
 }
 
