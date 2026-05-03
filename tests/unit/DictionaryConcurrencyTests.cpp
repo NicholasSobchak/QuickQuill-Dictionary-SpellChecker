@@ -34,4 +34,3 @@ TEST_CASE("Dictionary handles concurrent synonym lookups", "[dictionary][concurr
   a.get();
   b.get();
 }
-

@@ -4,18 +4,38 @@
 #include "dct/dct.h"
 #include "random.h"
 
-#include <mutex>
-
-Dictionary::Dictionary() : m_db{Config::getInstance().getDatabasePath()}
+struct Dictionary::ThreadResources
 {
-  m_db.createTables();
+  explicit ThreadResources(std::string dbPath) : db{std::move(dbPath)}
+  {
+    // Idempotent; ensures tables exist even in test DBs.
+    db.createTables();
+  }
+
+  Database db;
+  std::unordered_map<int, WordInfo> cache;
+};
+
+Dictionary::Dictionary() : m_dbPath{Config::getInstance().getDatabasePath()}
+{
+  // Ensure DB schema exists and populate trie using a short-lived connection.
+  Database bootstrap{m_dbPath};
+  bootstrap.createTables();
   loadTrie();
 }
 
+Dictionary::ThreadResources &Dictionary::resources() const
+{
+  thread_local ThreadResources resources{m_dbPath};
+  return resources;
+}
+
+Database &Dictionary::db() const { return resources().db; }
+
+std::unordered_map<int, WordInfo> &Dictionary::cache() const { return resources().cache; }
+
 WordInfo Dictionary::getWordInfo(std::string_view word) const
 {
-  std::lock_guard<std::mutex> lock{m_mutex};
-
   WordInfo info;
   std::string clean{cleanWord(word)};
   if (clean.empty())
@@ -29,14 +49,15 @@ WordInfo Dictionary::getWordInfo(std::string_view word) const
     return info;
   }
 
-  auto cached = m_cache.find(id.value);
-  if (cached != m_cache.end())
+  auto &localCache = cache();
+  auto cached = localCache.find(id.value);
+  if (cached != localCache.end())
   {
     return cached->second;
   }
 
-  info = m_db.getInfo(id);
-  m_cache.try_emplace(id.value, info);
+  info = db().getInfo(id);
+  localCache.try_emplace(id.value, info);
 
   return info;
 }
@@ -44,8 +65,6 @@ WordInfo Dictionary::getWordInfo(std::string_view word) const
 std::vector<std::string>
 Dictionary::getAlternativeSearches(std::string_view word, dct::WordId currentId) const
 {
-  std::lock_guard<std::mutex> lock{m_mutex};
-
   std::vector<std::string> alternatives;
   std::string clean{cleanWord(word)};
   if (clean.empty())
@@ -53,13 +72,14 @@ Dictionary::getAlternativeSearches(std::string_view word, dct::WordId currentId)
     return alternatives;
   }
 
-  const auto ids = m_db.findMatchingWordIds(clean);
+  const auto ids = db().findMatchingWordIds(clean);
   if (ids.size() <= 1)
   {
     return alternatives;
   }
 
   std::unordered_set<std::string> seen;
+  auto &localCache = cache();
   for (const auto &id : ids)
   {
     if (currentId.value != dct::g_defaultId && id.value == currentId.value)
@@ -68,15 +88,15 @@ Dictionary::getAlternativeSearches(std::string_view word, dct::WordId currentId)
     }
 
     WordInfo info;
-    auto cached = m_cache.find(id.value);
-    if (cached != m_cache.end())
+    auto cached = localCache.find(id.value);
+    if (cached != localCache.end())
     {
       info = cached->second;
     }
     else
     {
-      info = m_db.getInfo(id);
-      m_cache.try_emplace(id.value, info);
+      info = db().getInfo(id);
+      localCache.try_emplace(id.value, info);
     }
 
     const std::string label = info.displayLemma.empty() ? info.lemma : info.displayLemma;
@@ -98,8 +118,6 @@ Dictionary::getAlternativeSearches(std::string_view word, dct::WordId currentId)
 
 std::vector<std::string> Dictionary::suggestSynonyms(std::string_view word) const
 {
-  std::lock_guard<std::mutex> lock{m_mutex};
-
   std::vector<std::string> synonymSuggestions;
   std::string clean{cleanWord(word)};
   if (clean.empty())
@@ -107,8 +125,6 @@ std::vector<std::string> Dictionary::suggestSynonyms(std::string_view word) cons
     return synonymSuggestions;
   }
 
-  // Avoid calling getWordInfo() here since it also takes m_mutex.
-  // Reuse the same lookup logic to keep locking simple.
   dct::WordId id = m_trie.getWordId(clean);
   if (id.value == dct::g_defaultId)
   {
@@ -116,15 +132,16 @@ std::vector<std::string> Dictionary::suggestSynonyms(std::string_view word) cons
   }
 
   WordInfo info;
-  auto cached = m_cache.find(id.value);
-  if (cached != m_cache.end())
+  auto &localCache = cache();
+  auto cached = localCache.find(id.value);
+  if (cached != localCache.end())
   {
     info = cached->second;
   }
   else
   {
-    info = m_db.getInfo(id);
-    m_cache.try_emplace(id.value, info);
+    info = db().getInfo(id);
+    localCache.try_emplace(id.value, info);
   }
 
   // create pool
@@ -234,7 +251,9 @@ void Dictionary::loadTrie()
   { m_trie.insert(cleanWord(text), id, frequency); };
 
   // pass to database to retrieve words
-  m_db.streamAllWordsAndForms(trieLoader);
+  Database loaderDb{m_dbPath};
+  loaderDb.createTables();
+  loaderDb.streamAllWordsAndForms(trieLoader);
 }
 
 std::unordered_set<std::string> Dictionary::collectSuggestedWords(std::string_view word) const

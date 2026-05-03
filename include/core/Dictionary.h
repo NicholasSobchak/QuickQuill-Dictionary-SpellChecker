@@ -2,7 +2,6 @@
 #define DICTIONARY_H
 #include <algorithm>
 #include <fstream>
-#include <mutex>
 #include <nlohmann/json.hpp>
 #include <string>
 #include <unordered_map>
@@ -30,18 +29,18 @@ public:
   std::vector<std::string> suggestSpelling(std::string_view word) const;
 
 private:
-  // Protects m_cache and the shared sqlite connection inside m_db.
-  // The HTTP server runs with concurrency > 1, so Dictionary must be thread-safe.
-  mutable std::mutex m_mutex;
-
-  // Cache storage
-  mutable std::unordered_map<int, WordInfo> m_cache; // mutable allows getWordInfo to be const
-
   Trie m_trie;
-  Database m_db;
+  std::string m_dbPath;
 
   std::string cleanWord(std::string_view word) const;
   void loadTrie(); // populate Trie using Database
   std::unordered_set<std::string> collectSuggestedWords(std::string_view word) const;
+
+  // Each request thread gets its own sqlite connection (Database) and cache.
+  Database &db() const;
+  std::unordered_map<int, WordInfo> &cache() const;
+
+  struct ThreadResources;
+  ThreadResources &resources() const;
 };
 #endif
