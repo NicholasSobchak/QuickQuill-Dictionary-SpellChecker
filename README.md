@@ -3,8 +3,10 @@
 <h4 align="center">A Quick Lookup Dictionary at your service.</h4>
 <p align="center">
 <a href="https://github.com/NicholasSobchak/QuickQuill-Dictionary-SpellChecker/actions"><img src="https://github.com/NicholasSobchak/QuickQuill-Dictionary-SpellChecker/actions/workflows/ci.yml/badge.svg" alt="Build and test"></a>
-<!-- Placeholder -->
-<a href="https://github.com/NicholasSobchak/QuickQuill-Dictionary-SpellChecker/releases"><img src="https://img.shields.io/badge/version-0.0.0-black" alt="Version"></a>
+<img src="https://img.shields.io/github/v/release/NicholasSobchak/QuickQuill-Dictionary-SpellChecker?color=purple" alt="Version">
+<a href="https://quickquill.ink">
+<img src="https://img.shields.io/badge/website-quickquill.ink-black" alt="Website">
+</a>
 </p>
 
 #
@@ -13,13 +15,11 @@
 QuickQuill is a C++ dictionary + spell-check backend with a lightweight web UI.
 It supports fast word lookup, spell correction, and rich dictionary data (definitions, examples, synonyms, antonyms, forms, etymology).
 
-You can find the QuickQuill website here.
-
 ### Features
   - Trie-based lookup and autocomplete behavior
+  - Spellchecking and suggestion features
   - HTTP API via Crow (`dict_crow`)
-  - Local console test mode (`dict`)
-  - JSONL import pipeline for Kaikki/Wiktionary-style data
+  - Local test mode via console (`dict`)
   - SQLite-backed dictionary storage that includes:
     - Multi-sense entries with POS and definitions
     - Synonyms and antonyms per sense (when present in source data)
