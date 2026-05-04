@@ -8,31 +8,17 @@ const alternativeSearches = document.getElementById('alternativeSearches');
 const button = document.getElementById('go');
 const promptButton = document.getElementById('promptGo');
 const historyToggle = document.getElementById('historyToggle');
-const historyDrawer = document.getElementById('historyDrawer');
-const historyList = document.getElementById('historyList');
-const historyEmpty = document.getElementById('historyEmpty');
-const clearHistoryButton = document.getElementById('clearHistory');
 const suggestToggle = document.getElementById('suggestToggle');
-const suggestDrawer = document.getElementById('suggestDrawer');
-const suggestList = document.getElementById('suggestList');
-const suggestEmpty = document.getElementById('suggestEmpty');
-const clearSuggestionsButton = document.getElementById('clearSuggestions');
 const suggestedBox = document.getElementById('suggestedBox');
 const suggestedList = document.getElementById('suggestedList');
 const mainResultBox = document.getElementById('resultBox');
-const SUGGESTED_LIMIT = 100;
+const SUGGESTED_LIMIT = 1000;
 const HISTORY_KEY = 'quickquill-history';
-const HISTORY_LIMIT = 100;
+const HISTORY_LIMIT = 1000;
 const SUGGESTED_KEY = 'quickquill-suggested-words';
-const TOGGLE_GAP = 12;
-const DRAWER_UNLOAD_DELAY = 280;
 let spinnerTimer = null;
 let drawerSuggestedWords = loadSuggestedWords();
 let liveSuggestedWords = [];
-let historyDrawerNeedsRender = true;
-let suggestDrawerNeedsRender = true;
-let historyUnloadTimer = null;
-let suggestUnloadTimer = null;
 
 function loadHistory() {
   const stored = localStorage.getItem(HISTORY_KEY);
@@ -91,60 +77,20 @@ async function storeSuggestionsForQuery(word) {
     const filtered = words.filter((w) => w.toLowerCase() !== cleanedWord.toLowerCase());
     mergeDrawerSuggestedWords(filtered);
 
-    suggestDrawerNeedsRender = true;
-    if (suggestDrawer.classList.contains('open')) renderSuggest();
   } catch (err) {
     console.error('Error storing suggestions:', err);
   }
 }
 
-function renderHistory() {
-  historyDrawerNeedsRender = false;
-  const items = loadHistory();
-  historyList.innerHTML = '';
-  if (!items.length) {
-    historyEmpty.style.display = 'block';
-    historyList.style.display = 'none';
-    return;
-  }
-  historyEmpty.style.display = 'none';
-  historyList.style.display = 'flex';
-  items.forEach((w) => {
-    const li = document.createElement('li');
-    li.className = 'history-item';
-    li.textContent = w;
-    li.addEventListener('click', () => {
-      li.style.textDecoration = 'underline';
-      input.value = w;
-      lookup();
-    });
-    historyList.appendChild(li);
-  });
-}
+// History rendering moved to history.html
 
-function renderSuggest() {
-  if (!suggestList) return;
-  suggestDrawerNeedsRender = false;
-  drawerSuggestedWords = drawerSuggestedWords.slice(0, SUGGESTED_LIMIT);
-  suggestList.innerHTML = '';
-  if (!drawerSuggestedWords.length) {
-    if (suggestEmpty) suggestEmpty.style.display = 'block';
-    suggestList.style.display = 'none';
-    return;
+function checkUrlForWord() {
+  const params = new URLSearchParams(window.location.search);
+  const word = params.get('word');
+  if (word) {
+    input.value = word;
+    lookup();
   }
-  if (suggestEmpty) suggestEmpty.style.display = 'none';
-  suggestList.style.display = 'flex';
-  drawerSuggestedWords.forEach((w) => {
-    const li = document.createElement('li');
-    li.className = 'history-item';
-    li.textContent = w;
-    li.addEventListener('click', () => {
-      input.value = w;
-      hideSuggestedBox();
-      lookup();
-    });
-    suggestList.appendChild(li);
-  });
 }
 
 function addToHistory(word) {
@@ -153,136 +99,23 @@ function addToHistory(word) {
   const filtered = items.filter((w) => w.toLowerCase() !== word.toLowerCase());
   filtered.unshift(word);
   saveHistory(filtered.slice(0, HISTORY_LIMIT));
-  historyDrawerNeedsRender = true;
-  if (historyDrawer.classList.contains('open')) renderHistory();
 }
 
-if (clearHistoryButton) {
-  clearHistoryButton.addEventListener('click', () => {
-    localStorage.removeItem(HISTORY_KEY);
-    historyDrawerNeedsRender = true;
-    if (historyDrawer.classList.contains('open')) renderHistory();
-  });
-}
+// Clear history moved to history.html
 
-if (clearSuggestionsButton) {
-  clearSuggestionsButton.addEventListener('click', () => {
-    drawerSuggestedWords = [];
-    localStorage.removeItem(SUGGESTED_KEY);
-    suggestDrawerNeedsRender = true;
-    if (suggestDrawer.classList.contains('open')) renderSuggest();
-    syncSimilarSearchesForEmptyInput();
-  });
-}
+// Clear suggestions removed - now handled on suggestions.html page
 
-function updateHistoryLayout() {
-  const viewport = { w: window.innerWidth };
-  const sidePad = 16;
-  historyDrawer.style.left = `${sidePad}px`;
-  historyDrawer.style.right = `${sidePad}px`;
-  historyDrawer.style.width = `${Math.max(viewport.w - sidePad * 2, 0)}px`;
+// Layout update functions no longer needed - pages handle their own layout
 
-  const arrow = historyToggle.querySelector('.toggle-arrow');
-  if (arrow) arrow.textContent = historyDrawer.classList.contains('open') ? '^' : 'v';
-}
+// Toggle positioning no longer needed - CSS handles fixed positioning
 
-function updateSuggestLayout() {
-  const viewport = { w: window.innerWidth };
-  const sidePad = 16;
-  suggestDrawer.style.left = `${sidePad}px`;
-  suggestDrawer.style.right = `${sidePad}px`;
-  suggestDrawer.style.width = `${Math.max(viewport.w - sidePad * 2, 0)}px`;
-
-  const arrow = suggestToggle.querySelector('.toggle-arrow');
-  if (arrow) arrow.textContent = suggestDrawer.classList.contains('open') ? '^' : 'v';
-}
-
-function positionToggleGroup() {
-  const vw = window.innerWidth;
-  const sugWidth = suggestToggle.getBoundingClientRect().width || 0;
-  const histWidth = historyToggle.getBoundingClientRect().width || 0;
-  const total = sugWidth + histWidth + TOGGLE_GAP;
-  const start = Math.max((vw - total) / 2, 8);
-
-  suggestToggle.style.left = `${start}px`;
-  suggestToggle.style.right = 'auto';
-  historyToggle.style.left = `${start + sugWidth + TOGGLE_GAP}px`;
-  historyToggle.style.right = 'auto';
-  suggestToggle.style.transform = 'translate(0, 0)';
-  historyToggle.style.transform = 'translate(0, 0)';
-}
-
-function resolveToggleOverlap() {
-  positionToggleGroup();
-  suggestToggle.dataset.manual = '0';
-  historyToggle.dataset.manual = '0';
-}
-
-function toggleHistory(open) {
-  const shouldOpen = open ?? !historyDrawer.classList.contains('open');
-  if (shouldOpen) {
-    toggleSuggest(false);
-    if (historyUnloadTimer) {
-      clearTimeout(historyUnloadTimer);
-      historyUnloadTimer = null;
-    }
-  }
-  historyDrawer.classList.toggle('open', shouldOpen);
-  historyDrawer.setAttribute('aria-hidden', shouldOpen ? 'false' : 'true');
-  historyToggle.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
-  if (shouldOpen && historyDrawerNeedsRender) renderHistory();
-  if (!shouldOpen) {
-    historyDrawerNeedsRender = true;
-    historyUnloadTimer = setTimeout(() => {
-      historyList.innerHTML = '';
-      historyUnloadTimer = null;
-    }, DRAWER_UNLOAD_DELAY);
-  }
-  requestAnimationFrame(() => {
-    updateHistoryLayout();
-    resolveToggleOverlap();
-  });
-}
-
-historyToggle.addEventListener('click', () => toggleHistory());
-window.addEventListener('resize', () => {
-  updateHistoryLayout();
-  updateSuggestLayout();
-  resolveToggleOverlap();
-});
-requestAnimationFrame(() => {
-  updateHistoryLayout();
-  updateSuggestLayout();
-  resolveToggleOverlap();
+historyToggle.addEventListener('click', () => {
+  window.location.href = '/history.html';
 });
 
-function toggleSuggest(open) {
-  const shouldOpen = open ?? !suggestDrawer.classList.contains('open');
-  if (shouldOpen) {
-    toggleHistory(false);
-    if (suggestUnloadTimer) {
-      clearTimeout(suggestUnloadTimer);
-      suggestUnloadTimer = null;
-    }
-  }
-  suggestDrawer.classList.toggle('open', shouldOpen);
-  suggestDrawer.setAttribute('aria-hidden', shouldOpen ? 'false' : 'true');
-  suggestToggle.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
-  if (shouldOpen && suggestDrawerNeedsRender) renderSuggest();
-  if (!shouldOpen) {
-    suggestDrawerNeedsRender = true;
-    suggestUnloadTimer = setTimeout(() => {
-      suggestList.innerHTML = '';
-      suggestUnloadTimer = null;
-    }, DRAWER_UNLOAD_DELAY);
-  }
-  requestAnimationFrame(() => {
-    updateSuggestLayout();
-    resolveToggleOverlap();
-  });
-}
-
-suggestToggle.addEventListener('click', () => toggleSuggest());
+suggestToggle.addEventListener('click', () => {
+  window.location.href = '/suggestions.html';
+});
 
 function hideSuggestedBox() {
   if (suggestedBox) {
@@ -416,11 +249,8 @@ clearAlternativeSearches();
 syncSimilarSearchesForEmptyInput();
 
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && historyDrawer.classList.contains('open')) {
-    toggleHistory(false);
-  }
-  if (e.key === 'Escape' && suggestDrawer.classList.contains('open')) {
-    toggleSuggest(false);
+  if (e.key === 'Escape') {
+    window.location.href = '/';
   }
 });
 
@@ -742,8 +572,6 @@ async function lookup() {
       addToHistory(displayWord(word));
       addSearchedSuggestion();
       storeSuggestionsForQuery(word);
-      suggestDrawerNeedsRender = true;
-      if (suggestDrawer.classList.contains('open')) renderSuggest();
     }
   } catch (err) {
     clearResult();
@@ -805,3 +633,5 @@ promptButton.addEventListener('click', lookup);
 input.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') lookup();
 });
+
+checkUrlForWord();

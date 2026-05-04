@@ -8,61 +8,27 @@
     <link rel="icon" href="/assets/quill.png" />
   </head>
   <body>
-    <div class="shell">
-      <button
-        id="suggestToggle"
-        class="suggest-toggle"
-        aria-expanded="false"
-        aria-controls="suggestDrawer"
-      >
-        <span class="history-text">Suggested Words</span>
-        <span class="toggle-arrow">v</span>
-      </button>
-      <div id="suggestDrawer" class="suggest-drawer" aria-hidden="true">
-        <span class="corner corner-tl"></span>
-        <span class="corner corner-tr"></span>
-        <span class="corner corner-bl"></span>
-        <span class="corner corner-br"></span>
-        <div class="history-inner">
-          <div class="history-title-container">
-            <p class="history-title">Words You'll Like</p>
-            <button id="clearSuggestions" class="clear-history-button">Clear Suggestions</button>
-          </div>
-          <ul id="suggestList" class="history-list"></ul>
-          <div id="suggestEmpty" class="history-empty">No suggestions yet.</div>
-        </div>
-      </div>
+    <header class="site-header">
+        <button class="nav-button dictionary-toggle" onclick="window.location.href='/'">
+          <span class="history-text">Dictionary</span>
+        </button>
+        <button id="suggestToggle" class="nav-button suggest-toggle">
+          <span class="history-text">Suggested Words</span>
+        </button>
+        <button id="historyToggle" class="nav-button history-toggle">
+          <span class="history-text">History</span>
+        </button>
+      </header>
 
-      <button
-        id="historyToggle"
-        class="history-toggle"
-        aria-expanded="false"
-        aria-controls="historyDrawer"
-      >
-        <span class="history-text">History</span>
-        <span class="toggle-arrow">v</span>
-      </button>
-      <div id="historyDrawer" class="history-drawer" aria-hidden="true">
-        <span class="corner corner-tl"></span>
-        <span class="corner corner-tr"></span>
-        <span class="corner corner-bl"></span>
-        <span class="corner corner-br"></span>
-        <div class="history-inner">
-          <div class="history-title-container">
-            <p class="history-title">Recent searches</p>
-            <button id="clearHistory" class="clear-history-button">Clear History</button>
-          </div>
-          <ul id="historyList" class="history-list"></ul>
-          <div id="historyEmpty" class="history-empty">No searches yet.</div>
-        </div>
-      </div>
-
-      <header>
+      <div class="logo-container">
         <div class="brand">
           <img class="brand-logo" src="/assets/QuickQuill-logo.png" alt="QuickQuill" />
         </div>
-      </header>
+      </div>
 
+      <img src="/assets/school_line.png" alt="" class="header-line" />
+
+      <div class="shell">
       <section class="card">
         <div class="row">
           <button id="promptGo" class="prompt" type="button" aria-label="Look up word">
@@ -77,20 +43,16 @@
         </div>
         <div id="alternativeSearches" class="alternative-searches hidden"></div>
         <div id="resultBox" class="result-box">
-          <img src="/assets/school_line.png" alt="" class="section-line section-line-top" />
           <div id="result" class="result"></div>
-          <img src="/assets/school_line.png" alt="" class="section-line section-line-bottom" />
         </div>
         <div id="suggestedBox" class="result-box suggested-box has-results">
-          <img src="/assets/school_line.png" alt="" class="section-line section-line-top" />
           <div class="suggested-content">
             <p class="suggested-title">Similar Searches</p>
             <div id="suggestedList" class="suggested-list"></div>
           </div>
-          <img src="/assets/school_line.png" alt="" class="section-line section-line-bottom" />
         </div>
-      </section>
-    </div>
+        </section>
+      </div>
 
     <footer class="site-footer">
       <div class="footer-content">
