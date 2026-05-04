@@ -358,8 +358,9 @@ function renderSuggestedSearches() {
   if (!suggestedList || !suggestedBox) return;
   updateSuggestedBoxSpacing();
   liveSuggestedWords = liveSuggestedWords.slice(0, SUGGESTED_LIMIT);
-  const words = liveSuggestedWords.slice(0, Math.min(10, SUGGESTED_LIMIT));
+  const words = liveSuggestedWords.slice(0, 30);
   suggestedList.innerHTML = '';
+
   if (!words.length) {
     suggestedBox.classList.remove('hidden');
     const empty = document.createElement('div');
@@ -370,27 +371,42 @@ function renderSuggestedSearches() {
   }
 
   suggestedBox.classList.remove('hidden');
-  words.forEach((word) => {
-    const row = document.createElement('div');
-    row.className = 'suggested-row';
 
-    const bullet = document.createElement('span');
-    bullet.className = 'suggested-bullet';
-    bullet.textContent = '>';
+  const COLUMN_SIZE = 10;
+  const columns = [];
+  for (let i = 0; i < words.length; i += COLUMN_SIZE) {
+    columns.push(words.slice(i, i + COLUMN_SIZE));
+  }
 
-    const chip = document.createElement('button');
-    chip.type = 'button';
-    chip.className = 'chip suggested-chip';
-    chip.textContent = word;
-    chip.addEventListener('click', () => {
-      input.value = word;
-      hideSuggestedBox();
-      lookup();
+  columns.forEach((columnWords) => {
+    const columnDiv = document.createElement('div');
+    columnDiv.className = 'suggested-column';
+
+    columnWords.forEach((word) => {
+      const row = document.createElement('div');
+      row.className = 'suggested-row';
+
+      const bullet = document.createElement('img');
+      bullet.className = 'suggested-bullet';
+      bullet.src = '/assets/school_bullet_nobg.png';
+      bullet.alt = '';
+
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'chip suggested-chip';
+      chip.textContent = word;
+      chip.addEventListener('click', () => {
+        input.value = word;
+        hideSuggestedBox();
+        lookup();
+      });
+
+      row.appendChild(bullet);
+      row.appendChild(chip);
+      columnDiv.appendChild(row);
     });
 
-    row.appendChild(bullet);
-    row.appendChild(chip);
-    suggestedList.appendChild(row);
+    suggestedList.appendChild(columnDiv);
   });
 }
 

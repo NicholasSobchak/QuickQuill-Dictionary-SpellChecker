@@ -376,6 +376,7 @@ header {
   width: 38px;
   height: 38px;
   filter: invert(1);
+  forced-color-adjust: none;
 }
 
 input {
@@ -543,28 +544,41 @@ input {
 
 .suggested-list {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-direction: row;
+  gap: 425px;
   align-items: flex-start;
   text-align: left;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  justify-content: flex-start;
+}
+
+.suggested-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
 }
 
 .suggested-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 16px;
 }
 
 .suggested-bullet {
-  font-family: 'Times New Roman', Times, serif;
-  font-size: 14px;
-  color: var(--muted);
-  min-width: 10px;
-  transform: translateY(2px);
+  width: 18px;
+  height: 24px;
+  transform: translateY(2px) rotate(-90deg);
 }
 
 .suggested-chip {
   padding-left: 0;
+  font-size: 18px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  padding-right: 12px;
 }
 
 .section {

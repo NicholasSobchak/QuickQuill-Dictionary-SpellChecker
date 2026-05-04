@@ -10,7 +10,7 @@ namespace dct {
 
 inline constexpr int g_alpha{26};
 inline constexpr int g_defaultId{-1};
-inline constexpr int g_max_suggestions{10};
+inline constexpr int g_max_suggestions{30};
 
 /*
  * Strongly type WordId with explicit construction and comparison operator
