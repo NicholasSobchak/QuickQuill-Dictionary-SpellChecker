@@ -419,22 +419,50 @@ input {
   cursor: not-allowed;
 }
 
+.section-line {
+  display: block;
+  width: 130%;
+  max-height: 85px;
+  object-fit: contain;
+  object-position: center center;
+  opacity: 0.8;
+  margin-left: -15%;
+}
+
+.section-line-top {
+  margin-bottom: 16px;
+}
+
+.section-line-bottom {
+  transform: rotate(180deg);
+  margin-top: 16px;
+  margin-bottom: 0;
+  object-position: center center;
+  margin-left: -15%;
+}
+
 .result-box {
   position: relative;
   padding: 20px;
-  margin-top: 88px;
-  margin-bottom: 30px;
+  margin-top: 20px;
+  margin-bottom: 4px;
   min-height: 80px;
 }
 
 .suggested-box {
-  margin-top: 20px;
+  margin-top: 0;
+  margin-bottom: 6px;
+  padding: 18px;
+}
+
+.suggested-box {
+  margin-top: 0;
   margin-bottom: 6px;
   padding: 18px;
 }
 
 .suggested-box.standalone {
-  margin-top: 88px;
+  margin-top: 20px;
 }
 
 .hidden {
@@ -491,7 +519,7 @@ input {
 
 .result {
   margin-top: 0;
-  font-size: 17px;
+  font-size: 19px;
   background: transparent;
   border: none;
   border-radius: 0;
@@ -507,7 +535,7 @@ input {
 
 .suggested-title {
   margin: 0;
-  font-size: 15px;
+  font-size: 24px;
   letter-spacing: 0.9px;
   color: var(--muted);
   text-transform: uppercase;
@@ -544,7 +572,7 @@ input {
 }
 
 .label {
-  font-size: 18px;
+  font-size: 20px;
   text-transform: uppercase;
   letter-spacing: 1px;
   color: var(--muted);
@@ -562,7 +590,7 @@ input {
   border-radius: 0;
   border: none;
   margin: 4px 6px 0 0;
-  font-size: 12px;
+  font-size: 14px;
   font-family: 'Times New Roman', Times, serif;
   background: transparent;
   cursor: pointer;

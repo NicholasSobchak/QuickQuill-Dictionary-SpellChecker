@@ -88,17 +88,11 @@ async function storeSuggestionsForQuery(word) {
     if (!res.ok) return;
 
     const words = (await res.json()).map((item) => displayWord(item)).filter(Boolean);
-    // Filter out the searched word itself so it never appears in the suggested drawer
     const filtered = words.filter((w) => w.toLowerCase() !== cleanedWord.toLowerCase());
-    // Merge backend-provided synonyms into the existing drawer without clearing it
     mergeDrawerSuggestedWords(filtered);
 
-    // Update live view and render
-    liveSuggestedWords = drawerSuggestedWords.slice(0, 10);
     suggestDrawerNeedsRender = true;
     if (suggestDrawer.classList.contains('open')) renderSuggest();
-    renderSuggestedSearches();
-    syncSimilarSearchesForEmptyInput();
   } catch (err) {
     console.error('Error storing suggestions:', err);
   }
@@ -311,7 +305,7 @@ function showSuggestedBox() {
 
 function syncSimilarSearchesForEmptyInput() {
   if (input.value.trim()) return;
-  liveSuggestedWords = drawerSuggestedWords.slice(0, 10);
+  liveSuggestedWords = [];
   renderSuggestedSearches();
 }
 
@@ -764,17 +758,27 @@ async function fetchSuggestions() {
     input.value = sanitizedValue;
   }
 
-  // No dynamic fetching for suggestions on input anymore.
-  // Show stored drawer suggestions in the live view instead.
   const word = input.value.trim();
-  if (word.length < 2) {
-    liveSuggestedWords = drawerSuggestedWords.slice(0, 10);
-  } else {
-    // For typed input, still show the stored suggestions (no backend call)
-    liveSuggestedWords = drawerSuggestedWords.slice(0, 10);
+  if (word.length < 1) {
+    liveSuggestedWords = [];
+    renderSuggestedSearches();
+    return;
   }
-  suggestDrawerNeedsRender = true;
-  if (suggestDrawer.classList.contains('open')) renderSuggest();
+
+  try {
+    const res = await fetch(`/api/suggest/${encodeURIComponent(word)}`);
+    if (!res.ok) {
+      liveSuggestedWords = [];
+    } else {
+      const suggestions = await res.json();
+      liveSuggestedWords = (Array.isArray(suggestions) ? suggestions : [])
+        .map((w) => displayWord(w))
+        .filter(Boolean);
+    }
+  } catch (err) {
+    liveSuggestedWords = [];
+  }
+
   renderSuggestedSearches();
 }
 
