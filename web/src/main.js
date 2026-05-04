@@ -110,11 +110,11 @@ function addToHistory(word) {
 // Toggle positioning no longer needed - CSS handles fixed positioning
 
 historyToggle.addEventListener('click', () => {
-  window.location.href = '/history.html';
+  window.location.href = 'history.html';
 });
 
 suggestToggle.addEventListener('click', () => {
-  window.location.href = '/suggestions.html';
+  window.location.href = 'suggestions.html';
 });
 
 function hideSuggestedBox() {
@@ -250,7 +250,7 @@ syncSimilarSearchesForEmptyInput();
 
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
-    window.location.href = '/';
+    window.location.href = './';
   }
 });
 

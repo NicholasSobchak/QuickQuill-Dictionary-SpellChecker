@@ -104,9 +104,9 @@ body {
   mix-blend-mode: screen;
 }
 
-// logo-line removed
+/* logo-line removed */
 
-// search-line removed
+/* search-line removed */
 
 .header-left,
 .header-right {
@@ -171,7 +171,7 @@ header {
   /* inherits from .nav-button */
 }
 
-// History drawer styles removed - now using separate page
+/* History drawer styles removed - now using separate page */
 
 .history-list {
   display: flex;
@@ -381,7 +381,7 @@ input {
   cursor: not-allowed;
 }
 
-// Section line images and corners removed from result and suggested boxes
+/* Section line images and corners removed from result and suggested boxes */
 
 .suggested-box {
   margin-top: 0;
