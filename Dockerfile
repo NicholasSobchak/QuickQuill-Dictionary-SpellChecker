@@ -39,8 +39,9 @@ WORKDIR /app
 # Copy only the built binary and config; do NOT copy dictionary.db (mount at runtime)
 COPY --from=builder /src/build/src/dict_crow ./dict_crow
 COPY config.json ./config.json
+COPY scripts/entrypoint.sh ./entrypoint.sh
 COPY --from=frontend /web/dist ./web/dist
-RUN chmod +x ./dict_crow
+RUN chmod +x ./dict_crow ./entrypoint.sh
 
 EXPOSE 8080
 CMD ["./dict_crow"]

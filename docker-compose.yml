@@ -1,6 +1,6 @@
 services:
   backend:
-    image: nicksobchak/quickquill 
+    image: ${DOCKER_IMAGE:-nicksobchak/quickquill} 
     restart: unless-stopped
     working_dir: /app
     depends_on:
@@ -15,11 +15,12 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/ || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/api/health || exit 1"]
       interval: 30s
       timeout: 5s
-      retries: 3
-    command: ./dict_crow
+      retries: 5
+      start_period: 10s
+    command: sh entrypoint.sh
 
   redis:
     image: redis:7-alpine

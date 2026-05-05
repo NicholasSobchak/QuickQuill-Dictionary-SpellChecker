@@ -1,4 +1,5 @@
 #include "core/SpellChecker.h"
+#include "logging.h"
 
 #include <algorithm>
 #include <unordered_set>
@@ -83,7 +84,7 @@ void SpellChecker::printSuggest(const std::vector<std::string> &out) const
   {
     for (const auto &word : out)
     {
-      std::cout << "  → " << std::quoted(word) << '\n';
+      CROW_LOG_DEBUG << "  → " << word;
     }
   }
 }

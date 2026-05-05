@@ -1,4 +1,5 @@
 #include "data/Database.h"
+#include "logging.h"
 
 #include "dct/dct.h"
 
@@ -20,7 +21,7 @@ Database::Database(std::string_view filename)
   {
     if (errMsg)
     {
-      std::cerr << "SQL error: " << errMsg << '\n';
+      CROW_LOG_ERROR << "SQL error: " << errMsg;
       sqlite3_free(errMsg);
     }
   }
@@ -88,12 +89,11 @@ void Database::createTables()
       "CASCADE);"};
 
   char *errMsg = nullptr;
-
   for (auto s : stmts)
   {
     if (sqlite3_exec(m_db.get(), s, nullptr, nullptr, &errMsg) != SQLITE_OK)
     {
-      std::cerr << "SQL error: " << errMsg << '\n';
+      CROW_LOG_ERROR << "SQL error: " << errMsg;
       sqlite3_free(errMsg);
     }
   }
@@ -119,7 +119,7 @@ void Database::createTables()
   {
     if (sqlite3_exec(m_db.get(), s, nullptr, nullptr, &errMsg) != SQLITE_OK)
     {
-      std::cerr << "SQL error: " << errMsg << '\n';
+      CROW_LOG_ERROR << "SQL error: " << errMsg;
       sqlite3_free(errMsg);
     }
   }
@@ -421,7 +421,7 @@ void Database::clearDB()
     int rc = sqlite3_exec(m_db.get(), s, nullptr, nullptr, &errMsg);
     if (rc != SQLITE_OK)
     {
-      std::cerr << "Error clearing database: " << errMsg << "\n";
+      CROW_LOG_ERROR << "Error clearing database: " << errMsg;
       sqlite3_free(errMsg);
     }
   }

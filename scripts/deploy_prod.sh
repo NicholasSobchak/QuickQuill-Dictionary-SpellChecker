@@ -1,27 +1,52 @@
 #!/usr/bin/env bash
-echo "Deploying frontend, building backend, and starting docker-compose"
+set -e
 
-# build frontend
+IMAGE_NAME="nicksobchak/quickquill"
+
+echo "=== Deploying to production ==="
+
+# Build frontend
 echo "Building frontend..."
 (cd web && npm ci --silent && npm run build) || { echo "Frontend build failed"; exit 1; }
 
-# build backend C++
-echo "Building backend..."
-cmake -S . -B build
-cmake --build build -j
-
-# find DB and config
+# Verify required files exist
 if [ ! -f dictionary.db ]; then
-  echo "WARNING: dictionary.db not found in repo root. Make sure that dictionary.db is in the repo root"
+  echo "ERROR: dictionary.db not found in repo root"
+  exit 1
 fi
 if [ ! -f config.json ]; then
-  echo "WARNING: config.json not found in the repo root. Using default values"
+  echo "ERROR: config.json not found in repo root"
+  exit 1
+fi
+if [ ! -f scripts/entrypoint.sh ]; then
+  echo "ERROR: scripts/entrypoint.sh not found"
+  exit 1
 fi
 
-# start
+# Pull latest Docker image
+echo "Pulling latest Docker image..."
+docker pull "$IMAGE_NAME" || { echo "Failed to pull image"; exit 1; }
+
+# Stop existing containers
+echo "Stopping existing containers..."
+docker-compose down 2>/dev/null || true
+
+# Start services
 echo "Starting containers..."
-docker build -t nicksobhak:quickquill .
 docker-compose up -d
 
-echo "Deployment complete"
-echo "Use 'docker-compose down' to stop"
+# Wait for health check (through nginx)
+echo "Waiting for backend to be healthy..."
+for i in $(seq 1 12); do
+  if curl -sf https://quickquill.ink/api/health > /dev/null 2>&1; then
+    echo "=== Production deployment complete ==="
+    echo "Frontend: https://quickquill.ink"
+    exit 0
+  fi
+  echo "Waiting for backend... ($i/12)"
+  sleep 5
+done
+
+echo "ERROR: Backend failed to become healthy"
+docker-compose logs backend
+exit 1

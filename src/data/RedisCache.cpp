@@ -1,5 +1,5 @@
 #include "data/RedisCache.h"
-#include <iostream>
+#include "logging.h"
 #include <stdexcept>
 
 RedisCache::RedisCache(const std::string &host, int port) : m_connected(false)
@@ -14,7 +14,7 @@ RedisCache::RedisCache(const std::string &host, int port) : m_connected(false)
   }
   catch (const std::exception &e)
   {
-    std::cerr << "Redis connection failed: " << e.what() << '\n';
+    CROW_LOG_ERROR << "Redis connection failed: " << e.what();
     m_connected = false;
   }
 }
@@ -42,7 +42,7 @@ std::optional<WordInfo> RedisCache::get(int wordId) const
   }
   catch (const std::exception &e)
   {
-    std::cerr << "Redis get failed: " << e.what() << '\n';
+    CROW_LOG_ERROR << "Redis get failed: " << e.what();
     return std::nullopt;
   }
 }
@@ -71,7 +71,7 @@ void RedisCache::set(int wordId, const WordInfo &info, int ttlSeconds) const
   }
   catch (const std::exception &e)
   {
-    std::cerr << "Redis set failed: " << e.what() << '\n';
+    CROW_LOG_ERROR << "Redis set failed: " << e.what();
   }
 }
 
@@ -89,7 +89,7 @@ void RedisCache::del(int wordId) const
   }
   catch (const std::exception &e)
   {
-    std::cerr << "Redis del failed: " << e.what() << '\n';
+    CROW_LOG_ERROR << "Redis del failed: " << e.what();
   }
 }
 

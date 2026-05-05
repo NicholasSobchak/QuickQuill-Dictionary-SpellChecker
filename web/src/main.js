@@ -640,3 +640,5 @@ input.addEventListener('keydown', (e) => {
 });
 
 checkUrlForWord();
+
+window.addEventListener('popstate', checkUrlForWord);

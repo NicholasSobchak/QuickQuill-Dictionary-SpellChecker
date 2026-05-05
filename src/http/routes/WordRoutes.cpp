@@ -113,7 +113,20 @@ void registerWordRoutes(crow::SimpleApp &app)
   /**
    * GET requests
    */
-  CROW_ROUTE(app, "/api/health")([] { return jsonResponse("{\"ok\":true}"); });
+  CROW_ROUTE(app, "/api/health")
+  (
+      []
+      {
+        try
+        {
+          wordService().warmupDictionary();
+          return jsonResponse("{\"ok\":true}");
+        }
+        catch (...)
+        {
+        }
+        return crow::response(503, "{\"ok\":false}");
+      });
 
   CROW_ROUTE(app, "/api/word/<string>")
   (
