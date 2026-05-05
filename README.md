@@ -59,8 +59,11 @@ Then place `dictionary.db` in the project root.
   - [Catch2](https://github.com/catchorg/Catch2)
   - [CMake](https://cmake.org/documentation/)
   - [nlohmann/json](https://json.nlohmann.me/)
-  - Vite (Node.js)
+  - [Vite](https://vite.dev/) (Node.js)
   - clang-tidy & clang-format
+  - [Docker](https://docs.docker.com/manuals/)
+  - [nginx](https://nginx.org/en/docs/)
+  - Redis
 > Check out dependencies in vcpkg.json
 
 ### Project Layout
