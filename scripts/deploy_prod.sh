@@ -27,18 +27,19 @@ docker-compose -f docker-compose.yml down 2>/dev/null || true
 echo "Starting containers..."
 docker-compose -f docker-compose.yml up -d
 
-# Wait for health check (backend directly)
+# Wait for health check (through nginx)
 echo "Waiting for backend to be healthy..."
-for i in $(seq 1 12); do
-  if curl -sf http://localhost:8080/api/health > /dev/null 2>&1; then
+for i in $(seq 1 24); do
+  if curl -sf https://quickquill.ink/api/health > /dev/null 2>&1; then
     echo "=== Production deployment complete ==="
     echo "Frontend: https://quickquill.ink"
     exit 0
   fi
-  echo "Waiting for backend... ($i/12)"
-  sleep 5
+  echo "Waiting for backend... ($i/24)"
+  sleep 10
 done
 
 echo "ERROR: Backend failed to become healthy"
 docker-compose -f docker-compose.yml logs backend
+docker-compose -f docker-compose.yml logs nginx
 exit 1
