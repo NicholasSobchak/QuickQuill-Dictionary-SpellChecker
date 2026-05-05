@@ -5,10 +5,6 @@ IMAGE_NAME="nicksobchak/quickquill"
 
 echo "=== Deploying to production ==="
 
-# Build frontend
-echo "Building frontend..."
-(cd web && npm ci --silent && npm run build) || { echo "Frontend build failed"; exit 1; }
-
 # Verify required files exist
 if [ ! -f dictionary.db ]; then
   echo "ERROR: dictionary.db not found in repo root"
@@ -25,16 +21,16 @@ docker pull "$IMAGE_NAME" || { echo "Failed to pull image"; exit 1; }
 
 # Stop existing containers
 echo "Stopping existing containers..."
-docker-compose down 2>/dev/null || true
+docker-compose -f docker-compose.yml down 2>/dev/null || true
 
 # Start services
 echo "Starting containers..."
-docker-compose up -d
+docker-compose -f docker-compose.yml up -d
 
-# Wait for health check (through nginx)
+# Wait for health check (backend directly)
 echo "Waiting for backend to be healthy..."
 for i in $(seq 1 12); do
-  if curl -sf https://quickquill.ink/api/health > /dev/null 2>&1; then
+  if curl -sf http://localhost:8080/api/health > /dev/null 2>&1; then
     echo "=== Production deployment complete ==="
     echo "Frontend: https://quickquill.ink"
     exit 0
@@ -44,5 +40,5 @@ for i in $(seq 1 12); do
 done
 
 echo "ERROR: Backend failed to become healthy"
-docker-compose logs backend
+docker-compose -f docker-compose.yml logs backend
 exit 1
