@@ -754,7 +754,7 @@ input {
 }
 
 .alternative-searches {
-  margin-top: 90px;
+  margin-top: 0px;
   color: var(--muted);
   font-size: 14px;
   display: flex;

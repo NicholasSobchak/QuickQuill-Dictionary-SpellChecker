@@ -547,6 +547,11 @@ async function lookup() {
     return;
   }
 
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('word') !== word) {
+    window.history.pushState({}, '', `/?word=${encodeURIComponent(word)}`);
+  }
+
   button.disabled = true;
   spinner.style.display = 'inline-block';
   if (spinnerTimer) clearInterval(spinnerTimer);
