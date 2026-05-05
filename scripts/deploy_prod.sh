@@ -18,10 +18,6 @@ if [ ! -f config.json ]; then
   echo "ERROR: config.json not found in repo root"
   exit 1
 fi
-if [ ! -f scripts/entrypoint.sh ]; then
-  echo "ERROR: scripts/entrypoint.sh not found"
-  exit 1
-fi
 
 # Pull latest Docker image
 echo "Pulling latest Docker image..."

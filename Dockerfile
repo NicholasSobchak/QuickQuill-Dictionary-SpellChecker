@@ -44,4 +44,4 @@ COPY --from=frontend /web/dist ./web/dist
 RUN chmod +x ./dict_crow ./entrypoint.sh
 
 EXPOSE 8080
-CMD ["./dict_crow"]
+ENTRYPOINT ["./entrypoint.sh"]
