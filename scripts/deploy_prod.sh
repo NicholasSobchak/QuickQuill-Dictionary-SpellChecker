@@ -20,6 +20,8 @@ fi
 
 # start
 echo "Starting containers..."
-docker-compose up -d --build
+docker build -t nicksobhak:quickquill .
+docker-compose up -d
 
 echo "Deployment complete"
+echo "Use 'docker-compose down' to stop"

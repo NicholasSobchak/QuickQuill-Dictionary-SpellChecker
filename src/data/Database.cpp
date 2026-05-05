@@ -98,6 +98,7 @@ void Database::createTables()
     }
   }
 
+  // index the database (makes access much quicker)
   const char *idx[] = {
       "CREATE INDEX IF NOT EXISTS idx_words_lemma ON words(lemma);",
       "CREATE INDEX IF NOT EXISTS idx_etymologies_word_id ON "
@@ -534,7 +535,6 @@ std::vector<dct::WordId> Database::findMatchingWordIds(std::string_view word) co
 
 void Database::streamAllWordsAndForms(const WordRecordProcessor &processor) const
 {
-  // NOTE: This assumes m_db is a smart pointer, so we use .get()
   sqlite3 *sqlDB = m_db.get();
   sqlite3_stmt *stmt = nullptr;
 

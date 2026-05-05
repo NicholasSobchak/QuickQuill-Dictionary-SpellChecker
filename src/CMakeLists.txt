@@ -4,6 +4,7 @@ add_library(quickquill_core STATIC
     core/SpellChecker.cpp
     core/Trie.cpp
     data/Database.cpp
+    data/RedisCache.cpp
 )
 
 target_include_directories(quickquill_core PUBLIC
@@ -14,6 +15,7 @@ target_include_directories(quickquill_core PUBLIC
 target_link_libraries(quickquill_core PUBLIC
     nlohmann_json::nlohmann_json
     unofficial::sqlite3::sqlite3
+    redis++::redis++_static
 )
 
 add_library(quickquill_importer STATIC

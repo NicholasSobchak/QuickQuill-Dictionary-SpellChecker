@@ -6,10 +6,14 @@
 
 struct Dictionary::ThreadResources
 {
-  explicit ThreadResources(const std::string &dbPath) : db{dbPath} {}
+  explicit ThreadResources(const std::string &dbPath)
+      : db{dbPath},
+        redisCache{Config::getInstance().getRedisHost(), Config::getInstance().getRedisPort()}
+  {
+  }
 
   Database db;
-  std::unordered_map<int, WordInfo> cache;
+  RedisCache redisCache;
 };
 
 Dictionary::Dictionary() : m_dbPath{Config::getInstance().getDatabasePath()}
@@ -28,7 +32,7 @@ Dictionary::ThreadResources &Dictionary::resources() const
 
 Database &Dictionary::db() const { return resources().db; }
 
-std::unordered_map<int, WordInfo> &Dictionary::cache() const { return resources().cache; }
+RedisCache &Dictionary::redisCache() const { return resources().redisCache; }
 
 WordInfo Dictionary::getWordInfo(std::string_view word) const
 {
@@ -45,15 +49,19 @@ WordInfo Dictionary::getWordInfo(std::string_view word) const
     return info;
   }
 
-  auto &localCache = cache();
-  auto cached = localCache.find(id.value);
-  if (cached != localCache.end())
+  // Try Redis cache first
+  auto cached = redisCache().get(id.value);
+  if (cached)
   {
-    return cached->second;
+    return *cached;
   }
 
+  // Cache miss - get from DB and store in Redis
   info = db().getInfo(id);
-  localCache.try_emplace(id.value, info);
+  if (info.id.value != dct::g_defaultId)
+  {
+    redisCache().set(id.value, info);
+  }
 
   return info;
 }
@@ -75,7 +83,6 @@ Dictionary::getAlternativeSearches(std::string_view word, dct::WordId currentId)
   }
 
   std::unordered_set<std::string> seen;
-  auto &localCache = cache();
   for (const auto &id : ids)
   {
     if (currentId.value != dct::g_defaultId && id.value == currentId.value)
@@ -83,16 +90,20 @@ Dictionary::getAlternativeSearches(std::string_view word, dct::WordId currentId)
       continue;
     }
 
+    // Try Redis cache first
+    auto cached = redisCache().get(id.value);
     WordInfo info;
-    auto cached = localCache.find(id.value);
-    if (cached != localCache.end())
+    if (cached)
     {
-      info = cached->second;
+      info = *cached;
     }
     else
     {
       info = db().getInfo(id);
-      localCache.try_emplace(id.value, info);
+      if (info.id.value != dct::g_defaultId)
+      {
+        redisCache().set(id.value, info);
+      }
     }
 
     const std::string label = info.displayLemma.empty() ? info.lemma : info.displayLemma;
@@ -127,17 +138,20 @@ std::vector<std::string> Dictionary::suggestSynonyms(std::string_view word) cons
     return synonymSuggestions;
   }
 
+  // Try Redis cache first
+  auto cached = redisCache().get(id.value);
   WordInfo info;
-  auto &localCache = cache();
-  auto cached = localCache.find(id.value);
-  if (cached != localCache.end())
+  if (cached)
   {
-    info = cached->second;
+    info = *cached;
   }
   else
   {
     info = db().getInfo(id);
-    localCache.try_emplace(id.value, info);
+    if (info.id.value != dct::g_defaultId)
+    {
+      redisCache().set(id.value, info);
+    }
   }
 
   // create pool

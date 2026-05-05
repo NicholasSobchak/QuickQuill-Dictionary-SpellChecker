@@ -17,6 +17,7 @@ find_package(nlohmann_json 3.2.0 CONFIG REQUIRED)
 find_package(Crow CONFIG REQUIRED)
 #find_package(asio CONFIG REQUIRED)
 find_package(unofficial-sqlite3 CONFIG REQUIRED)
+find_package(redis++ CONFIG REQUIRED)
 find_package(Threads REQUIRED)
 
 add_subdirectory(src)

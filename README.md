@@ -63,7 +63,7 @@ Then place `dictionary.db` in the project root.
   - clang-tidy & clang-format
   - [Docker](https://docs.docker.com/manuals/)
   - [nginx](https://nginx.org/en/docs/)
-  - Redis
+  - redis-plus-plus
 > Check out dependencies in vcpkg.json
 
 ### Project Layout

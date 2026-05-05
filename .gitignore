@@ -26,4 +26,5 @@ dictionary.db-wal
 
 # Config
 config.json
+.env
 .codex

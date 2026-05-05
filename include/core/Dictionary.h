@@ -4,12 +4,12 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <string>
-#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
 #include "core/Trie.h"
 #include "data/Database.h"
+#include "data/RedisCache.h"
 #include "dct/WordInfo.h"
 
 class Dictionary
@@ -36,9 +36,9 @@ private:
   void loadTrie(); // populate Trie using Database
   std::unordered_set<std::string> collectSuggestedWords(std::string_view word) const;
 
-  // Each request thread gets its own sqlite connection (Database) and cache.
+  // Each request thread gets its own sqlite connection (Database) and Redis cache
   Database &db() const;
-  std::unordered_map<int, WordInfo> &cache() const;
+  RedisCache &redisCache() const;
 
   struct ThreadResources;
   ThreadResources &resources() const;

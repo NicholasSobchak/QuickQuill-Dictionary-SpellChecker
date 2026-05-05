@@ -4,7 +4,7 @@
 #include <sstream>
 #include <string>
 
-#include "KaikkiImporter.h"
+#include "data/KaikkiImporter.h"
 
 namespace
 {

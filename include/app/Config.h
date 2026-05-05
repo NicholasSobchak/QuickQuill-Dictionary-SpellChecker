@@ -20,6 +20,8 @@ public:
 
   std::string getDatabasePath() const;
   int getServerPort() const;
+  std::string getRedisHost() const;
+  int getRedisPort() const;
 
 private:
   Config();

@@ -3,7 +3,7 @@
 #include <string>
 #include <string_view>
 
-#include "KaikkiImporter.h"
+#include "data/KaikkiImporter.h"
 
 /**
  * This is an JSONL importer that migrated from a python script to C++
