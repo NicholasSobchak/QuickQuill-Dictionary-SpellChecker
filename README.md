@@ -16,11 +16,11 @@ QuickQuill is a C++ dictionary + spell-check backend with a lightweight web UI.
 It supports fast word lookup, spell correction, and rich dictionary data (definitions, examples, synonyms, antonyms, forms, etymology).
 
 ### Features
-  - Trie-based lookup and autocomplete behavior
-  - Spellchecking and suggestion features
-  - HTTP API via Crow (`dict_crow`)
-  - Local test mode via console (`dict`)
-  - SQLite-backed dictionary storage that includes:
+  - Spellchecking (Did you mean ...?)
+  - Similar search
+  - Word suggestion (Synonym selection)
+  - Lightweight frontend
+  - Dictionary data including:
     - Multi-sense entries with POS and definitions
     - Synonyms and antonyms per sense (when present in source data)
     - Examples
@@ -40,12 +40,19 @@ Import Complete:
 ```
 
 ### Technical Highlights
-  - coming soon
+  - Trie-based lookup autocomplete behavior
+  - HTTP RESTful API via Crow 
+  - Thread management for SQL and Redis access 
+  - Redis caching managing access via mutex
+  - Crow logging
+  - Dockerized deployment using docker-compose
+  - SQL database with rich Wiktionary extract (JSONL) 
+
 #
 ## Setting Up / Building this Project Locally
 
 ### Database Download
-If you want to run this with the full prebuilt database, download:
+To run this with the full prebuilt database, download:
 
 ```https://www.dropbox.com/home/dictionary-db-sql/dictionary-db?preview=dictionary.db```
 
@@ -53,7 +60,7 @@ Then place `dictionary.db` in the project root.
 
 ### This Project Uses
   - C++17
-  -  python3
+  - python3
   - [SQLite3](https://sqlite.org/cintro.html) 
   - [Crow (HTTP)](https://crowcpp.org/master/)
   - [Catch2](https://github.com/catchorg/Catch2)
@@ -71,37 +78,33 @@ Then place `dictionary.db` in the project root.
 .
 ├── src/
 │   ├── app/
-│   │   ├── main.cpp
-│   │   ├── main_crow.cpp
-│   │   └── main_import.cpp
 │   ├── http/
 │   ├── core/
 │   └── data/
 ├── tests/
+├── utils/
 └── web/
-    └── index.html
+
 ```
 ### Configuration
 
-QuickQuill can be configured via a `config.json` file in the project root.
-If this file is not present, the application will use default values.
+QuickQuill uses `config.json` file, the config checks envars first and then the config.json, if both miss it will resort to default values.
 
 Example `config.json`:
 ```json
 {
   "database_path": "dictionary.db",
-  "server_port": 80
+  "server_port": 80,
+  "redis_host": "redis",
+  "redis_port": 6379
 }
 ```
 
-- `database_path`: The path to the SQLite database file.
-- `server_port`: The port for the web server to listen on.
-
 ### Code Formatting (Pre-commit Hook)
-To ensure consistent code formatting across the project, a `pre-commit` hook is configured. This hook automatically runs `clang-format` on your staged C++ files before each commit.
+To have consistent formatting across the project, configure `pre-commit`. It's a hook that automatically runs `clang-format` on your staged C++ files before each commit.
 
-CI uses `clang-format-17` by default. To match CI locally on Ubuntu/Debian:
-
+CI uses `clang-format-17` by default.
+ 
 **Setup Instructions:**
 
 1.  **Install `pre-commit`:** If you don't have it already, install `pre-commit`:
@@ -143,16 +146,9 @@ cmake --build build -j
 
 ### Run
 
-#### 1) Console test mode
-
 ```bash
-./build/src/dict
-```
-
-#### 2) Web server
-
-```bash
-./build/src/dict_crow
+./build/src/dict // Console test mode
+./build/src/dict_crow // Web server
 ```
 
 Open:
@@ -167,6 +163,18 @@ Open:
 
 ```http
 GET /api/word/<word>
+```
+
+### Similar searches 
+
+```http
+GET /api/suggest/<word>
+```
+
+### Suggest Word
+
+```http
+GET /api/synonym/<word>
 ```
 
 Response shape:

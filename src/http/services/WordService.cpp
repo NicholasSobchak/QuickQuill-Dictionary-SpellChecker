@@ -36,12 +36,12 @@ WordService &wordService()
 }
 
 /*
- * Forces static dictionary to construct and touch DB
+ * Forces static dictionary to construct and touch DB/Redis on current thread
  */
 void WordService::warmupDictionary() const
 {
-  static constexpr std::array<std::string_view, 4> kWarmupCandidates = {
-      "nameless", "grace", "raven", "tress"};
+  static constexpr std::array<std::string_view, 8> kWarmupCandidates = {
+      "had", "half", "impaired", "this", "nameless", "grace", "that", "waves"};
 
   for (const auto candidate : kWarmupCandidates)
   {
@@ -58,7 +58,6 @@ void WordService::warmupDictionary() const
 
     m_dict.getAlternativeSearches(candidate, info.id);
     m_dict.suggestSynonyms(candidate);
-    return;
   }
 }
 

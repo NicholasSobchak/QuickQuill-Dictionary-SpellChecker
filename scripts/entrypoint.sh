@@ -5,7 +5,6 @@
 HEALTH_URL="http://localhost:8080/api/health"
 MAX_FAILS=3
 FAIL_COUNT=0
-WARMUP_REQUESTS=8
 WARMUP_INTERVAL=300  # Re-warm every 5 minutes to prevent cold threads
 
 ./dict_crow &
@@ -21,11 +20,15 @@ while ! curl -sf --max-time 3 "$HEALTH_URL" > /dev/null 2>&1; do
   sleep 1
 done
 
-# Warmup function - hit health endpoint which already exercises DB/Redis
+# Warmup function - hit various endpoints to initialize all thread-local resources
 warmup() {
-  echo "[$(date)] Warming up server..."
-  for i in $(seq 1 $WARMUP_REQUESTS); do
-    curl -sf --max-time 5 "$HEALTH_URL" > /dev/null 2>&1 &
+  echo "[$(date)] Warming up server (initializing thread-local DB/Redis connections)..."
+  # Hit multiple endpoints to force initialization of thread-local resources
+  # Using subshells to ensure requests are distributed across threads
+  WORDS="the and water fire earth air light dark house time year"
+  for word in $WORDS; do
+    curl -sf --max-time 5 "http://localhost:8080/api/word/$word" > /dev/null 2>&1 &
+    curl -sf --max-time 5 "http://localhost:8080/api/suggest/$word" > /dev/null 2>&1 &
   done
   wait
   echo "[$(date)] Warmup complete"

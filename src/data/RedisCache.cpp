@@ -1,28 +1,44 @@
 #include "data/RedisCache.h"
 #include "logging.h"
+
+#include <chrono>
 #include <stdexcept>
 
-RedisCache::RedisCache(const std::string &host, int port) : m_host(host), m_port(port), m_connected(false)
+RedisCache::RedisCache(const std::string &host, int port)
+    : m_host(host), m_port(port), m_connected(false)
 {
-  connect();
 }
 
 bool RedisCache::isConnected() const { return m_connected; }
 
 void RedisCache::connect() const
 {
+  const auto now = std::chrono::steady_clock::now();
+  if (m_nextRetry != std::chrono::steady_clock::time_point{} && now < m_nextRetry)
+  {
+    return;
+  }
+
   try
   {
-    std::string url = "tcp://" + m_host + ":" + std::to_string(m_port);
-    m_redis = std::make_unique<sw::redis::Redis>(url);
+    sw::redis::ConnectionOptions opts;
+    opts.host = m_host;
+    opts.port = m_port;
+    opts.connect_timeout = kConnectTimeout;
+    opts.socket_timeout = kSocketTimeout;
+    opts.keep_alive = true;
+
+    m_redis = std::make_unique<sw::redis::Redis>(opts);
     m_redis->ping();
     m_connected = true;
+    m_nextRetry = std::chrono::steady_clock::time_point{};
   }
   catch (const std::exception &e)
   {
     CROW_LOG_ERROR << "Redis connection failed: " << e.what();
     m_redis.reset();
     m_connected = false;
+    m_nextRetry = now + kRetryBackoff;
   }
 }
 
@@ -62,6 +78,7 @@ std::optional<WordInfo> RedisCache::get(int wordId) const
     CROW_LOG_ERROR << "Redis get failed: " << e.what();
     std::scoped_lock lock(m_mutex);
     m_connected = false;
+    m_nextRetry = std::chrono::steady_clock::now() + kRetryBackoff;
     return std::nullopt;
   }
 }
@@ -93,6 +110,7 @@ void RedisCache::set(int wordId, const WordInfo &info, int ttlSeconds) const
     CROW_LOG_ERROR << "Redis set failed: " << e.what();
     std::scoped_lock lock(m_mutex);
     m_connected = false;
+    m_nextRetry = std::chrono::steady_clock::now() + kRetryBackoff;
   }
 }
 
@@ -113,6 +131,7 @@ void RedisCache::del(int wordId) const
     CROW_LOG_ERROR << "Redis del failed: " << e.what();
     std::scoped_lock lock(m_mutex);
     m_connected = false;
+    m_nextRetry = std::chrono::steady_clock::now() + kRetryBackoff;
   }
 }
 

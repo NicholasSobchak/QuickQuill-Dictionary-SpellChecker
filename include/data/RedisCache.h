@@ -1,6 +1,7 @@
 #ifndef REDIS_CACHE_H
 #define REDIS_CACHE_H
 
+#include <chrono>
 #include <dct/WordInfo.h>
 #include <memory>
 #include <mutex>
@@ -35,11 +36,17 @@ public:
   bool isConnected() const;
 
 private:
+  static constexpr std::chrono::milliseconds kConnectTimeout{250};
+  static constexpr std::chrono::milliseconds kSocketTimeout{250};
+  static constexpr std::chrono::seconds kRetryBackoff{5};
+
   std::string m_host;
   int m_port;
   mutable std::mutex m_mutex;
   mutable std::unique_ptr<sw::redis::Redis> m_redis;
   mutable bool m_connected;
+  mutable std::chrono::steady_clock::time_point m_nextRetry{
+      std::chrono::steady_clock::time_point{}};
 
   bool ensureConnected() const;
   void connect() const;

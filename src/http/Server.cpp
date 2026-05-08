@@ -33,20 +33,22 @@ void runServer(const int port)
   CROW_LOG_INFO << "Starting server on port " << port << " with 4 threads";
   app.port(port).concurrency(4).timeout(5);
 
-  auto serverThread = std::thread([&app]() {
-    try
-    {
-      app.run();
-    }
-    catch (const std::exception &e)
-    {
-      CROW_LOG_ERROR << "Server thread threw: " << e.what();
-    }
-    catch (...)
-    {
-      CROW_LOG_ERROR << "Server thread threw unknown exception";
-    }
-  });
+  auto serverThread = std::thread(
+      [&app]()
+      {
+        try
+        {
+          app.run();
+        }
+        catch (const std::exception &e)
+        {
+          CROW_LOG_ERROR << "Server thread threw: " << e.what();
+        }
+        catch (...)
+        {
+          CROW_LOG_ERROR << "Server thread threw unknown exception";
+        }
+      });
 
   while (!g_shutdown.load())
   {
