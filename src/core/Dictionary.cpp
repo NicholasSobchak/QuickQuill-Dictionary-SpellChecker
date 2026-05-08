@@ -1,5 +1,7 @@
 #include "core/Dictionary.h"
 
+#include <set>
+
 #include "app/Config.h"
 #include "dct/dct.h"
 #include "random.h"
@@ -154,32 +156,35 @@ std::vector<std::string> Dictionary::suggestSynonyms(std::string_view word) cons
     }
   }
 
-  // create pool
-  std::vector<std::string> pool;
+  // create pool of unique synonyms
+  std::set<std::string> uniquePool;
   for (const auto &s : info.senses)
   {
     for (const auto &syn : s.synonyms)
     {
-      pool.push_back(syn);
+      uniquePool.insert(syn);
     }
   }
 
-  if (pool.empty())
+  if (uniquePool.empty())
   {
     return synonymSuggestions;
   }
 
-  const auto pick = Random::get<std::size_t>(0, pool.size() - 1);
-  std::size_t count{std::min(pool.size(), std::size_t{pick})};
-  while (synonymSuggestions.size() < count)
+  // convert to vector for random access
+  std::vector<std::string> uniqueVec(uniquePool.begin(), uniquePool.end());
+
+  // pick random number of synonyms to return (1 to unique count)
+  const auto numToPick = Random::get<std::size_t>(1, uniqueVec.size());
+
+  // pick random unique items
+  std::set<std::size_t> pickedIndices;
+  while (synonymSuggestions.size() < numToPick)
   {
-    const auto index = Random::get<std::size_t>(0, pool.size() - 1);
-    const auto &pick = pool[index];
-    // only add if not already picked
-    if (std::find(synonymSuggestions.begin(), synonymSuggestions.end(), pick) ==
-        synonymSuggestions.end())
+    const auto index = Random::get<std::size_t>(0, uniqueVec.size() - 1);
+    if (pickedIndices.insert(index).second)
     {
-      synonymSuggestions.push_back(pick);
+      synonymSuggestions.push_back(uniqueVec[index]);
     }
   }
   return synonymSuggestions;
