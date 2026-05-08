@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fixed suggestSynonyms() Function</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #f5f5f5; }
+        pre { background: #fff; padding: 15px; border: 1px solid #ccc; overflow-x: auto; }
+        .old { color: #999; text-decoration: line-through; }
+        .new { color: #090; font-weight: bold; }
+        h2 { color: #333; }
+    </style>
+</head>
+<body>
+    <h2>Fixed suggestSynonyms() Function</h2>
+    <p>File: <code>src/core/Dictionary.cpp</code></p>
+    
+    <h3>Complete Fixed Function:</h3>
+    <pre>std::vector&lt;std::string&gt; Dictionary::suggestSynonyms(std::string_view word) const
+{
+  std::vector&lt;std::string&gt; synonymSuggestions;
+  std::string clean{cleanWord(word)};
+  if (clean.empty())
+  {
+    return synonymSuggestions;
+  }
+
+  dct::WordId id = m_trie.getWordId(clean);
+  if (id.value == dct::g_defaultId)
+  {
+    return synonymSuggestions;
+  }
+
+  // Try Redis cache first
+  auto cached = redisCache().get(id.value);
+  WordInfo info;
+  if (cached)
+  {
+    info = *cached;
+  }
+  else
+  {
+    info = db().getInfo(id);
+    if (info.id.value != dct::g_defaultId)
+    {
+      redisCache().set(id.value, info);
+    }
+  }
+
+  // create pool of unique synonyms
+  std::set&lt;std::string&gt; uniquePool;
+  for (const auto &s : info.senses)
+  {
+    for (const auto &syn : s.synonyms)
+    {
+      uniquePool.insert(syn);
+    }
+  }
+
+  if (uniquePool.empty())
+  {
+    return synonymSuggestions;
+  }
+
+  // convert to vector for random access
+  std::vector&lt;std::string&gt; uniqueVec(uniquePool.begin(), uniquePool.end());
+
+  // pick random number of synonyms to return (1 to unique count)
+  const auto numToPick = Random::get&lt;std::size_t&gt;(1, uniqueVec.size());
+
+  // pick random unique items
+  std::set&lt;std::size_t&gt; pickedIndices;
+  while (synonymSuggestions.size() &lt; numToPick)
+  {
+    const auto index = Random::get&lt;std::size_t&gt;(0, uniqueVec.size() - 1);
+    if (pickedIndices.insert(index).second)
+    {
+      synonymSuggestions.push_back(uniqueVec[index]);
+    }
+  }
+  return synonymSuggestions;
+}</pre>
+
+    <h3>Also add to top of file (after line 1):</h3>
+    <pre>#include &lt;set&gt;</pre>
+
+    <p><strong>Bug Fixed:</strong> The while loop could run forever when pool contained duplicate synonyms because the random count could exceed the number of unique items.</p>
+</body>
+</html>

@@ -174,6 +174,11 @@ std::vector<std::string> Dictionary::suggestSynonyms(std::string_view word) cons
   // convert to vector for random access
   std::vector<std::string> uniqueVec(uniquePool.begin(), uniquePool.end());
 
+  if (uniqueVec.empty())
+  {
+    return synonymSuggestions;
+  }
+
   // pick random number of synonyms to return (1 to unique count)
   const auto numToPick = Random::get<std::size_t>(1, uniqueVec.size());
 
