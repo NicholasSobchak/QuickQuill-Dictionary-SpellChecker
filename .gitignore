@@ -3,6 +3,7 @@
 /bin/
 .venv/
 vcpkg/
+vcpkg_installed/
 web/node_modules/
 web/dist/
 valgrind_output.txt

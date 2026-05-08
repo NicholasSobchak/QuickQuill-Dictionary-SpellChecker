@@ -2,28 +2,45 @@
 #include "logging.h"
 #include <stdexcept>
 
-RedisCache::RedisCache(const std::string &host, int port) : m_connected(false)
+RedisCache::RedisCache(const std::string &host, int port) : m_host(host), m_port(port), m_connected(false)
+{
+  connect();
+}
+
+bool RedisCache::isConnected() const { return m_connected; }
+
+void RedisCache::connect() const
 {
   try
   {
-    std::string url = "tcp://" + host + ":" + std::to_string(port);
+    std::string url = "tcp://" + m_host + ":" + std::to_string(m_port);
     m_redis = std::make_unique<sw::redis::Redis>(url);
-    // Test connection
     m_redis->ping();
     m_connected = true;
   }
   catch (const std::exception &e)
   {
     CROW_LOG_ERROR << "Redis connection failed: " << e.what();
+    m_redis.reset();
     m_connected = false;
   }
 }
 
-bool RedisCache::isConnected() const { return m_connected; }
+bool RedisCache::ensureConnected() const
+{
+  std::scoped_lock lock(m_mutex);
+  if (m_connected && m_redis)
+  {
+    return true;
+  }
+
+  connect();
+  return m_connected && m_redis;
+}
 
 std::optional<WordInfo> RedisCache::get(int wordId) const
 {
-  if (!m_connected || !m_redis)
+  if (!ensureConnected())
   {
     return std::nullopt;
   }
@@ -43,13 +60,15 @@ std::optional<WordInfo> RedisCache::get(int wordId) const
   catch (const std::exception &e)
   {
     CROW_LOG_ERROR << "Redis get failed: " << e.what();
+    std::scoped_lock lock(m_mutex);
+    m_connected = false;
     return std::nullopt;
   }
 }
 
 void RedisCache::set(int wordId, const WordInfo &info, int ttlSeconds) const
 {
-  if (!m_connected || !m_redis)
+  if (!ensureConnected())
   {
     return;
   }
@@ -72,12 +91,14 @@ void RedisCache::set(int wordId, const WordInfo &info, int ttlSeconds) const
   catch (const std::exception &e)
   {
     CROW_LOG_ERROR << "Redis set failed: " << e.what();
+    std::scoped_lock lock(m_mutex);
+    m_connected = false;
   }
 }
 
 void RedisCache::del(int wordId) const
 {
-  if (!m_connected || !m_redis)
+  if (!ensureConnected())
   {
     return;
   }
@@ -90,6 +111,8 @@ void RedisCache::del(int wordId) const
   catch (const std::exception &e)
   {
     CROW_LOG_ERROR << "Redis del failed: " << e.what();
+    std::scoped_lock lock(m_mutex);
+    m_connected = false;
   }
 }
 

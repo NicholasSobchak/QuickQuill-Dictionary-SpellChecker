@@ -117,11 +117,10 @@ CI uses `clang-format-17` by default. To match CI locally on Ubuntu/Debian:
 
 This project uses **CMake** + **vcpkg** (manifest mode via `vcpkg.json`) to fetch/build dependencies.
 
-#### 1) Install vcpkg (one-time)
+#### 1) Install dependencies 
 
 ```bash
-git clone https://github.com/microsoft/vcpkg.git ~/vcpkg
-~/vcpkg/bootstrap-vcpkg.sh
+~/vcpkg/vcpkg install
 ```
 
 #### 2) Configure

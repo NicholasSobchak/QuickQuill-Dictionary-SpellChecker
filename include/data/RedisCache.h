@@ -3,6 +3,7 @@
 
 #include <dct/WordInfo.h>
 #include <memory>
+#include <mutex>
 #include <nlohmann/json.hpp>
 #include <optional>
 #include <string>
@@ -34,12 +35,15 @@ public:
   bool isConnected() const;
 
 private:
-  std::unique_ptr<sw::redis::Redis> m_redis;
-  bool m_connected;
+  std::string m_host;
+  int m_port;
+  mutable std::mutex m_mutex;
+  mutable std::unique_ptr<sw::redis::Redis> m_redis;
+  mutable bool m_connected;
 
-  /**
-   * Serialization helpers
-   */
+  bool ensureConnected() const;
+  void connect() const;
+
   nlohmann::json wordInfoToJson(const WordInfo &info) const;
   WordInfo jsonToWordInfo(const nlohmann::json &j) const;
   std::string buildKey(int wordId) const;

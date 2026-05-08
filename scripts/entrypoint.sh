@@ -50,7 +50,7 @@ while kill -0 "$SERVER_PID" 2>/dev/null; do
   else
     FAIL_COUNT=$((FAIL_COUNT + 1))
     if [ "$FAIL_COUNT" -ge "$MAX_FAILS" ]; then
-      echo "Health check failed $MAX_FAILS times, killing server (PID $SERVER_PID)"
+      echo "[$(date)] Health check failed $MAX_FAILS times, killing server (PID $SERVER_PID)"
       kill -9 "$SERVER_PID"
       exit 1
     fi
@@ -58,6 +58,9 @@ while kill -0 "$SERVER_PID" 2>/dev/null; do
   sleep 5
 done
 
-# Cleanup
+# Server exited on its own — capture exit code and restart
 kill "$WARMUP_PID" 2>/dev/null
 wait "$SERVER_PID"
+EXIT_CODE=$?
+echo "[$(date)] Server exited with code $EXIT_CODE — restarting container"
+exit 1

@@ -13,19 +13,19 @@ FROM debian:bookworm-slim AS builder
 RUN apt-get update \
   && apt-get install -y --no-install-recommends build-essential cmake git ca-certificates curl pkg-config unzip tar zip python3 \
   && rm -rf /var/lib/apt/lists/*
+
+# Install vcpkg and bootstrap (rarely changes)
 WORKDIR /src
-# Copy source and build inside the container
-COPY . .
-# Install vcpkg and bootstrap
-RUN git clone https://github.com/microsoft/vcpkg.git /src/vcpkg \
-  && /src/vcpkg/bootstrap-vcpkg.sh
+RUN git clone --depth=1 https://github.com/microsoft/vcpkg.git /src/vcpkg \
+  && /src/vcpkg/bootstrap-vcpkg.sh -disableMetrics
 
-# Install common dependencies via vcpkg (fallback to explicit install)
-RUN /src/vcpkg/vcpkg install nlohmann-json sqlite3 crow catch2 --triplet x64-linux || true
+# Copy only manifest and install dependencies (cached until vcpkg.json changes)
+COPY vcpkg.json /src/vcpkg.json
+RUN /src/vcpkg/vcpkg install --triplet x64-linux
 
-# Clean any host-created build cache and use vcpkg toolchain for dependency resolution
-RUN rm -rf build \
-  && cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
+# Copy source and build (invalidated on code changes, but deps layer above is cached)
+COPY . /src/
+RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
      -DCMAKE_TOOLCHAIN_FILE=/src/vcpkg/scripts/buildsystems/vcpkg.cmake \
      -DVCPKG_TARGET_TRIPLET=x64-linux \
   && cmake --build build -j$(nproc)

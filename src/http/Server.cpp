@@ -23,20 +23,31 @@ void signalHandler(int) { g_shutdown.store(true); }
 
 void runServer(const int port)
 {
-  // Setup signal handlers for graceful shutdown
   signal(SIGTERM, signalHandler);
   signal(SIGINT, signalHandler);
+  signal(SIGPIPE, SIG_IGN);
 
   crow::SimpleApp app;
   registerWordRoutes(app);
 
   CROW_LOG_INFO << "Starting server on port " << port << " with 4 threads";
-  app.port(port).concurrency(4).timeout(5 /*s*/);
+  app.port(port).concurrency(4).timeout(5);
 
-  // Run server in a way that can be interrupted
-  auto serverThread = std::thread([&app]() { app.run(); });
+  auto serverThread = std::thread([&app]() {
+    try
+    {
+      app.run();
+    }
+    catch (const std::exception &e)
+    {
+      CROW_LOG_ERROR << "Server thread threw: " << e.what();
+    }
+    catch (...)
+    {
+      CROW_LOG_ERROR << "Server thread threw unknown exception";
+    }
+  });
 
-  // Wait for shutdown signal
   while (!g_shutdown.load())
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
