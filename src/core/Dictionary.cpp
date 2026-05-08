@@ -1,21 +1,43 @@
 #include "core/Dictionary.h"
 
+#include <mutex>
+#include <optional>
+#include <unordered_map>
+
 #include <set>
 
 #include "app/Config.h"
 #include "dct/dct.h"
 #include "random.h"
 
+namespace
+{
+std::unordered_map<int, WordInfo> g_cache;
+std::mutex g_cacheMutex;
+
+std::optional<WordInfo> getFromCache(int wordId)
+{
+  std::scoped_lock lock(g_cacheMutex);
+  auto it = g_cache.find(wordId);
+  if (it != g_cache.end())
+  {
+    return it->second;
+  }
+  return std::nullopt;
+}
+
+void setInCache(int wordId, const WordInfo &info)
+{
+  std::scoped_lock lock(g_cacheMutex);
+  g_cache[wordId] = info;
+}
+} // namespace
+
 struct Dictionary::ThreadResources
 {
-  explicit ThreadResources(const std::string &dbPath)
-      : db{dbPath},
-        redisCache{Config::getInstance().getRedisHost(), Config::getInstance().getRedisPort()}
-  {
-  }
+  explicit ThreadResources(const std::string &dbPath) : db{dbPath} {}
 
   Database db;
-  RedisCache redisCache;
 };
 
 Dictionary::Dictionary() : m_dbPath{Config::getInstance().getDatabasePath()}
@@ -34,8 +56,6 @@ Dictionary::ThreadResources &Dictionary::resources() const
 
 Database &Dictionary::db() const { return resources().db; }
 
-RedisCache &Dictionary::redisCache() const { return resources().redisCache; }
-
 WordInfo Dictionary::getWordInfo(std::string_view word) const
 {
   WordInfo info;
@@ -51,18 +71,18 @@ WordInfo Dictionary::getWordInfo(std::string_view word) const
     return info;
   }
 
-  // Try Redis cache first
-  auto cached = redisCache().get(id.value);
+  // Try cache first
+  auto cached = getFromCache(id.value);
   if (cached)
   {
     return *cached;
   }
 
-  // Cache miss - get from DB and store in Redis
+  // Cache miss - get from DB and store in cache
   info = db().getInfo(id);
   if (info.id.value != dct::g_defaultId)
   {
-    redisCache().set(id.value, info);
+    setInCache(id.value, info);
   }
 
   return info;
@@ -92,8 +112,8 @@ Dictionary::getAlternativeSearches(std::string_view word, dct::WordId currentId)
       continue;
     }
 
-    // Try Redis cache first
-    auto cached = redisCache().get(id.value);
+    // Try cache first
+    auto cached = getFromCache(id.value);
     WordInfo info;
     if (cached)
     {
@@ -104,7 +124,7 @@ Dictionary::getAlternativeSearches(std::string_view word, dct::WordId currentId)
       info = db().getInfo(id);
       if (info.id.value != dct::g_defaultId)
       {
-        redisCache().set(id.value, info);
+        setInCache(id.value, info);
       }
     }
 
@@ -140,8 +160,8 @@ std::vector<std::string> Dictionary::suggestSynonyms(std::string_view word) cons
     return synonymSuggestions;
   }
 
-  // Try Redis cache first
-  auto cached = redisCache().get(id.value);
+  // Try cache first
+  auto cached = getFromCache(id.value);
   WordInfo info;
   if (cached)
   {
@@ -152,7 +172,7 @@ std::vector<std::string> Dictionary::suggestSynonyms(std::string_view word) cons
     info = db().getInfo(id);
     if (info.id.value != dct::g_defaultId)
     {
-      redisCache().set(id.value, info);
+      setInCache(id.value, info);
     }
   }
 

@@ -42,8 +42,9 @@ Import Complete:
 ### Technical Highlights
   - Trie-based lookup autocomplete behavior
   - HTTP RESTful API via Crow 
-  - Thread management for SQL and Redis access 
-  - Redis caching managing access via mutex
+  - Thread management for SQL and cache access using mutex and thread local
+  - In memory caching 
+  - Redis caching (implementation)
   - Crow logging
   - Dockerized deployment using docker-compose
   - SQL database with rich Wiktionary extract (JSONL) 

@@ -9,7 +9,6 @@
 
 #include "core/Trie.h"
 #include "data/Database.h"
-#include "data/RedisCache.h"
 #include "dct/WordInfo.h"
 
 class Dictionary
@@ -37,8 +36,8 @@ private:
   std::unordered_set<std::string> collectSuggestedWords(std::string_view word) const;
 
   // Each request thread gets its own sqlite connection (Database) and Redis cache
+  // Each request thread gets its own sqlite connection
   Database &db() const;
-  RedisCache &redisCache() const;
 
   struct ThreadResources;
   ThreadResources &resources() const;
