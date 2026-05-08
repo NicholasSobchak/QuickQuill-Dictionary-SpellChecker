@@ -59,7 +59,9 @@ while kill -0 "$SERVER_PID" 2>/dev/null; do
     echo "[$(date)] Health check failed (count: $FAIL_COUNT/$MAX_FAILS, error: $(curl -sS --max-time 10 "$HEALTH_URL" 2>&1 | head -c 200))"
     if [ "$FAIL_COUNT" -ge "$MAX_FAILS" ]; then
       echo "Health check failed $MAX_FAILS times, killing server (PID $SERVER_PID)"
-      kill -9 "$SERVER_PID"
+      kill -TERM "$SERVER_PID" 2>/dev/null
+      sleep 5
+      kill -9 "$SERVER_PID" 2>/dev/null
       exit 1
     fi
   fi
@@ -68,7 +70,7 @@ done
 
 # Server exited on its own — capture exit code and restart
 kill "$WARMUP_PID" 2>/dev/null
-wait "$SERVER_PID"
+# Don't wait here — trap handles server shutdown
 EXIT_CODE=$?
-echo "[$(date)] Server exited with code $EXIT_CODE — restarting container"
+echo "[$(date)] Server exited — restarting container"
 exit 1

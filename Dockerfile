@@ -19,12 +19,11 @@ WORKDIR /src
 RUN git clone --depth=1 https://github.com/microsoft/vcpkg.git /src/vcpkg \
   && /src/vcpkg/bootstrap-vcpkg.sh -disableMetrics
 
-# Copy only manifest and install dependencies (cached until vcpkg.json changes)
-COPY vcpkg.json /src/vcpkg.json
+# Copy source and install dependencies (cached until vcpkg.json changes)
+COPY . /src/
 RUN /src/vcpkg/vcpkg install --triplet x64-linux
 
-# Copy source and build (invalidated on code changes, but deps layer above is cached)
-COPY . /src/
+# Build (invalidated on code changes, but deps layer above is cached)
 RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
      -DCMAKE_TOOLCHAIN_FILE=/src/vcpkg/scripts/buildsystems/vcpkg.cmake \
      -DVCPKG_TARGET_TRIPLET=x64-linux \

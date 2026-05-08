@@ -1,10 +1,11 @@
 services:
   backend:
-    image: ${DOCKER_IMAGE:-nicksobchak/quickquill} 
+    image: ${DOCKER_IMAGE:-nicksobchak/quickquill}
     restart: unless-stopped
     working_dir: /app
     depends_on:
-      - redis
+      redis:
+        condition: service_started
     volumes:
       - ./dictionary.db:/app/dictionary.db:ro
       - ./config.json:/app/config.json:ro
@@ -19,6 +20,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 60s
 
   redis:
     image: redis:7-alpine
