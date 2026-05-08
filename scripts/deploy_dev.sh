@@ -15,12 +15,12 @@ echo "=== Building Docker image: $IMAGE_NAME ==="
 docker build -t "$IMAGE_NAME" . || (echo "Docker build failed" && exit 1)
 
 echo "=== Stopping existing containers ==="
-docker compose down 2>/dev/null || true
+docker-compose down 2>/dev/null || true
 
 echo "=== Starting services with local image ==="
 # Use local image instead of registry
 export DOCKER_IMAGE="$IMAGE_NAME"
-docker compose -f docker-compose.yml -f docker-compose.override.yml up -d
+docker-compose -f docker-compose.yml -f docker-compose.override.yml up -d
 
 echo "=== Waiting for services to be ready ==="
 sleep 5
@@ -39,5 +39,5 @@ for i in $(seq 1 12); do
 done
 
 echo "ERROR: Backend failed to become healthy"
-docker compose logs backend
+docker-compose logs backend
 exit 1
