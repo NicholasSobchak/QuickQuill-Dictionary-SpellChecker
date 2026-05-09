@@ -1,5 +1,6 @@
 #include "core/Dictionary.h"
 
+#include <list>
 #include <mutex>
 #include <optional>
 #include <unordered_map>
@@ -12,7 +13,15 @@
 
 namespace
 {
-std::unordered_map<int, WordInfo> g_cache;
+struct CacheEntry
+{
+  WordInfo info;
+  std::list<int>::iterator lruIt;
+};
+
+constexpr size_t kMaxCacheSize = 10000;
+std::unordered_map<int, CacheEntry> g_cache;
+std::list<int> g_lruList;
 std::mutex g_cacheMutex;
 
 std::optional<WordInfo> getFromCache(int wordId)
@@ -21,7 +30,10 @@ std::optional<WordInfo> getFromCache(int wordId)
   auto it = g_cache.find(wordId);
   if (it != g_cache.end())
   {
-    return it->second;
+    g_lruList.erase(it->second.lruIt);
+    g_lruList.push_front(wordId);
+    it->second.lruIt = g_lruList.begin();
+    return it->second.info;
   }
   return std::nullopt;
 }
@@ -29,7 +41,25 @@ std::optional<WordInfo> getFromCache(int wordId)
 void setInCache(int wordId, const WordInfo &info)
 {
   std::scoped_lock lock(g_cacheMutex);
-  g_cache[wordId] = info;
+  auto it = g_cache.find(wordId);
+  if (it != g_cache.end())
+  {
+    g_lruList.erase(it->second.lruIt);
+    g_lruList.push_front(wordId);
+    it->second.lruIt = g_lruList.begin();
+    it->second.info = info;
+    return;
+  }
+
+  if (g_cache.size() >= kMaxCacheSize)
+  {
+    int lruKey = g_lruList.back();
+    g_lruList.pop_back();
+    g_cache.erase(lruKey);
+  }
+
+  g_lruList.push_front(wordId);
+  g_cache[wordId] = {info, g_lruList.begin()};
 }
 } // namespace
 

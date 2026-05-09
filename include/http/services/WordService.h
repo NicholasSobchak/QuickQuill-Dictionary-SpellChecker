@@ -5,6 +5,7 @@
 #include "core/SpellChecker.h"
 
 #include <string>
+#include <vector>
 
 namespace http
 {
@@ -37,8 +38,6 @@ public:
   void warmupDictionary() const;
 
 private:
-  static std::string decodeInput(const std::string &in);
-
   Dictionary &m_dict;
   SpellChecker &m_checker;
 };
