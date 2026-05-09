@@ -27,6 +27,12 @@ public:
   std::vector<std::string> suggestFromPrefix(std::string_view word) const;
   std::vector<std::string> suggestSpelling(std::string_view word) const;
 
+  // ghost autofill: returns best completion for prefix, searching history→suggested→cache→db
+  std::string autofillFromTrie(
+      std::string_view prefix,
+      const std::vector<std::string> &history,
+      const std::vector<std::string> &suggested) const;
+
 private:
   Trie m_trie;
   std::string m_dbPath;

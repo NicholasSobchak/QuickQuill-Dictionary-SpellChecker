@@ -27,6 +27,12 @@ struct SuggestSynonymResult
   int status{200};
 };
 
+struct AutofillResult
+{
+  std::string body;
+  int status{200};
+};
+
 class WordService
 {
 public:
@@ -35,6 +41,10 @@ public:
   SearchResult search(const std::string &word) const;
   SuggestResult suggest(const std::string &word) const;
   SuggestSynonymResult suggestSynonym(const std::string &word) const;
+  AutofillResult autofill(
+      const std::string &prefix,
+      const std::vector<std::string> &history,
+      const std::vector<std::string> &suggested) const;
   void warmupDictionary() const;
 
 private:

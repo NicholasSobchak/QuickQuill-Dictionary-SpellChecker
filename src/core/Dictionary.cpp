@@ -38,6 +38,12 @@ std::optional<WordInfo> getFromCache(int wordId)
   return std::nullopt;
 }
 
+bool isInCache(int wordId)
+{
+  std::scoped_lock lock(g_cacheMutex);
+  return g_cache.find(wordId) != g_cache.end();
+}
+
 void setInCache(int wordId, const WordInfo &info)
 {
   std::scoped_lock lock(g_cacheMutex);
@@ -314,6 +320,72 @@ std::vector<std::string> Dictionary::suggestSpelling(std::string_view word) cons
 // Dictionary Helper Functions
 **********************************/
 std::string Dictionary::cleanWord(std::string_view word) const { return dct::sanitizeWord(word); }
+
+std::string Dictionary::autofillFromTrie(
+    std::string_view prefix,
+    const std::vector<std::string> &history,
+    const std::vector<std::string> &suggested) const
+{
+  std::string clean = cleanWord(prefix);
+  if (clean.empty())
+  {
+    return {};
+  }
+
+  std::vector<std::pair<std::string, dct::Frequency>> completions;
+  m_trie.collectWithPrefix(clean, completions, 50);
+
+  if (completions.empty())
+  {
+    return {};
+  }
+
+  std::unordered_set<std::string> historySet, suggestedSet;
+  for (const auto &w : history)
+  {
+    historySet.insert(cleanWord(w));
+  }
+  for (const auto &w : suggested)
+  {
+    suggestedSet.insert(cleanWord(w));
+  }
+
+  int bestScore = 4;
+  dct::Frequency bestFreq{0};
+  std::string best;
+
+  for (const auto &[word, freq] : completions)
+  {
+    std::string norm = cleanWord(word);
+    int score = 3;
+
+    if (historySet.count(norm))
+    {
+      score = 0;
+    }
+    else if (suggestedSet.count(norm))
+    {
+      score = 1;
+    }
+    else
+    {
+      dct::WordId id = m_trie.getWordId(norm);
+      if (id.value != dct::g_defaultId && isInCache(id.value))
+      {
+        score = 2;
+      }
+    }
+
+    if (score < bestScore || (score == bestScore && freq.value > bestFreq.value))
+    {
+      best = word;
+      bestScore = score;
+      bestFreq = freq;
+    }
+  }
+
+  return best;
+}
 
 void Dictionary::loadTrie()
 {

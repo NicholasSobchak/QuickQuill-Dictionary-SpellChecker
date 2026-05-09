@@ -34,7 +34,12 @@
           <button id="promptGo" class="prompt" type="button" aria-label="Look up word">
             <img class="prompt-icon" src="/assets/magnifying-glass-svgrepo-com.svg" alt="" />
           </button>
-          <input id="word" placeholder="lookup &lt;word&gt;" autocomplete="off" />
+          <div class="autofill-wrapper">
+            <input id="word" placeholder="lookup &lt;word&gt;" autocomplete="off" />
+            <div id="ghostLayer" class="ghost-layer" aria-hidden="true">
+              <span id="ghostTyped"></span><span id="ghostSuffix"></span>
+            </div>
+          </div>
           <button id="go">run</button>
         </div>
         <div id="status" class="status">

@@ -1,6 +1,7 @@
 #ifndef SPELLCHECKER_H
 #define SPELLCHECKER_H
 #include <string>
+#include <vector>
 
 #include "core/Dictionary.h"
 
@@ -15,7 +16,10 @@ public:
   std::vector<std::string> suggest(std::string_view prefix) const;
   std::string correct(std::string_view word) const;
 
-  std::string autofill(std::string_view word) const;
+  std::string autofill(
+      std::string_view word,
+      const std::vector<std::string> &history = {},
+      const std::vector<std::string> &suggested = {}) const;
 
 private:
   const Dictionary &m_dict;

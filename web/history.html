@@ -35,6 +35,13 @@
             <button id="clearAllHistory" class="clear-history-button">Clear All</button>
           </div>
         </div>
+        <div class="row">
+          <button id="promptGo" class="prompt" type="button" aria-label="Look up word">
+            <img class="prompt-icon" src="/assets/magnifying-glass-svgrepo-com.svg" alt="" />
+          </button>
+          <input id="word" placeholder="lookup &lt;word&gt;" autocomplete="off" />
+          <button id="go">run</button>
+        </div>
         <div id="historyWordsList" class="history-words-grid"></div>
         <div id="historyEmpty" class="history-empty">No search history yet.</div>
       </section>
@@ -105,10 +112,46 @@
 
       clearAllButton.addEventListener('click', () => {
         localStorage.removeItem(HISTORY_KEY);
+        allHistoryWords = [];
         renderHistory();
       });
 
+      let allHistoryWords = loadHistory();
       renderHistory();
+
+      function filterHistory() {
+        const query = document.getElementById('word').value.trim().toLowerCase();
+        const words = query
+          ? allHistoryWords.filter(w => w.toLowerCase().includes(query))
+          : allHistoryWords;
+        historyWordsList.innerHTML = '';
+
+        if (!words.length) {
+          historyEmpty.style.display = 'block';
+          historyWordsList.style.display = 'none';
+          return;
+        }
+
+        historyEmpty.style.display = 'none';
+        historyWordsList.style.display = 'flex';
+
+        words.forEach((word) => {
+          const chip = document.createElement('button');
+          chip.type = 'button';
+          chip.className = 'chip history-chip';
+          chip.textContent = word;
+          chip.addEventListener('click', () => {
+            window.location.href = `./?word=${encodeURIComponent(word)}`;
+          });
+          historyWordsList.appendChild(chip);
+        });
+      }
+
+      document.getElementById('word').addEventListener('input', filterHistory);
+      document.getElementById('promptGo').addEventListener('click', () => {
+        const word = document.getElementById('word').value.trim();
+        if (word) window.location.href = `./?word=${encodeURIComponent(word)}`;
+      });
     </script>
   </body>
 </html>

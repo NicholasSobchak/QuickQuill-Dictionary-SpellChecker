@@ -109,6 +109,23 @@ SuggestResult WordService::suggest(const std::string &word) const
   return {body.dump(), 200};
 }
 
+AutofillResult WordService::autofill(
+    const std::string &prefix,
+    const std::vector<std::string> &history,
+    const std::vector<std::string> &suggested) const
+{
+  const std::string sanitized = dct::sanitizeWord(prefix);
+  if (sanitized.empty())
+  {
+    nlohmann::json body = {{"completion", ""}};
+    return {body.dump(), 200};
+  }
+
+  std::string completion = m_checker.autofill(sanitized, history, suggested);
+  nlohmann::json body = {{"completion", completion}};
+  return {body.dump(), 200};
+}
+
 SuggestSynonymResult WordService::suggestSynonym(const std::string &word) const
 {
   const std::string sanitized = dct::sanitizeWord(word);

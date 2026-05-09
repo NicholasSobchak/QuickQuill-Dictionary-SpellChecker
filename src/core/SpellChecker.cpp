@@ -56,22 +56,17 @@ std::string SpellChecker::correct(std::string_view word) const
   return clean; // Return the original word if no suggestions are found
 }
 
-std::string SpellChecker::autofill(std::string_view word) const
+std::string SpellChecker::autofill(
+    std::string_view word,
+    const std::vector<std::string> &history,
+    const std::vector<std::string> &suggested) const
 {
   if (word.empty())
   {
     return {};
   }
 
-  std::vector<std::string> suggestions = suggest(word);
-
-  if (!suggestions.empty())
-  {
-    return suggestions[0]; // Return the first suggestion as the
-                           // autocompletion
-  }
-
-  return std::string{word}; // Return the original word if no suggestions found
+  return m_dict.autofillFromTrie(word, history, suggested);
 }
 
 void SpellChecker::printSuggest(const std::vector<std::string> &out) const

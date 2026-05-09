@@ -20,6 +20,12 @@ let spinnerTimer = null;
 let drawerSuggestedWords = loadSuggestedWords();
 let liveSuggestedWords = [];
 
+// Ghost autofill
+const ghostTyped = document.getElementById('ghostTyped');
+const ghostSuffix = document.getElementById('ghostSuffix');
+let ghostCompletion = '';
+let ghostController = null;
+
 function loadHistory() {
   const stored = localStorage.getItem(HISTORY_KEY);
   return stored ? JSON.parse(stored) : [];
@@ -601,6 +607,67 @@ function debounce(fn, delay) {
   };
 }
 
+// --- Ghost Autofill ---
+
+function setGhostText(typed, completion) {
+  if (!completion || completion.toLowerCase() === typed.toLowerCase()) {
+    clearGhostText();
+    return;
+  }
+  ghostCompletion = completion;
+  ghostTyped.textContent = typed;
+  ghostSuffix.textContent = completion.substring(typed.length);
+}
+
+function clearGhostText() {
+  ghostCompletion = '';
+  if (ghostTyped) ghostTyped.textContent = '';
+  if (ghostSuffix) ghostSuffix.textContent = '';
+}
+
+function acceptGhost() {
+  if (ghostCompletion) {
+    input.value = ghostCompletion;
+    input.setSelectionRange(ghostCompletion.length, ghostCompletion.length);
+    clearGhostText();
+  }
+}
+
+function triggerGhostAutofill() {
+  const word = input.value.trim();
+  if (word.length < 1) {
+    clearGhostText();
+    return;
+  }
+
+  if (ghostController) ghostController.abort();
+  ghostController = new AbortController();
+  const signal = ghostController.signal;
+
+  const history = loadHistory().slice(0, 20).join(',');
+  const suggested = loadSuggestedWords().slice(0, 20).join(',');
+
+  let url = `/api/autofill/${encodeURIComponent(word)}`;
+  const params = new URLSearchParams();
+  if (history) params.set('history', history);
+  if (suggested) params.set('suggested', suggested);
+  const qs = params.toString();
+  if (qs) url += '?' + qs;
+
+  fetch(url, { signal })
+    .then((res) => {
+      if (!res.ok) { clearGhostText(); return null; }
+      return res.json();
+    })
+    .then((data) => {
+      if (!data) return;
+      if (input.value.trim() !== word) return; // stale
+      setGhostText(word, data.completion || '');
+    })
+    .catch(() => {});
+}
+// --- end Ghost Autofill ---
+
 async function fetchSuggestions() {
   const sanitizedValue = sanitizeSearchInput(input.value);
   if (input.value !== sanitizedValue) {
@@ -631,12 +698,20 @@ async function fetchSuggestions() {
   renderSuggestedSearches();
 }
 
+input.addEventListener('input', triggerGhostAutofill);
 input.addEventListener('input', debounce(fetchSuggestions, 300));
 
 button.addEventListener('click', lookup);
 promptButton.addEventListener('click', lookup);
 input.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') lookup();
+  if (e.key === 'Enter') {
+    if (ghostCompletion) acceptGhost();
+    lookup();
+  }
+  if ((e.key === 'Tab' || e.key === 'ArrowRight') && ghostCompletion) {
+    e.preventDefault();
+    acceptGhost();
+  }
 });
 
 checkUrlForWord();

@@ -142,5 +142,44 @@ void registerWordRoutes(crow::SimpleApp &app)
         const auto res = wordService().suggestSynonym(word);
         return jsonResponse(res.body, res.status);
       });
+
+  CROW_ROUTE(app, "/api/autofill/<string>")
+  (
+      [](const crow::request &req, const std::string &word)
+      {
+        std::vector<std::string> history;
+        std::vector<std::string> suggested;
+
+        if (const char *h = req.url_params.get("history"))
+        {
+          std::string hstr(h);
+          std::istringstream ss(hstr);
+          std::string item;
+          while (std::getline(ss, item, ','))
+          {
+            if (!item.empty())
+            {
+              history.push_back(std::move(item));
+            }
+          }
+        }
+
+        if (const char *s = req.url_params.get("suggested"))
+        {
+          std::string sstr(s);
+          std::istringstream ss(sstr);
+          std::string item;
+          while (std::getline(ss, item, ','))
+          {
+            if (!item.empty())
+            {
+              suggested.push_back(std::move(item));
+            }
+          }
+        }
+
+        auto result = wordService().autofill(word, history, suggested);
+        return jsonResponse(result.body, result.status);
+      });
 }
 } // namespace http
