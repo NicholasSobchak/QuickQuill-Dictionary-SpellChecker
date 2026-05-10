@@ -383,6 +383,15 @@ header {
 .suggested-page input,
 .history-page input {
   font-size: 18px;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 0;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  color: var(--ink);
+  caret-color: var(--ink);
+  outline: none;
 }
 
 #go {

@@ -29,8 +29,8 @@ TEST_CASE("Dictionary handles concurrent synonym lookups", "[dictionary][concurr
   auto a = std::async(std::launch::async, worker);
   auto b = std::async(std::launch::async, worker);
 
-  REQUIRE(a.wait_for(2s) == std::future_status::ready);
-  REQUIRE(b.wait_for(2s) == std::future_status::ready);
+  REQUIRE((a.wait_for(2s) == std::future_status::ready));
+  REQUIRE((b.wait_for(2s) == std::future_status::ready));
   a.get();
   b.get();
 }

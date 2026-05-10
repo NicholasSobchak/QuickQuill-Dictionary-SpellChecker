@@ -41,6 +41,7 @@ public:
   SearchResult search(const std::string &word) const;
   SuggestResult suggest(const std::string &word) const;
   SuggestSynonymResult suggestSynonym(const std::string &word) const;
+  // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
   AutofillResult autofill(
       const std::string &prefix,
       const std::vector<std::string> &history,

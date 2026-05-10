@@ -56,6 +56,7 @@ std::string SpellChecker::correct(std::string_view word) const
   return clean; // Return the original word if no suggestions are found
 }
 
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 std::string SpellChecker::autofill(
     std::string_view word,
     const std::vector<std::string> &history,

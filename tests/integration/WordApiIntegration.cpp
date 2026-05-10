@@ -17,11 +17,11 @@ TEST_CASE("search returns 200 with found word", "[integration][api]")
   }
   auto res = http::wordService().search("lumen");
 
-  REQUIRE(res.status == 200);
+  REQUIRE((res.status == 200));
   auto json = nlohmann::json::parse(res.body);
-  CHECK(json["lemma"] == "lumen");
-  CHECK(json["senses"].size() == 1);
-  CHECK(json["senses"][0]["definition"] == "unit of luminous flux");
+  CHECK((json["lemma"] == "lumen"));
+  CHECK((json["senses"].size() == 1));
+  CHECK((json["senses"][0]["definition"] == "unit of luminous flux"));
 }
 
 TEST_CASE("search returns 404 with suggestion when missing", "[integration][api]")
@@ -37,8 +37,8 @@ TEST_CASE("search returns 404 with suggestion when missing", "[integration][api]
   }
   auto res = http::wordService().search("lumon");
 
-  REQUIRE(res.status == 404);
+  REQUIRE((res.status == 404));
   auto json = nlohmann::json::parse(res.body);
-  CHECK(json["found"] == false);
+  CHECK((json["found"] == false));
   CHECK(json["suggestion"].is_string());
 }

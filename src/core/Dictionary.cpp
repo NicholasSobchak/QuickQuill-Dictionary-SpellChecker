@@ -323,7 +323,7 @@ std::string Dictionary::cleanWord(std::string_view word) const { return dct::san
 
 std::string Dictionary::autofillFromTrie(
     std::string_view prefix,
-    const std::vector<std::string> &history,
+    const std::vector<std::string> &history, // NOLINT(bugprone-easily-swappable-parameters)
     const std::vector<std::string> &suggested) const
 {
   std::string clean = cleanWord(prefix);

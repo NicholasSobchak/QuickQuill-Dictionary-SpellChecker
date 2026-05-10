@@ -28,6 +28,7 @@ public:
   std::vector<std::string> suggestSpelling(std::string_view word) const;
 
   // ghost autofill: returns best completion for prefix, searching history→suggested→cache→db
+  // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
   std::string autofillFromTrie(
       std::string_view prefix,
       const std::vector<std::string> &history,
