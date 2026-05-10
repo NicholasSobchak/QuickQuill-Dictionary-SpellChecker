@@ -20,9 +20,15 @@ let spinnerTimer = null;
 let drawerSuggestedWords = loadSuggestedWords();
 let liveSuggestedWords = [];
 
+const DISPLAY_WORD_DISALLOWED_RE = /[^A-Za-z0-9'’ -]+/g;
+const MULTISPACE_RE = /\s+/g;
+const SEARCH_INPUT_DISALLOWED_RE = /[^A-Za-z'\- .]+/g;
+const SEARCH_INPUT_ALLOWED_RE = /^[A-Za-z'\- .]+$/;
+
 // Ghost autofill
 const ghostTyped = document.getElementById('ghostTyped');
 const ghostSuffix = document.getElementById('ghostSuffix');
+const ghostHint = document.getElementById('ghostHint');
 let ghostCompletion = '';
 let ghostController = null;
 
@@ -76,7 +82,7 @@ async function storeSuggestionsForQuery(word) {
   if (!cleanedWord) return;
 
   try {
-    const res = await fetch(`/api/synonym/${encodeURIComponent(cleanedWord)}`);
+    const res = await fetch(`/api/synonym/${encodePathSegment(cleanedWord)}`);
     if (!res.ok) return;
 
     const words = (await res.json()).map((item) => displayWord(item)).filter(Boolean);
@@ -354,14 +360,20 @@ function appendNumberedList(section, items) {
 function displayWord(text) {
   if (!text) return '';
   return text
-    .replace(/[^A-Za-z0-9'’ -]+/g, ' ')
-    .replace(/\s+/g, ' ')
+    .replace(DISPLAY_WORD_DISALLOWED_RE, ' ')
+    .replace(MULTISPACE_RE, ' ')
     .trim();
 }
 
 function sanitizeSearchInput(text) {
   if (!text) return '';
-  return text.replace(/[^A-Za-z'\- .]+/g, '');
+  return text.replace(SEARCH_INPUT_DISALLOWED_RE, '');
+}
+
+function encodePathSegment(value) {
+  // Use '+' for spaces so routes like `/api/word/<string>` stay readable and
+  // can be decoded server-side consistently (see WordService::decodeInput).
+  return encodeURIComponent(value).replace(/%20/g, '+');
 }
 
 function renderWord(data) {
@@ -538,7 +550,8 @@ function renderWord(data) {
 }
 
 async function lookup() {
-  const word = input.value.trim();
+  const raw = input.value || '';
+  const word = raw.trim();
   if (!word) {
     clearResult();
     showSuggestedBox();
@@ -546,7 +559,7 @@ async function lookup() {
     input.focus();
     return;
   }
-  if (!/^[A-Za-z'\- .]+$/.test(word)) {
+  if (!SEARCH_INPUT_ALLOWED_RE.test(word)) {
     clearResult();
     setStatus('400: Enter a valid word', true);
     input.focus();
@@ -555,7 +568,7 @@ async function lookup() {
 
   const params = new URLSearchParams(window.location.search);
   if (params.get('word') !== word) {
-    window.history.pushState({}, '', `/?word=${encodeURIComponent(word)}`);
+    window.history.pushState({}, '', `/?word=${encodePathSegment(word)}`);
   }
 
   button.disabled = true;
@@ -572,7 +585,7 @@ async function lookup() {
 
   try {
     setStatus('Looking up…');
-    const res = await fetch(`/api/word/${encodeURIComponent(word)}`);
+    const res = await fetch(`/api/word/${encodePathSegment(word)}`);
     const data = await res.json();
     if (!res.ok) {
       renderWord(data, word);
@@ -580,9 +593,15 @@ async function lookup() {
     } else {
       renderWord(data, word);
       setStatus('');
-      addToHistory(displayWord(word));
+
+      // Canonicalize the query to match what the backend returns (display lemma).
+      const canonical = displayWord(data.display_lemma || data.query || word);
+      if (canonical && canonical !== word)
+        window.history.replaceState({}, '', `/?word=${encodePathSegment(canonical)}`);
+
+      addToHistory(canonical || displayWord(word));
       addSearchedSuggestion();
-      storeSuggestionsForQuery(word);
+      storeSuggestionsForQuery(canonical || word);
     }
   } catch (err) {
     clearResult();
@@ -614,15 +633,23 @@ function setGhostText(typed, completion) {
     clearGhostText();
     return;
   }
+  // Only show a ghost completion when the completion actually extends what the
+  // user typed; otherwise substring math can produce confusing suffixes.
+  if (completion.toLowerCase().indexOf(typed.toLowerCase()) !== 0) {
+    clearGhostText();
+    return;
+  }
   ghostCompletion = completion;
   ghostTyped.textContent = typed;
   ghostSuffix.textContent = completion.substring(typed.length);
+  if (ghostHint) ghostHint.style.display = 'inline';
 }
 
 function clearGhostText() {
   ghostCompletion = '';
   if (ghostTyped) ghostTyped.textContent = '';
   if (ghostSuffix) ghostSuffix.textContent = '';
+  if (ghostHint) ghostHint.style.display = 'none';
 }
 
 function acceptGhost() {
@@ -634,7 +661,13 @@ function acceptGhost() {
 }
 
 function triggerGhostAutofill() {
-  const word = input.value.trim();
+  const typed = input.value || '';
+  // Autocomplete only the last "word" segment so spaces don't break suffix math.
+  const lastSpace = typed.lastIndexOf(' ');
+  const base = lastSpace >= 0 ? typed.slice(0, lastSpace + 1) : '';
+  const segment = lastSpace >= 0 ? typed.slice(lastSpace + 1) : typed;
+  const word = segment.trim();
+
   if (word.length < 1) {
     clearGhostText();
     return;
@@ -647,7 +680,7 @@ function triggerGhostAutofill() {
   const history = loadHistory().slice(0, 20).join(',');
   const suggested = loadSuggestedWords().slice(0, 20).join(',');
 
-  let url = `/api/autofill/${encodeURIComponent(word)}`;
+  let url = `/api/autofill/${encodePathSegment(word)}`;
   const params = new URLSearchParams();
   if (history) params.set('history', history);
   if (suggested) params.set('suggested', suggested);
@@ -661,8 +694,15 @@ function triggerGhostAutofill() {
     })
     .then((data) => {
       if (!data) return;
-      if (input.value.trim() !== word) return; // stale
-      setGhostText(word, data.completion || '');
+      // stale: last segment changed
+      const current = input.value || '';
+      const currentLastSpace = current.lastIndexOf(' ');
+      const currentSegment = currentLastSpace >= 0 ? current.slice(currentLastSpace + 1) : current;
+      if (currentSegment.trim() !== word) return;
+
+      const completion = data.completion || '';
+      const composed = base + completion;
+      setGhostText(current, composed);
     })
     .catch(() => {});
 }
@@ -670,11 +710,7 @@ function triggerGhostAutofill() {
 
 async function fetchSuggestions() {
   const sanitizedValue = sanitizeSearchInput(input.value);
-  if (input.value !== sanitizedValue) {
-    input.value = sanitizedValue;
-  }
-
-  const word = input.value.trim();
+  const word = sanitizedValue.trim();
   if (word.length < 1) {
     liveSuggestedWords = [];
     renderSuggestedSearches();
@@ -682,7 +718,7 @@ async function fetchSuggestions() {
   }
 
   try {
-    const res = await fetch(`/api/suggest/${encodeURIComponent(word)}`);
+  const res = await fetch(`/api/suggest/${encodePathSegment(word)}`);
     if (!res.ok) {
       liveSuggestedWords = [];
     } else {
@@ -705,10 +741,9 @@ button.addEventListener('click', lookup);
 promptButton.addEventListener('click', lookup);
 input.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') {
-    if (ghostCompletion) acceptGhost();
     lookup();
   }
-  if ((e.key === 'Tab' || e.key === 'ArrowRight') && ghostCompletion) {
+  if (e.key === 'Tab' && ghostCompletion) {
     e.preventDefault();
     acceptGhost();
   }

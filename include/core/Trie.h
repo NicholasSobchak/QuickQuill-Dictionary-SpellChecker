@@ -38,7 +38,7 @@ private:
     std::array<std::unique_ptr<TrieNode>, dct::g_alpha> m_children;
     bool m_isEndOfWord{false};
     dct::WordId m_wordID;
-    dct::Frequency frequency;
+    dct::Frequency m_frequency;
   };
 
   std::unique_ptr<TrieNode> m_root;

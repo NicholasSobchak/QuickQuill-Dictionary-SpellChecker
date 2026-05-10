@@ -49,6 +49,11 @@ public:
   void warmupDictionary() const;
 
 private:
+  /**
+   * Removes random characters that could potentially corrupt the search query
+   */
+  static std::string decodeInput(const std::string &in);
+
   Dictionary &m_dict;
   SpellChecker &m_checker;
 };

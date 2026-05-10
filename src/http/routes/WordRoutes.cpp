@@ -1,6 +1,9 @@
 #include "http/routes/WordRoutes.h"
 #include "http/services/WordService.h"
 
+#include <cctype>
+#include <cstdlib>
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -11,6 +14,9 @@ namespace http
 namespace
 {
 const std::string kDistRoot = "web/dist";
+const std::string kAssetsRoot = kDistRoot + "/assets/";
+
+namespace fs = std::filesystem;
 
 /**
  * Type safety: wrapper carrying a MIME type string
@@ -85,6 +91,116 @@ crow::response fileResponseFromFile(const std::string &path, const ContentType &
   response.set_header("Content-Type", contentType.value);
   return response;
 }
+
+std::string decodeUrlComponent(const std::string &in)
+{
+  std::string out;
+  out.reserve(in.size());
+
+  for (size_t i = 0; i < in.size(); ++i)
+  {
+    if (in[i] == '%')
+    {
+      if (i + 2 >= in.size())
+      {
+        return "";
+      }
+
+      const auto hex = in.substr(i + 1, 2);
+      char *end = nullptr;
+      const long val = std::strtol(hex.c_str(), &end, 16);
+      if (end != hex.c_str() + 2)
+      {
+        return "";
+      }
+
+      out.push_back(static_cast<char>(val));
+      i += 2;
+    }
+    else if (in[i] == '+')
+    {
+      out.push_back(' ');
+    }
+    else
+    {
+      out.push_back(in[i]);
+    }
+  }
+
+  return out;
+}
+
+bool isAllowedAssetPathChar(unsigned char c)
+{
+  return std::isalnum(c) != 0 || c == '_' || c == '-' || c == '.' || c == '/' || c == '@';
+}
+
+bool isSafeAssetPath(const std::string &path)
+{
+  if (path.empty() || path.size() > 512)
+  {
+    return false;
+  }
+
+  // disallow absolute paths and windows separators
+  if (path.front() == '/' || path.front() == '\\')
+  {
+    return false;
+  }
+  if (path.find('\\') != std::string::npos)
+  {
+    return false;
+  }
+
+  // character allow-list
+  for (unsigned char c : path)
+  {
+    if (!isAllowedAssetPathChar(c))
+    {
+      return false;
+    }
+  }
+
+  // segment validation: reject empty segments and "." / ".."
+  size_t start = 0;
+  while (start < path.size())
+  {
+    const size_t slash = path.find('/', start);
+    const size_t end = (slash == std::string::npos) ? path.size() : slash;
+    if (end == start)
+    {
+      return false;
+    }
+
+    const std::string_view seg(path.data() + start, end - start);
+    if (seg == "." || seg == "..")
+    {
+      return false;
+    }
+
+    start = (slash == std::string::npos) ? path.size() : slash + 1;
+  }
+
+  return true;
+}
+
+bool isUnderRoot(const fs::path &root, const fs::path &candidate)
+{
+  const fs::path r = root.lexically_normal();
+  const fs::path c = candidate.lexically_normal();
+
+  auto rIt = r.begin();
+  auto cIt = c.begin();
+  for (; rIt != r.end() && cIt != c.end(); ++rIt, ++cIt)
+  {
+    if (*rIt != *cIt)
+    {
+      return false;
+    }
+  }
+
+  return rIt == r.end();
+}
 } // namespace
 
 /**
@@ -105,7 +221,20 @@ void registerWordRoutes(crow::SimpleApp &app)
   (
       [](const std::string &path)
       {
-        const std::string full = kDistRoot + "/assets/" + path;
+        const std::string decoded = decodeUrlComponent(path);
+        if (decoded.empty() || !isSafeAssetPath(decoded))
+        {
+          return crow::response(400, "Invalid asset path.");
+        }
+
+        const fs::path root = fs::weakly_canonical(kAssetsRoot);
+        const fs::path candidate = fs::weakly_canonical(root / fs::path(decoded));
+        if (!isUnderRoot(root, candidate))
+        {
+          return crow::response(400, "Invalid asset path.");
+        }
+
+        const std::string full = candidate.string();
         const auto mime = guessContentType(full);
         return fileResponseFromFile(full, ContentType(mime));
       });

@@ -316,11 +316,6 @@ std::vector<std::string> Dictionary::suggestSpelling(std::string_view word) cons
   return suggestions;
 }
 
-/*********************************
-// Dictionary Helper Functions
-**********************************/
-std::string Dictionary::cleanWord(std::string_view word) const { return dct::sanitizeWord(word); }
-
 std::string Dictionary::autofillFromTrie(
     std::string_view prefix,
     const std::vector<std::string> &history, // NOLINT(bugprone-easily-swappable-parameters)
@@ -350,7 +345,9 @@ std::string Dictionary::autofillFromTrie(
     suggestedSet.insert(cleanWord(w));
   }
 
-  int bestScore = 4;
+  // rank words based on a score system (0 being the best, 3 being the worst)
+  // ranks are determined by searching history→suggested→cache→db (0-3)
+  int bestScore{4};
   dct::Frequency bestFreq{0};
   std::string best;
 
@@ -386,6 +383,10 @@ std::string Dictionary::autofillFromTrie(
 
   return best;
 }
+/*********************************
+// Dictionary Helper Functions
+**********************************/
+std::string Dictionary::cleanWord(std::string_view word) const { return dct::sanitizeWord(word); }
 
 void Dictionary::loadTrie()
 {

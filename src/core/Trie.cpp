@@ -36,7 +36,7 @@ bool Trie::insert(std::string_view word, dct::WordId word_id, dct::Frequency fre
 
   node->m_isEndOfWord = true;
   node->m_wordID = word_id;
-  node->frequency = frequency;
+  node->m_frequency = frequency;
   return true;
 }
 
@@ -339,7 +339,7 @@ void Trie::wordsFromNode(
 
   if (node->m_isEndOfWord)
   {
-    out.push_back({currentWord, node->frequency});
+    out.push_back({currentWord, node->m_frequency});
     if (out.size() >= limit)
     {
       return;

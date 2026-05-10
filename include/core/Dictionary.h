@@ -27,7 +27,9 @@ public:
   std::vector<std::string> suggestFromPrefix(std::string_view word) const;
   std::vector<std::string> suggestSpelling(std::string_view word) const;
 
-  // ghost autofill: returns best completion for prefix, searching history→suggested→cache→db
+  /**
+   * ghost autofill: returns best completion for prefix, searching history→suggested→cache→db
+   */
   // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
   std::string autofillFromTrie(
       std::string_view prefix,
@@ -42,8 +44,7 @@ private:
   void loadTrie(); // populate Trie using Database
   std::unordered_set<std::string> collectSuggestedWords(std::string_view word) const;
 
-  // Each request thread gets its own sqlite connection (Database) and Redis cache
-  // Each request thread gets its own sqlite connection
+  // Each request thread gets its own sqlite connection and cache
   Database &db() const;
 
   struct ThreadResources;

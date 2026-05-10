@@ -380,6 +380,15 @@ header {
   color: #555;
 }
 
+.ghost-hint {
+  display: none;
+}
+
+.hint-tab {
+  color: #aaa;
+  font-weight: 700;
+}
+
 .suggested-page input,
 .history-page input {
   font-size: 18px;

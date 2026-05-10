@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <array>
 #include <cctype>
+#include <cstdlib>
 #include <sstream>
 
 namespace http
@@ -24,6 +25,44 @@ SpellChecker &checker()
   return instance;
 }
 } // namespace
+
+std::string WordService::decodeInput(const std::string &in)
+{
+  std::string out;
+  out.reserve(in.size());
+
+  for (size_t i = 0; i < in.size(); ++i)
+  {
+    if (in[i] == '%')
+    {
+      if (i + 2 >= in.size())
+      {
+        return "";
+      }
+
+      const auto hex = in.substr(i + 1, 2);
+      char *end = nullptr;
+      const long val = std::strtol(hex.c_str(), &end, 16);
+      if (end != hex.c_str() + 2)
+      {
+        return "";
+      }
+
+      out.push_back(static_cast<char>(val));
+      i += 2;
+    }
+    else if (in[i] == '+')
+    {
+      out.push_back(' ');
+    }
+    else
+    {
+      out.push_back(in[i]);
+    }
+  }
+
+  return out;
+}
 
 WordService::WordService(Dictionary &dict, SpellChecker &checker) : m_dict{dict}, m_checker{checker}
 {
@@ -63,7 +102,8 @@ void WordService::warmupDictionary() const
 
 SearchResult WordService::search(const std::string &word) const
 {
-  const std::string sanitized = dct::sanitizeWord(word);
+  const std::string decoded = decodeInput(word);
+  const std::string sanitized = dct::sanitizeWord(decoded);
   if (sanitized.empty())
   {
     nlohmann::json body = {{"error", "Enter a valid word"}};
@@ -71,7 +111,7 @@ SearchResult WordService::search(const std::string &word) const
   }
 
   const bool allowedChars = std::all_of(
-      word.begin(), word.end(),
+      decoded.begin(), decoded.end(),
       [](unsigned char c)
       { return std::isalpha(c) || c == '\'' || c == '-' || c == ' ' || c == '.'; });
 
@@ -85,9 +125,9 @@ SearchResult WordService::search(const std::string &word) const
   if (info.lemma.empty())
   {
     // Multi-word query: try individual words
-    if (word.find(' ') != std::string::npos)
+    if (decoded.find(' ') != std::string::npos)
     {
-      std::istringstream iss(word);
+      std::istringstream iss(decoded);
       std::vector<std::string> parts;
       std::string part;
       while (iss >> part)
@@ -115,7 +155,7 @@ SearchResult WordService::search(const std::string &word) const
 
   // alternative searches comes from words with the same id's (same lemmas)
   const auto alternativeSearches = m_dict.getAlternativeSearches(sanitized, info.id);
-  return {toWordJson(info, word, alternativeSearches), 200};
+  return {toWordJson(info, decoded, alternativeSearches), 200};
 }
 
 /*
@@ -123,7 +163,8 @@ SearchResult WordService::search(const std::string &word) const
  */
 SuggestResult WordService::suggest(const std::string &word) const
 {
-  const std::string sanitized = dct::sanitizeWord(word);
+  const std::string decoded = decodeInput(word);
+  const std::string sanitized = dct::sanitizeWord(decoded);
   if (sanitized.empty())
   {
     return {"[]", 200};
@@ -140,7 +181,8 @@ AutofillResult WordService::autofill(
     const std::vector<std::string> &history,
     const std::vector<std::string> &suggested) const
 {
-  const std::string sanitized = dct::sanitizeWord(prefix);
+  const std::string decoded = decodeInput(prefix);
+  const std::string sanitized = dct::sanitizeWord(decoded);
   if (sanitized.empty())
   {
     nlohmann::json body = {{"completion", ""}};
@@ -154,7 +196,8 @@ AutofillResult WordService::autofill(
 
 SuggestSynonymResult WordService::suggestSynonym(const std::string &word) const
 {
-  const std::string sanitized = dct::sanitizeWord(word);
+  const std::string decoded = decodeInput(word);
+  const std::string sanitized = dct::sanitizeWord(decoded);
   if (sanitized.empty())
   {
     return {"[]", 200};
