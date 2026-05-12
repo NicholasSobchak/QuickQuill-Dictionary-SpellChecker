@@ -1,0 +1,14 @@
+---
+Checks: >
+  -*,
+ 
+  clang-analyzer-*,
+ 
+  bugprone-*,
+  -bugprone-easily-swappable-parameters
+
+
+CheckOptions:
+  - key: readability-magic-numbers.IgnoredIntegerValues
+    value: 0;1;-1
+...
