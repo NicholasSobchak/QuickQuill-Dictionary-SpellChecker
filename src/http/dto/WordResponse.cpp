@@ -44,4 +44,4 @@ std::string toWordJson(
 
   return j.dump();
 }
-} // namespace http
+} // end namespace http

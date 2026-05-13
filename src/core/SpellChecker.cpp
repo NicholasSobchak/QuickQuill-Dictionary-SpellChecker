@@ -50,10 +50,10 @@ std::string SpellChecker::correct(std::string_view word) const
 
   if (!suggestions.empty())
   {
-    return suggestions[0]; // Return the first suggestion
+    return suggestions[0]; // return the first suggestion
   }
 
-  return clean; // Return the original word if no suggestions are found
+  return clean; // return the original word if no suggestions are found
 }
 
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)

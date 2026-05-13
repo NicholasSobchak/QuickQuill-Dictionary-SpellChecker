@@ -201,22 +201,18 @@ bool isUnderRoot(const fs::path &root, const fs::path &candidate)
 
   return rIt == r.end();
 }
-} // namespace
+} // end namespace
 
 /**
  * Requests
  */
 void registerWordRoutes(crow::SimpleApp &app)
 {
-  /**
-   * Static frontend from Vite build (web/dist)
-   */
+  // static frontend from Vite build (web/dist)
   CROW_ROUTE(app, "/")
   ([] { return htmlResponseFromFile(kDistRoot + "/index.html"); });
 
-  /**
-   * Serve hashed assets (and public assets) with a catch-all in /assets/
-   */
+  // Serve hashed assets (and public assets) with a catch-all in /assets/
   CROW_ROUTE(app, "/assets/<path>")
   (
       [](const std::string &path)
@@ -311,4 +307,4 @@ void registerWordRoutes(crow::SimpleApp &app)
         return jsonResponse(result.body, result.status);
       });
 }
-} // namespace http
+} // end namespace http

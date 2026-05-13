@@ -2,7 +2,6 @@
 
 #include "core/Trie.h"
 
-// insertion tests
 TEST_CASE("reject duplicate insertions", "[trie]")
 {
   Trie trie;
@@ -53,7 +52,6 @@ TEST_CASE("insert long word and retrieve", "[trie]")
                             // return it
 }
 
-// id tests
 TEST_CASE("getWordId returns correct id", "[trie]")
 {
   Trie trie;
@@ -76,7 +74,6 @@ TEST_CASE("getWordId returns correct id after removal", "[trie]")
   REQUIRE(trie.getWordId("best").value == 2);
 }
 
-// prefix tests
 TEST_CASE("collectWithPrefix respects limit order", "[trie]")
 {
   Trie trie;
@@ -105,7 +102,6 @@ TEST_CASE("prefix not present", "[trie]")
   REQUIRE(out.size() == 0);
 }
 
-// removal tests
 TEST_CASE("remove deletes only targeted word", "[trie]")
 {
   Trie trie;
@@ -152,7 +148,6 @@ TEST_CASE("removing only word leaves trie empty (only root)", "[trie]")
   REQUIRE(trie.contains("climes"));
 }
 
-// emtpy tests
 TEST_CASE("clear() empties trie", "[trie]")
 {
   Trie trie;

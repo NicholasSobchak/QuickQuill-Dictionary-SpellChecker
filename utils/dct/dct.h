@@ -1,12 +1,13 @@
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef UTILS_DCT_H
+#define UTILS_DCT_H
 #include <nlohmann/json.hpp>
 #include <ostream>
 #include <string>
 #include <string_view>
 #include <vector>
 
-namespace dct {
+namespace dct
+{
 
 inline constexpr int g_alpha{26};
 inline constexpr int g_defaultId{-1};
@@ -15,7 +16,8 @@ inline constexpr int g_max_suggestions{30};
 /*
  * Strongly type WordId with explicit construction and comparison operator
  */
-struct WordId {
+struct WordId
+{
   explicit WordId(int val = g_defaultId) : value{val} {}
   int value;
 
@@ -24,7 +26,8 @@ struct WordId {
 
 inline void to_json(nlohmann::json &j, const WordId &id) { j = id.value; }
 
-inline std::ostream &operator<<(std::ostream &os, const WordId &id) {
+inline std::ostream &operator<<(std::ostream &os, const WordId &id)
+{
   os << id.value;
   return os;
 }
@@ -32,18 +35,18 @@ inline std::ostream &operator<<(std::ostream &os, const WordId &id) {
 /*
  * Strongly type Frequency with explicit consturciton and comparison operator
  */
-struct Frequency {
+struct Frequency
+{
   explicit Frequency(int val = 0) : value{val} {}
   int value;
 
   bool operator==(const Frequency &other) const { return value == other.value; }
 };
 
-inline void to_json(nlohmann::json &j, const Frequency &freq) {
-  j = freq.value;
-}
+inline void to_json(nlohmann::json &j, const Frequency &freq) { j = freq.value; }
 
-inline std::ostream &operator<<(std::ostream &os, const Frequency &freq) {
+inline std::ostream &operator<<(std::ostream &os, const Frequency &freq)
+{
   os << freq.value;
   return os;
 }
@@ -51,13 +54,17 @@ inline std::ostream &operator<<(std::ostream &os, const Frequency &freq) {
 /*
  * The trie and database are stored with sanatized words
  */
-inline std::string sanitizeWord(std::string_view word) {
+inline std::string sanitizeWord(std::string_view word)
+{
   std::string clean;
   clean.reserve(word.size());
 
-  for (unsigned char c : word) {
+  for (unsigned char c : word)
+  {
     if (!std::isalpha(c))
+    {
       continue;
+    }
     clean.push_back(static_cast<char>(std::tolower(c)));
   }
 
@@ -73,12 +80,14 @@ inline std::string sanitizeWord(std::string_view word) {
  * Important note: After each row is calculated col and prev_col are swapped
  * this helps avoid allocating a full 2D matrix which would be costly to memory
  */
-inline size_t calculateLevenshteinDistance(std::string_view s1,
-                                           std::string_view s2) {
-  if (s1.length() == 0) {
+inline size_t calculateLevenshteinDistance(std::string_view s1, std::string_view s2)
+{
+  if (s1.length() == 0)
+  {
     return s2.length();
   }
-  if (s2.length() == 0) {
+  if (s2.length() == 0)
+  {
     return s1.length();
   }
   const auto s1Length{s1.length()};
@@ -89,21 +98,23 @@ inline size_t calculateLevenshteinDistance(std::string_view s1,
   std::vector<size_t> prev_col(s2Length + 1);
 
   // set each element to itself
-  for (size_t i{0}; i < prev_col.size(); ++i) {
+  for (size_t i{0}; i < prev_col.size(); ++i)
+  {
     prev_col[i] = i;
   }
 
-  for (size_t i{0}; i < s1Length; ++i) {
+  for (size_t i{0}; i < s1Length; ++i)
+  {
     col[0] = i + 1;
-    for (unsigned int j{0}; j < s2Length; j++) {
+    for (unsigned int j{0}; j < s2Length; j++)
+    {
       col[j + 1] = std::min(
-          prev_col[j + 1] + 1,
-          std::min(col[j] + 1, prev_col[j] + (s1[i] == s2[j] ? 0 : 1)));
+          prev_col[j + 1] + 1, std::min(col[j] + 1, prev_col[j] + (s1[i] == s2[j] ? 0 : 1)));
     }
     col.swap(prev_col);
   }
   return prev_col[s2Length];
 }
-} // namespace dct
+} // end namespace dct
 
-#endif
+#endif // UTILS_DCT_H

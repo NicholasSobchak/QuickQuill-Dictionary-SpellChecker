@@ -40,4 +40,4 @@ struct KaikkiImportStats
 KaikkiImportStats
 importKaikkiJsonl(Database &db, std::istream &jsonl, const KaikkiImportOptions &options);
 
-#endif
+#endif // KAIKKI_IMPORTER_H

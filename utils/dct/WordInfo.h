@@ -5,7 +5,8 @@
 
 #include "dct/dct.h"
 
-struct Sense {
+struct Sense
+{
   dct::WordId id;
   std::string pos; // noun, verb, adj, etc.
   std::string definition;
@@ -14,12 +15,14 @@ struct Sense {
   std::vector<std::string> antonyms;
 };
 
-struct Form {
+struct Form
+{
   std::string form;
   std::string tag;
 };
 
-struct WordInfo {
+struct WordInfo
+{
   dct::WordId id{};
   std::string lemma;
   std::string displayLemma;
@@ -30,4 +33,4 @@ struct WordInfo {
   std::vector<Sense> senses;
 };
 
-#endif
+#endif // WORDINFO_H

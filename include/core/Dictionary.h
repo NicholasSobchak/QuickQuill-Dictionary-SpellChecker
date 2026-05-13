@@ -18,18 +18,15 @@ public:
   ~Dictionary() = default;
 
   WordInfo getWordInfo(std::string_view word) const;
+  bool contains(std::string_view word) const;
   std::vector<std::string> getAlternativeSearches(
       std::string_view word, dct::WordId currentId = dct::WordId{dct::g_defaultId}) const;
-  std::vector<std::string> suggestSynonyms(std::string_view word) const;
-  bool contains(std::string_view word) const;
 
-  // spellchecking functions
+  std::vector<std::string> suggestSynonyms(std::string_view word) const;
   std::vector<std::string> suggestFromPrefix(std::string_view word) const;
   std::vector<std::string> suggestSpelling(std::string_view word) const;
 
-  /**
-   * ghost autofill: returns best completion for prefix, searching history→suggested→cache→db
-   */
+  // Ghost Autofill: returns best completion for prefix, searching history→suggested→cache→db
   // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
   std::string autofillFromTrie(
       std::string_view prefix,
@@ -37,17 +34,19 @@ public:
       const std::vector<std::string> &suggested) const;
 
 private:
+  /*
+   * Each request thread gets its own sqlite connection and cache
+   */
+  struct ThreadResources;
+
   Trie m_trie;
   std::string m_dbPath;
 
   std::string cleanWord(std::string_view word) const;
-  void loadTrie(); // populate Trie using Database
+  void loadTrie();
   std::unordered_set<std::string> collectSuggestedWords(std::string_view word) const;
-
-  // Each request thread gets its own sqlite connection and cache
   Database &db() const;
-
-  struct ThreadResources;
   ThreadResources &resources() const;
 };
-#endif
+
+#endif // DICTIONARY_H

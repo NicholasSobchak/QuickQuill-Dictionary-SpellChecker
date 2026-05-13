@@ -216,9 +216,6 @@ void Trie::collectWithPrefix(
   wordsFromNode(node, currentWord, out, limit);
 }
 
-/*********************************
-// Trie Helper Functions
-*********************************/
 int Trie::indexForChar(char c)
 {
   auto lowercase = static_cast<unsigned char>(std::tolower(
@@ -303,8 +300,7 @@ bool Trie::removeWord(TrieNode *node, std::string_view word)
     return false;
   }
 
-  // If the child is now empty (no children and not end-of-word), prune
-  // it.
+  // if the child is now empty (no children and not end-of-word), prune it.
   TrieNode *child = node->m_children[index].get();
   if (child && !child->m_isEndOfWord)
   {

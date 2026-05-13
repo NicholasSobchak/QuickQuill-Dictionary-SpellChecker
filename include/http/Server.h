@@ -4,6 +4,6 @@
 namespace http
 {
 void runServer(int port);
-}
+} // end namespace http
 
-#endif
+#endif // HTTP_SERVER_H

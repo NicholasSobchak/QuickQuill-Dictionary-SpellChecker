@@ -83,8 +83,14 @@ Then place `dictionary.db` in the project root.
 │   ├── core/
 │   └── data/
 ├── tests/
+│   ├── unit/
+│   ├── integration/
 ├── utils/
+│   ├── dct/
+│   ├── tests/
 └── web/
+    ├── public/assets/
+    └── src/
 
 ```
 ### Configuration
@@ -156,28 +162,15 @@ Open:
 - Frontend (Vite dev server): `cd web && npm install && npm run dev` then open http://localhost:5173
 - Backend API (Crow): http://localhost:8080 (default) — keep this running so the frontend can load data
 
-
 #
 ## API
 
-### Word lookup
-
 ```http
-GET /api/word/<word>
+GET /api/word/<word> // word lookup
+GET /api/suggest/<word> // Similar searches
+GET /api/synonym/<word> // Suggest Word
+GET /api/autofill/<word> // Autocomplete word
 ```
-
-### Similar searches 
-
-```http
-GET /api/suggest/<word>
-```
-
-### Suggest Word
-
-```http
-GET /api/synonym/<word>
-```
-
 Response shape:
 
 ```json

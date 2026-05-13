@@ -19,17 +19,15 @@ public:
   bool remove(const std::string &word);
   bool contains(std::string_view word) const;
   bool isEmpty() const;
-
   dct::WordId getWordId(std::string_view word) const;
-
   void collectWithPrefix(
       std::string_view prefix,
       std::vector<std::pair<std::string, dct::Frequency>> &out,
       std::size_t limit) const;
+
   void dump() const;
   void dumpWord(std::string_view word) const;
   void clear();
-
   std::string getPrefix(std::string_view word) const;
 
 private:
@@ -42,10 +40,8 @@ private:
   };
 
   std::unique_ptr<TrieNode> m_root;
-
   static int indexForChar(char c);
 
-  // Returns true if the node should be deleted by its parent.
   bool removeWord(TrieNode *node, std::string_view word);
   void dumpNode(const TrieNode *node, const std::string &prefix) const;
   void wordsFromNode(
@@ -54,4 +50,5 @@ private:
       std::vector<std::pair<std::string, dct::Frequency>> &out,
       std::size_t limit) const;
 };
-#endif
+
+#endif // TRIE_H

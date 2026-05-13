@@ -16,7 +16,7 @@ std::filesystem::path makeTempDbPath()
   return dir / ("quickquill-import-test-" + std::to_string(stamp) + ".db");
 }
 
-} // namespace
+} // end namespace
 
 TEST_CASE("importKaikkiJsonl imports lemma, form, and senses", "[import]")
 {

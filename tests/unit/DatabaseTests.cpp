@@ -17,7 +17,7 @@ std::filesystem::path makeTempDbPath()
   return dir / ("quickquill-test-" + std::to_string(stamp) + ".db");
 }
 
-} // namespace
+} // end namespace
 
 TEST_CASE("streamAllWordsAndForms prefers lemma over form collisions", "[database]")
 {

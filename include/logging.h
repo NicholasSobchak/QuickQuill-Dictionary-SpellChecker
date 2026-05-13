@@ -9,4 +9,4 @@
 #error "Crow headers not found"
 #endif
 
-#endif
+#endif // LOGGING_H

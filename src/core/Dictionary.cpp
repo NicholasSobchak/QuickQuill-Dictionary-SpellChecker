@@ -67,7 +67,7 @@ void setInCache(int wordId, const WordInfo &info)
   g_lruList.push_front(wordId);
   g_cache[wordId] = {info, g_lruList.begin()};
 }
-} // namespace
+} // end namespace
 
 struct Dictionary::ThreadResources
 {
@@ -383,9 +383,7 @@ std::string Dictionary::autofillFromTrie(
 
   return best;
 }
-/*********************************
-// Dictionary Helper Functions
-**********************************/
+
 std::string Dictionary::cleanWord(std::string_view word) const { return dct::sanitizeWord(word); }
 
 void Dictionary::loadTrie()

@@ -12,6 +12,6 @@
 namespace http
 {
 void registerWordRoutes(crow::SimpleApp &app);
-}
+} // end namespace http
 
-#endif
+#endif // HTTP_ROUTES_WORDROUTES_H

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef UTILS_TESTS_MOCKDB_H
+#define UTILS_TESTS_MOCKDB_H
 
 #include <cstdlib>
 #include <filesystem>
@@ -60,4 +61,6 @@ inline SpellChecker makeSpellCheckerOnDb(const std::filesystem::path &dbPath)
   return SpellChecker{dict};
 }
 
-} // namespace test_support
+} // end namespace test_support
+
+#endif // UTILS_TESTS_MOCKDB_H

@@ -24,7 +24,7 @@ SpellChecker &checker()
   static SpellChecker instance{dict()};
   return instance;
 }
-} // namespace
+} // end namespace
 
 std::string WordService::decodeInput(const std::string &in)
 {
@@ -74,7 +74,7 @@ WordService &wordService()
   return instance;
 }
 
-/*
+/**
  * Forces static dictionary to construct and touch DB/Redis on current thread
  */
 void WordService::warmupDictionary() const
@@ -158,7 +158,7 @@ SearchResult WordService::search(const std::string &word) const
   return {toWordJson(info, decoded, alternativeSearches), 200};
 }
 
-/*
+/**
  * Provides similar searches using the suggest function
  */
 SuggestResult WordService::suggest(const std::string &word) const
@@ -207,4 +207,4 @@ SuggestSynonymResult WordService::suggestSynonym(const std::string &word) const
   nlohmann::json body = synonyms;
   return {body.dump(), 200};
 }
-} // namespace http
+} // end namespace http

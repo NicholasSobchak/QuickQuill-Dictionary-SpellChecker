@@ -49,17 +49,15 @@ public:
   void warmupDictionary() const;
 
 private:
-  /**
-   * Removes random characters that could potentially corrupt the search query
-   */
-  static std::string decodeInput(const std::string &in);
-
   Dictionary &m_dict;
   SpellChecker &m_checker;
+
+  // Removes random characters that could potentially corrupt the search query
+  static std::string decodeInput(const std::string &in);
 };
 
 WordService &wordService();
 void warmupDictionary();
-} // namespace http
+} // end namespace http
 
-#endif
+#endif // HTTP_SERVICES_WORDSERVICE_H

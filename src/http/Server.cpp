@@ -24,4 +24,4 @@ void runServer(const int port)
   app.signal_clear().signal_add(SIGINT).signal_add(SIGTERM);
   app.port(port).concurrency(4).timeout(5).run();
 }
-} // namespace http
+} // end namespace http

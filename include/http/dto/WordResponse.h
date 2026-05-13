@@ -14,6 +14,6 @@ std::string toWordJson(
     const WordInfo &info,
     const std::string &query = "",
     const std::vector<std::string> &alternativeSearches = {});
-} // namespace http
+} // end namespace http
 
-#endif
+#endif // HTTP_DTO_WORDRESPONSE_H
