@@ -84,10 +84,10 @@ Then place `dictionary.db` in the project root.
 │   └── data/
 ├── tests/
 │   ├── unit/
-│   ├── integration/
+│   └── integration/
 ├── utils/
 │   ├── dct/
-│   ├── tests/
+│   └── tests/
 └── web/
     ├── public/assets/
     └── src/
@@ -166,10 +166,10 @@ Open:
 ## API
 
 ```http
-GET /api/word/<word> // word lookup
-GET /api/suggest/<word> // Similar searches
-GET /api/synonym/<word> // Suggest Word
-GET /api/autofill/<word> // Autocomplete word
+GET /api/word/<word>
+GET /api/suggest/<word>
+GET /api/synonym/<word>
+GET /api/autofill/<word>
 ```
 Response shape:
 
