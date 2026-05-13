@@ -2,11 +2,9 @@
 
 <h4 align="center">A Quick Lookup Dictionary at your service.</h4>
 <p align="center">
-<a href="https://github.com/NicholasSobchak/QuickQuill-Dictionary-SpellChecker/actions"><img src="https://github.com/NicholasSobchak/QuickQuill-Dictionary-SpellChecker/actions/workflows/ci.yml/badge.svg" alt="Build and test"></a>
-<img src="https://img.shields.io/github/v/release/NicholasSobchak/QuickQuill-Dictionary-SpellChecker?color=purple" alt="Version">
-<a href="https://quickquill.ink">
-<img src="https://img.shields.io/badge/website-quickquill.ink-black" alt="Website">
-</a>
+  <a href="https://github.com/NicholasSobchak/QuickQuill-Dictionary-SpellChecker/actions"><img src="https://github.com/NicholasSobchak/QuickQuill-Dictionary-SpellChecker/actions/workflows/ci.yml/badge.svg" alt="Build and Test"></a>
+  <a href="https://github.com/NicholasSobchak/QuickQuill-Dictionary-SpellChecker/releases"><img src="https://img.shields.io/github/v/release/NicholasSobchak/QuickQuill-Dictionary-SpellChecker?color=purple&cachebust=1" alt="Release">
+  <a href="https://quickquill.ink"><img src="https://img.shields.io/badge/website-quickquill.ink-black" alt="Website"></a>
 </p>
 
 #
