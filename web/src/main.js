@@ -642,14 +642,20 @@ function setGhostText(typed, completion) {
   ghostCompletion = completion;
   ghostTyped.textContent = typed;
   ghostSuffix.textContent = completion.substring(typed.length);
-  if (ghostHint) ghostHint.style.display = 'inline';
+  if (ghostHint) {
+  ghostHint.style.display = 'inline';
+  ghostHint.style.cursor = 'pointer';
+}
 }
 
 function clearGhostText() {
   ghostCompletion = '';
   if (ghostTyped) ghostTyped.textContent = '';
   if (ghostSuffix) ghostSuffix.textContent = '';
-  if (ghostHint) ghostHint.style.display = 'none';
+  if (ghostHint) {
+    ghostHint.style.display = 'none';
+    ghostHint.style.cursor = 'default';
+  }
 }
 
 function acceptGhost() {
@@ -748,6 +754,7 @@ input.addEventListener('keydown', (e) => {
     acceptGhost();
   }
 });
+ghostHint.addEventListener('click', acceptGhost);
 
 checkUrlForWord();
 

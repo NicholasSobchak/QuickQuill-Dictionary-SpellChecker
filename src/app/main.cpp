@@ -16,61 +16,111 @@ using json = nlohmann::json;
 
 namespace
 {
+void printLine()
+{
+  for (int i = 0; i < 50; ++i)
+  {
+    std::cout << "\u2500";
+  }
+  std::cout << '\n';
+}
+
+void printHeader(const std::string &title)
+{
+  std::cout << '\n' << "\u2500\u2500 " << title << ' ';
+  printLine();
+}
+
 void printWordInfo(const WordInfo &info)
 {
-  std::cout << "\nWord ID: " << info.id << "\n";
-  std::cout << "Lemma: " << (info.lemma.empty() ? "UNKNOWN" : info.lemma) << "\n";
-  std::cout << "Display Lemma: " << (info.displayLemma.empty() ? "UNKNOWN" : info.displayLemma)
-            << "\n";
+  printHeader("WORDS");
+  std::cout << "id=" << info.id << "  lemma=" << (info.lemma.empty() ? "UNKNOWN" : info.lemma)
+            << "  display_lemma=" << (info.displayLemma.empty() ? "UNKNOWN" : info.displayLemma)
+            << "  frequency=" << info.frequency << '\n';
+
+  if (!info.etymology.empty())
+  {
+    printHeader("ETYMOLOGY");
+    for (std::size_t i = 0; i < info.etymology.size(); ++i)
+    {
+      if (info.etymology.size() > 1)
+      {
+        std::cout << "[" << i + 1 << "] ";
+      }
+      std::cout << info.etymology[i] << '\n';
+    }
+  }
 
   if (!info.senses.empty())
   {
-    for (std::size_t i{0}; i < info.senses.size(); ++i)
+    printHeader("SENSES");
+    for (const auto &s : info.senses)
     {
-      const auto &s = info.senses[i];
-      std::cout << "  [" << i + 1 << "] " << (s.pos.empty() ? "" : s.pos + " ") << "(id " << s.id
-                << ")\n";
+      std::cout << "id=" << s.id << "  pos=" << (s.pos.empty() ? "-" : s.pos) << "  "
+                << s.definition << '\n';
+    }
 
-      std::cout << "    Definition: " << (s.definition.empty() ? "UNKNOWN" : s.definition) << "\n";
-
+    bool hasExamples = false;
+    for (const auto &s : info.senses)
+    {
       if (!s.examples.empty())
       {
-        std::cout << "    Examples:\n";
+        hasExamples = true;
+        break;
+      }
+    }
+    if (hasExamples)
+    {
+      printHeader("EXAMPLES");
+      for (const auto &s : info.senses)
+      {
         for (const auto &ex : s.examples)
         {
-          std::cout << "      - " << ex << "\n";
+          std::cout << "sense_id=" << s.id << "  " << ex << '\n';
         }
       }
+    }
 
+    bool hasSynonyms = false;
+    for (const auto &s : info.senses)
+    {
       if (!s.synonyms.empty())
       {
-        std::cout << "    Synonyms: ";
-        for (std::size_t j{0}; j < s.synonyms.size(); ++j)
-        {
-          if (j)
-          {
-            std::cout << ", ";
-          }
-          std::cout << s.synonyms[j];
-        }
-        std::cout << "\n";
+        hasSynonyms = true;
+        break;
       }
+    }
+    if (hasSynonyms)
+    {
+      printHeader("SYNONYMS");
+      for (const auto &s : info.senses)
+      {
+        for (const auto &syn : s.synonyms)
+        {
+          std::cout << "sense_id=" << s.id << "  " << syn << '\n';
+        }
+      }
+    }
 
+    bool hasAntonyms = false;
+    for (const auto &s : info.senses)
+    {
       if (!s.antonyms.empty())
       {
-        std::cout << "    Antonyms: ";
-        for (std::size_t j{0}; j < s.antonyms.size(); ++j)
-        {
-          if (j)
-          {
-            std::cout << ", ";
-          }
-          std::cout << s.antonyms[j];
-        }
-        std::cout << "\n";
+        hasAntonyms = true;
+        break;
       }
-
-      std::cout << "\n";
+    }
+    if (hasAntonyms)
+    {
+      printHeader("ANTONYMS");
+      for (const auto &s : info.senses)
+      {
+        for (const auto &ant : s.antonyms)
+        {
+          std::cout << "sense_id=" << s.id << "  " << ant << '\n';
+        }
+      }
     }
   }
   else
@@ -80,20 +130,24 @@ void printWordInfo(const WordInfo &info)
 
   if (!info.forms.empty())
   {
-    std::cout << "Forms:\n";
-    for (std::size_t i = 0; i < info.forms.size(); ++i)
+    printHeader("FORMS");
+    for (const auto &f : info.forms)
     {
-      const auto &f = info.forms[i];
-      std::cout << "  [" << i + 1 << "] " << f.form;
+      std::cout << "  " << f.form;
       if (!f.tag.empty())
       {
         std::cout << " (" << f.tag << ")";
       }
-      std::cout << "\n";
+      std::cout << '\n';
     }
   }
+
+  if (info.etymology.empty() && info.senses.empty() && info.forms.empty())
+  {
+    std::cout << "\nWord not found.\n";
+  }
 }
-} // namespace
+} // end namespace
 
 int main()
 {

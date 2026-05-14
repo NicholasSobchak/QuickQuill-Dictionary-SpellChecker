@@ -384,6 +384,10 @@ header {
   display: none;
 }
 
+.ghost-hint:hover {
+  text-decoration: underline;
+}
+
 .hint-tab {
   color: #aaa;
   font-weight: 700;
