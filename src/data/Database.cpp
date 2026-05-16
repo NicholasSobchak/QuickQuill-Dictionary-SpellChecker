@@ -130,6 +130,11 @@ sqlite3 *Database::handle() const noexcept { return m_db.get(); }
 dct::WordId Database::insertWord(
     const std::string &lemma, const std::string &displayLemma, dct::Frequency frequency)
 {
+  if (lemma.empty())
+  {
+    return dct::WordId{dct::g_defaultId};
+  }
+
   sqlite3_stmt *stmt = nullptr;
   const char *sql{"INSERT OR IGNORE INTO words (lemma, display_lemma, "
                   "frequency) VALUES (?, ?, ?);"};
@@ -181,6 +186,11 @@ dct::WordId Database::insertWord(
 dct::WordId
 Database::insertSense(dct::WordId word_id, const std::string &pos, const std::string &definition)
 {
+  if (definition.empty())
+  {
+    return dct::WordId{dct::g_defaultId};
+  }
+
   sqlite3_stmt *stmt = nullptr;
   const char *sql{"INSERT INTO senses (word_id, pos, definition) VALUES "
                   "(?, ?, ?);"};

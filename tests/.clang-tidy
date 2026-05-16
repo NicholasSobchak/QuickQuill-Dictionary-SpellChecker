@@ -1,12 +1,7 @@
 ---
 Checks: >
   -*,
- 
   bugprone-*,
-  -bugprone-easily-swappable-parameters
-
-
-CheckOptions:
-  - key: readability-magic-numbers.IgnoredIntegerValues
-    value: 0;1;-1
+  -bugprone-easily-swappable-parameters,
+  -bugprone-chained-comparison
 ...
