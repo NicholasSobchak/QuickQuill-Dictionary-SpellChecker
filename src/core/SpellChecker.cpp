@@ -70,7 +70,7 @@ std::string SpellChecker::autofill(
   return m_dict.autofillFromTrie(word, history, suggested);
 }
 
-void SpellChecker::printSuggest(const std::vector<std::string> &out) const
+void SpellChecker::dumpList(const std::vector<std::string> &out) const
 {
   if (out.empty())
   {

@@ -217,7 +217,7 @@ int main()
 
     if (command == "suggest")
     {
-      checker.printSuggest(checker.suggest(arg));
+      checker.dumpList(checker.suggest(arg));
       continue;
     }
 

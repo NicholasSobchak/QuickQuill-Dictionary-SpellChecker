@@ -107,14 +107,14 @@ WordInfo Dictionary::getWordInfo(std::string_view word) const
     return info;
   }
 
-  // Try cache first
+  // try cache first
   auto cached = getFromCache(id.value);
   if (cached)
   {
     return *cached;
   }
 
-  // Cache miss - get from DB and store in cache
+  // cache miss - get from DB and store in cache
   info = db().getInfo(id);
   if (info.id.value != dct::g_defaultId)
   {
@@ -148,7 +148,7 @@ Dictionary::getAlternativeSearches(std::string_view word, dct::WordId currentId)
       continue;
     }
 
-    // Try cache first
+    // try cache first
     auto cached = getFromCache(id.value);
     WordInfo info;
     if (cached)
@@ -196,7 +196,7 @@ std::vector<std::string> Dictionary::suggestSynonyms(std::string_view word) cons
     return synonymSuggestions;
   }
 
-  // Try cache first
+  // try cache first
   auto cached = getFromCache(id.value);
   WordInfo info;
   if (cached)
@@ -236,6 +236,8 @@ std::vector<std::string> Dictionary::suggestSynonyms(std::string_view word) cons
   }
 
   // pick random number of synonyms to return (1 to unique count)
+  // (if using mutex, use thread_local Random::get to avoid two threads pulling a random number at
+  // the same time)
   const auto numToPick = Random::get<std::size_t>(1, uniqueVec.size());
 
   // pick random unique items
@@ -265,8 +267,6 @@ bool Dictionary::contains(std::string_view word) const
 
 std::vector<std::string> Dictionary::suggestFromPrefix(std::string_view word) const
 {
-  // std::string prefix{ m_trie.getPrefix(word) };
-
   std::string clean{cleanWord(word)};
   if (clean.empty())
   {
