@@ -32,7 +32,7 @@ inline Database makeFreshDb(const std::filesystem::path &dbPath)
   db.createTables();
   return std::move(db);
 }
-// NOLINTBEGIN(bugprone-easily-swappable-parameters)
+
 inline void seedWord(
     Database &db,
     const std::string &lemma,
@@ -47,7 +47,7 @@ inline void seedWord(
     db.insertSynonym(sense, s);
   }
 }
-// NOLINTEND(bugprone-easily-swappable-parameters)
+
 inline Dictionary makeDictionaryOnDb(const std::filesystem::path &dbPath)
 {
   // Ensures Config reads the right path when Dictionary constructs

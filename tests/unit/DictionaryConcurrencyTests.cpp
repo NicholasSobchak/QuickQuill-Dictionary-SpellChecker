@@ -4,12 +4,26 @@
 #include <future>
 
 #include "MockDB.h"
+#include "core/Dictionary.h"
+
+namespace
+{
+
+std::filesystem::path makeTempDbPath()
+{
+  auto dir = std::filesystem::temp_directory_path();
+  auto stamp = std::chrono::steady_clock::now().time_since_epoch().count();
+  return dir / ("qq-dictionaryconcurrencytests-" + std::to_string(stamp) + ".db");
+}
+
+} // namespace
 
 using namespace std::chrono_literals;
 
-TEST_CASE("Dictionary handles concurrent synonym lookups", "[dictionary][concurrency]")
+TEST_CASE("Dictionary::concurrent lookups", "[dictionary][concurrency]")
 {
-  auto tmp = test_support::tempDbPath("qq_dictionary_concurrency.sqlite");
+  Dictionary::clearGlobalCache();
+  auto tmp = makeTempDbPath();
   auto db = test_support::makeFreshDb(tmp);
   test_support::seedWord(db, "behind", "at the back of", {"after", "rear", "back"});
 

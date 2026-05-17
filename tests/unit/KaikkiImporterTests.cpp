@@ -13,12 +13,12 @@ std::filesystem::path makeTempDbPath()
 {
   auto dir = std::filesystem::temp_directory_path();
   const auto stamp = std::chrono::steady_clock::now().time_since_epoch().count();
-  return dir / ("quickquill-import-test-" + std::to_string(stamp) + ".db");
+  return dir / ("qq-kaikkiimportertests-" + std::to_string(stamp) + ".db");
 }
 
 } // end namespace
 
-TEST_CASE("importKaikkiJsonl imports lemma, form, and senses", "[import]")
+TEST_CASE("KaikkiImporter::importKaikkiJsonl", "[import]")
 {
   const auto dbPath = makeTempDbPath();
 

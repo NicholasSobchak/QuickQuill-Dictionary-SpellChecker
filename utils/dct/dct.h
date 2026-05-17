@@ -18,9 +18,9 @@ inline constexpr int g_max_suggestions{30};
  */
 struct WordId
 {
-  explicit WordId(int val = g_defaultId) : value{val} {}
   int value;
 
+  explicit WordId(int val = g_defaultId) : value{val} {}
   bool operator==(const WordId &other) const { return value == other.value; }
 };
 
@@ -37,9 +37,9 @@ inline std::ostream &operator<<(std::ostream &os, const WordId &id)
  */
 struct Frequency
 {
-  explicit Frequency(int val = 0) : value{val} {}
   int value;
 
+  explicit Frequency(int val = 0) : value{val} {}
   bool operator==(const Frequency &other) const { return value == other.value; }
 };
 
