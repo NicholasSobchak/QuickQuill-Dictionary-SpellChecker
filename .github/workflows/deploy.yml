@@ -41,7 +41,7 @@ jobs:
             set -e
             cd /var/www/quickquill
             git pull
-            cd web && npm ci && npm run build
+            rm -rf web/node_modules && cd web && npm ci && npm run build
             cd ..
             docker-compose pull
             docker-compose -f docker-compose.yml down
