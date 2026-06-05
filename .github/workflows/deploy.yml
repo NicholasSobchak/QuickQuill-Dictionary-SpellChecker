@@ -39,7 +39,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /var/www/quickquill
-            docker compose pull
-            docker compose -f docker-compose.yml down
-            docker compose -f docker-compose.yml up -d
+            docker-compose pull
+            docker-compose -f docker-compose.yml down
+            docker-compose -f docker-compose.yml up -d
             docker image prune -f
