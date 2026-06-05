@@ -102,7 +102,7 @@ body {
   object-fit: contain;
   object-position: center center;
   opacity: 0.8;
-  margin-top: -35px;
+  margin-top: -20px;
   transform: rotate(180deg);
   mix-blend-mode: screen;
 }
