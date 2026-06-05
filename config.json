@@ -1,7 +1,5 @@
 {
   "_comment": "Default config tracked by git. The VPS docker-compose mounts ./config.json over this at runtime.",
   "database_path": "dictionary.db",
-  "server_port": 8080,
-  "redis_host": "redis",
-  "redis_port": 6379
+  "server_port": 8080
 }
