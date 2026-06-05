@@ -69,11 +69,19 @@ void setInCache(int wordId, const WordInfo &info)
 }
 } // end namespace
 
+void Dictionary::clearGlobalCache()
+{
+  std::scoped_lock lock(g_cacheMutex);
+  g_cache.clear();
+  g_lruList.clear();
+}
+
 struct Dictionary::ThreadResources
 {
-  explicit ThreadResources(const std::string &dbPath) : db{dbPath} {}
-
+  std::string dbPath;
   Database db;
+
+  explicit ThreadResources(const std::string &path) : dbPath(path), db{path} {}
 };
 
 Dictionary::Dictionary() : m_dbPath{Config::getInstance().getDatabasePath()}
@@ -87,6 +95,14 @@ Dictionary::Dictionary() : m_dbPath{Config::getInstance().getDatabasePath()}
 Dictionary::ThreadResources &Dictionary::resources() const
 {
   thread_local ThreadResources resources{m_dbPath};
+  /*
+   * thread_local is initialized once per thread; recreate if a different
+   * dictionary instance (i.e. in tests) uses a distinct database path.
+   */
+  if (resources.dbPath != m_dbPath)
+  {
+    resources = ThreadResources{m_dbPath};
+  }
   return resources;
 }
 

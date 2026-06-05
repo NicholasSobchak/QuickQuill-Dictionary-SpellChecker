@@ -596,8 +596,11 @@ async function lookup() {
 
       // Canonicalize the query to match what the backend returns (display lemma).
       const canonical = displayWord(data.display_lemma || data.query || word);
-      if (canonical && canonical !== word)
-        window.history.replaceState({}, '', `/?word=${encodePathSegment(canonical)}`);
+      if (canonical) {
+        input.value = canonical;
+        if (canonical !== word)
+          window.history.replaceState({}, '', `/?word=${encodePathSegment(canonical)}`);
+      }
 
       addToHistory(canonical || displayWord(word));
       addSearchedSuggestion();

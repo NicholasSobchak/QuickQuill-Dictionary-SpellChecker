@@ -7,7 +7,6 @@
 #include <array>
 #include <cctype>
 #include <cstdlib>
-#include <sstream>
 
 namespace http
 {
@@ -124,30 +123,6 @@ SearchResult WordService::search(const std::string &word) const
   WordInfo info = m_dict.getWordInfo(sanitized);
   if (info.lemma.empty())
   {
-    // Multi-word query: try individual words
-    if (decoded.find(' ') != std::string::npos)
-    {
-      std::istringstream iss(decoded);
-      std::vector<std::string> parts;
-      std::string part;
-      while (iss >> part)
-      {
-        std::string s = dct::sanitizeWord(part);
-        if (!s.empty() && m_dict.contains(s))
-        {
-          parts.push_back(s);
-        }
-      }
-      if (!parts.empty())
-      {
-        info = m_dict.getWordInfo(parts[0]);
-        if (!info.lemma.empty())
-        {
-          return {toWordJson(info, word, {}), 200};
-        }
-      }
-    }
-
     const std::string correctWord = m_checker.correct(sanitized);
     nlohmann::json body = {{"query", sanitized}, {"found", false}, {"suggestion", correctWord}};
     return {body.dump(), 404};

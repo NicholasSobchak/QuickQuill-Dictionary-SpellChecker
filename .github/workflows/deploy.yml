@@ -1,0 +1,52 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            nicksobchak/quickquill:latest
+            nicksobchak/quickquill:${{ github.sha }}
+
+      - name: Deploy on VPS
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            cd /var/www/quickquill
+            git pull
+            if [ ! -f config.json ]; then
+              printf '{"database_path":"dictionary.db","server_port":8080}\n' > config.json
+            fi
+            rm -rf web/node_modules && cd web && npm ci && npm run build
+            cd ..
+            docker-compose pull
+            docker-compose -f docker-compose.yml down
+            docker-compose -f docker-compose.yml up -d
+            docker image prune -f

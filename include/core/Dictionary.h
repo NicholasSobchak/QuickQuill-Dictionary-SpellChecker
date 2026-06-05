@@ -17,6 +17,8 @@ public:
   explicit Dictionary();
   ~Dictionary() = default;
 
+  static void clearGlobalCache();
+
   WordInfo getWordInfo(std::string_view word) const;
   bool contains(std::string_view word) const;
   std::vector<std::string> getAlternativeSearches(

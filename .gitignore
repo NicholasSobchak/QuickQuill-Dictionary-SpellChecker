@@ -8,6 +8,7 @@ web/node_modules/
 web/dist/
 valgrind_output.txt
 docker-compose.override.yml
+Testing/
 
 # Dictionary
 nlohmann/kaikki.org-dictionary-English.jsonl
