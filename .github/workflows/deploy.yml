@@ -46,7 +46,8 @@ jobs:
             fi
             rm -rf web/node_modules && cd web && npm ci && npm run build
             cd ..
-            docker-compose pull
-            docker-compose -f docker-compose.yml down
-            docker-compose -f docker-compose.yml up -d
+            docker-compose -p quickquill -f docker-compose.yml pull
+            docker-compose -p quickquill -f docker-compose.yml down --remove-orphans
+            docker ps -aq --filter "name=quickquill" | xargs -r docker rm -f
+            docker-compose -p quickquill -f docker-compose.yml up -d --remove-orphans
             docker image prune -f
