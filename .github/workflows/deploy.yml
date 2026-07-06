@@ -39,6 +39,16 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -e
+
+            # Ensure Node.js is installed (for frontend build)
+            if ! command -v node &>/dev/null; then
+              sudo apt-get update -qq && sudo apt-get install -y -qq nodejs npm
+            fi
+
+            # Stop host nginx so Docker nginx can bind port 80
+            sudo systemctl stop nginx 2>/dev/null || true
+            sudo systemctl disable nginx 2>/dev/null || true
+
             cd /var/www/quickquill
             git pull
             if [ ! -f config.json ]; then
