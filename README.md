@@ -25,6 +25,8 @@ It supports fast word lookup, spell correction, and rich dictionary data (defini
     - Examples
     - Forms/inflections and etymology
 
+> **Note:** The live deployment at [quickquill.ink](https://quickquill.ink) uses a trimmed dictionary (~200K words) to keep the free-tier VPS fast and responsive. The full database supports **over 1.28 million words** at the same speed — see the [analytics](#analytics) section below. The only words cut are obscure, obsolete word forms (rare plurals, scientific jargon, archaic inflections, etc.) — no common English vocabulary was removed.
+
 ### Analytics
 ```
 Import complete:
