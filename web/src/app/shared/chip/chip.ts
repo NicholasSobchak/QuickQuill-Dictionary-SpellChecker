@@ -1,9 +1,22 @@
-import { Component } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 
 @Component({
   selector: 'app-chip',
-  imports: [],
-  templateUrl: './chip.html',
-  styleUrl: './chip.css',
+  template: `
+    <a class="chip" href="#" (click)="handleClick($event)">
+      {{ label() }}
+    </a>
+  `,
 })
-export class Chip {}
+export class Chip {
+  label = input('');
+  clickable = input(true);
+  clicked = output<string>();
+
+  handleClick(event: Event) {
+    event.preventDefault();
+    if (this.clickable()) {
+      this.clicked.emit(this.label());
+    }
+  }
+}

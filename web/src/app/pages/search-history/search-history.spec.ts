@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { History } from './history';
+import { SearchHistory } from './search-history';
 
-describe('History', () => {
-  let component: History;
-  let fixture: ComponentFixture<History>;
+describe('SearchHistory', () => {
+  let component: SearchHistory;
+  let fixture: ComponentFixture<SearchHistory>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [History],
+      imports: [SearchHistory],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(History);
+    fixture = TestBed.createComponent(SearchHistory);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

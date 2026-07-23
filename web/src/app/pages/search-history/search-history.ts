@@ -4,19 +4,19 @@ import { FormsModule } from '@angular/forms';
 import { Storage } from '../../services/storage';
 
 @Component({
-  selector: 'app-suggestions',
+  selector: 'app-search-history',
   imports: [FormsModule, RouterLink],
-  templateUrl: './suggestions.html',
-  styleUrl: './suggestions.css',
+  templateUrl: './search-history.html',
+  styleUrl: './search-history.css',
 })
-export class Suggestions {
+export class SearchHistory {
   private storage = inject(Storage);
   private router = inject(Router);
 
   filterText = signal('');
 
   filteredWords = computed(() => {
-    const words = this.storage.getSuggestedWords();
+    const words = this.storage.getHistory();
     const query = this.filterText().trim().toLowerCase();
     if (!query) return words;
     return words.filter((w) => w.toLowerCase().includes(query));
@@ -27,7 +27,7 @@ export class Suggestions {
   }
 
   clearAll() {
-    this.storage.clearSuggestedWords();
+    this.storage.clearHistory();
   }
 
   onFilterInput(event: Event) {
